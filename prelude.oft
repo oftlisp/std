@@ -1,0 +1,13 @@
+(module std/prelude
+  (f
+   nil
+   t))
+
+;; The true constant.
+(def t 't)
+
+;; The false constant.
+(def f '())
+
+;; The empty list constant.
+(def nil '())
