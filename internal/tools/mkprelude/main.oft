@@ -1,0 +1,5 @@
+(module std/internal/tools/mkprelude/main
+  main)
+
+(defn main ()
+  (panic "TODO"))

@@ -1,0 +1,22 @@
+;; The print/display family of functions.
+(module std/internal/prelude/print
+  display
+  displayln
+  print
+  println)
+
+(import std/internal/io
+  stdout
+  writeStr)
+
+;; Prints values without an ending newline. Strings will **not** have quotes.
+;; Arguments do not have spaces printed between them.
+(defn print (...vals)
+  (map print-one vals)
+  nil)
+
+;; Prints a value, followed by a newline. Strings will **not** have quotes.
+;; Arguments do not have spaces printed between them.
+(defn print (...vals)
+  (map print-one vals)
+  nil)

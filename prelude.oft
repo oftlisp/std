@@ -1,13 +1,22 @@
+;; TODO THIS SHOULD BE GENERATED.
 (module std/prelude
-  (f
-   nil
-   t))
+  display
+  displayln
+  f
+  nil
+  print
+  println
+  show
+  t)
 
-;; The true constant.
-(def t 't)
-
-;; The false constant.
-(def f '())
-
-;; The empty list constant.
-(def nil '())
+(import std/internal/prelude/constants
+  f
+  nil
+  t)
+(import std/internal/prelude/format
+  show)
+(import std/internal/prelude/print
+  display
+  displayln
+  print
+  println)
