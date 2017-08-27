@@ -1,15 +1,17 @@
 (module std/internal/prelude/format
   show)
 
+(import std/internal/prelude/constants
+  t)
 (import std/internal/primitives
   object?
   object-get-property
   object-has-property?
   panic)
 
-(defn show (val (to-string t))
+(defn show (val)
   (if (object? val)
-    (if (and to-string (object-has-property? val 'to-string))
+    (if (object-has-property? val 'to-string)
 	  ((object-get-property val 'to-string) val)
 	  "#<object>")
-	(panic "TODO")))
+	(panic "TODO show")))

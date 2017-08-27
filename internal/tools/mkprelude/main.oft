@@ -1,5 +1,20 @@
 (module std/internal/tools/mkprelude/main
   main)
 
+(defn fac (n)
+  (defn Y (f)
+    (defn y (x)
+	  (f (x x)))
+	(y y))
+  (def fac-helper (fn (next x)
+    (if (= x 0)
+	  1
+	  (* x (next (- x 1))))))
+  ((Y fac-helper) n))
+
 (defn main ()
+  (println "fac 10 = " (fac 10))
+  (println
+    '(1 "two" three)
+	[1 "two" 'three])
   (panic "TODO"))

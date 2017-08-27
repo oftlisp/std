@@ -1,11 +1,14 @@
 ;; TODO THIS SHOULD BE GENERATED.
 (module std/prelude
-  display
-  displayln
   f
+  filter
+  fold
+  for-each
+  map
   nil
   print
   println
+  reverse
   show
   t)
 
@@ -15,8 +18,12 @@
   t)
 (import std/internal/prelude/format
   show)
+(import std/internal/prelude/fp
+  filter
+  fold
+  for-each
+  map
+  reverse)
 (import std/internal/prelude/print
-  display
-  displayln
   print
   println)
