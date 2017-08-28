@@ -7,11 +7,12 @@
   object?
   object-get-property
   object-has-property?
-  panic)
+  panic
+  show-primitive)
 
 (defn show (val)
   (if (object? val)
     (if (object-has-property? val 'to-string)
 	  ((object-get-property val 'to-string) val)
 	  "#<object>")
-	(panic "TODO show")))
+	(show-primitive val)))
