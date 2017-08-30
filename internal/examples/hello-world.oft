@@ -1,0 +1,5 @@
+(module std/internal/examples/hello-world
+  main)
+
+(defn main ()
+  (println "Hello, world!"))
