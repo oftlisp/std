@@ -1,0 +1,10 @@
+(module std/internal/examples/prime-sieve
+  main)
+
+(import-macros std/lazy
+  lazy-cons)
+(import std/lazy
+  force)
+
+(defn main ()
+  (panic "TODO"))
