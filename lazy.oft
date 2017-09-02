@@ -1,0 +1,51 @@
+(module std/lazy
+  naturals
+  stream
+  thunk)
+
+(import-macros std/fp/monad
+  do)
+(import std/stm
+  stm-read
+  stm-var
+  stm-write)
+
+;;; The Thunk class
+
+(defclass thunk
+  (val inner)
+  (val evaled?)
+
+  (ctor (func)
+    (list (stm-var func) (stm-var f)))
+
+  (defn force ()
+    (do
+	  (mdef e (stm-read evaled?))
+	  (mdef i (stm-read inner))
+	  (if e
+	    i ; i is an already-evaluated value.
+		(do ; i is a function that will return the value.
+		  (def val (i))
+		  (stm-write evaled? t)
+		  (stm-write inner val)
+		  (mreturn val)))))
+
+;;; The Stream class
+
+(defclass stream
+  (val car)
+  (val cdr)
+
+  (ctor (car cdr)
+    (list car (thunk cdr)))
+
+  (defn head () car)
+  (defn tail () (force cdr)))
+
+(defmacro stream-cons (car cdr)
+  `(std/lazy/stream ,car (fn () ,cdr)))
+
+;;; Predefined Streams
+
+(def naturals (stream-cons 1 (1+ (head naturals))))
