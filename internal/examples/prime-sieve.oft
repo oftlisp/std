@@ -9,8 +9,8 @@
   (stream-cons
     (head stream)
     (sieve (filter
-	  (fn (x) (/= (mod x (head stream)) 0))
-	  (tail stream)))))
+      (fn (x) (/= (mod x (head stream)) 0))
+      (tail stream)))))
 
 (def primes (sieve (skip 2 naturals)))
 

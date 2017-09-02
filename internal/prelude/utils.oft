@@ -1,0 +1,33 @@
+(module std/internal/prelude/utils
+  ->
+  todo)
+
+;; The arrow macro of Clojure. Equivalents exist in ML, Elixir, and probably in
+;; other languages.
+;;
+;; # Example
+;;
+;; ```
+;; (-> (get-list)
+;;   (map 1+)
+;;   (filter (fn (x) (< x 0))))
+;;
+;; ; is equivalent to
+;;
+;; (filter (map (get-list) 1+) (fn (x) (< x 0)))
+;; ```
+(defmacro -> (fst ... rest)
+  (defn helper (x xs)
+    (if (nil? xs) x
+      (progn
+        (def car (head xs))
+        (def cdr (tail xs))
+        (def next (if (cons? car)
+          `(,(head car) ,x ,@(tail car))
+          `(,car ,x)))
+        (helper next cdr))))
+  (helper fst rest))
+
+;; Panics with the string "TODO".
+(defmacro todo ()
+  '(panic "TODO"))

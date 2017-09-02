@@ -23,15 +23,15 @@
 
   (defn force ()
     (do
-	  (mdef e (stm-read evaled?))
-	  (mdef i (stm-read inner))
-	  (if e
-	    i ; i is an already-evaluated value.
-		(do ; i is a function that will return the value.
-		  (def val (i))
-		  (stm-write evaled? t)
-		  (stm-write inner val)
-		  (mreturn val))))))
+      (mdef e (stm-read evaled?))
+      (mdef i (stm-read inner))
+      (if e
+        i ; i is an already-evaluated value.
+        (do ; i is a function that will return the value.
+          (def val (i))
+          (stm-write evaled? t)
+          (stm-write inner val)
+          (mreturn val))))))
 
 ;;; The Stream class
 

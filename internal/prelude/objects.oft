@@ -1,0 +1,16 @@
+(module std/internal/prelude/objects
+  defclass)
+
+(import std/internal/primitives
+  object?
+  object-get-property)
+
+;; The class declarator.
+;;
+;; This expands into two function definitions, and potentially method
+;; definitions as well. For a class named foo, the functions defined are foo
+;; and foo?, where foo is the constructor and foo? checks if an arbitrary value
+;; is an object of the given class.
+(defmacro defclass (name ... decls)
+  (def decls (group-by head vals))
+  (todo))

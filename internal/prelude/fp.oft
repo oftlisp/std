@@ -18,8 +18,8 @@
 (defn reverse (l)
   (defn helper (in out)
     (if (nil? in)
-	  out
-	  (helper (cdr in) (cons (car in) out))))
+      out
+      (helper (cdr in) (cons (car in) out))))
   (helper l nil))
 
 (defn filter () (panic "TODO filter"))
@@ -27,22 +27,22 @@
 (defn for-each (f l)
   (if (nil? l)
     nil
-	(progn
-	  (f (car l))
-	  (for-each f (cdr l)))))
+    (progn
+      (f (car l))
+      (for-each f (cdr l)))))
 
 (defn fold () (panic "TODO fold"))
 
 (defn for-each (f l)
   (if (nil? l)
     nil
-	(progn
-	  (f (car l))
-	  (for-each f (cdr l)))))
+    (progn
+      (f (car l))
+      (for-each f (cdr l)))))
 
 (defn map (f l)
   (defn helper (in out)
     (if (nil? in)
-	  (reverse out)
-	  (helper (cdr in) (cons (f (car in)) out))))
+      (reverse out)
+      (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))

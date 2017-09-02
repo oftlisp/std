@@ -14,8 +14,8 @@
 (defn show (val)
   (if (object? val)
     (if (object-has-property? val 'to-string)
-	  ((object-get-property val 'to-string) val)
-	  "#<object>")
-	(if (string? val)
-	  val
-	  (show-primitive val))))
+      ((object-get-property val 'to-string) val)
+      "#<object>")
+    (if (string? val)
+      val
+      (show-primitive val))))

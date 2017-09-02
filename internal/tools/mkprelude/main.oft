@@ -1,20 +1,35 @@
 (module std/internal/tools/mkprelude/main
   main)
 
-(defn fac (n)
-  (defn Y (f)
-    (defn y (x)
-	  (f (x x)))
-	(y y))
-  (def fac-helper (fn (next x)
-    (if (= x 0)
-	  1
-	  (* x (next (- x 1))))))
-  ((Y fac-helper) n))
+(import std/log
+  warn)
+
+(import github.com/oftlisp/oftlisp/modules
+  all-modules
+  load)
+
+;; Returns an assoc from module name to a list of module imports, all of which
+;; are symbols.
+(defn prelude-exports ()
+  ;; Returns a single assoc entry for the name of and values exported by the
+  ;; given module.
+  (defn exports-of (name)
+    (def m (load name))
+    (if (or (nil? m) (not (cons? (head m))) (neq (head (head m)) 'module))
+      (progn
+        (warn "Probably invalid prelude module: " name)
+        nil)
+      (progn
+        (todo) ; TODO: Check that (second (head m)) and name are equal.
+        (tail (head m)))))
+
+  ;; Returns whether the given module name is a prelude module.
+  (defn prelude-module? (name)
+    (starts-with "std/internal/prelude/" name))
+
+  (-> (all-modules)
+    (filter prelude-module?)
+    (map exports-of)))
 
 (defn main ()
-  (println "fac 10 = " (fac 10))
-  (println
-    '(1 "two" three)
-	[1 "two" 'three])
-  (panic "TODO"))
+  (todo))
