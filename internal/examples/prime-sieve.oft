@@ -1,16 +1,15 @@
 (module std/internal/examples/prime-sieve
   main)
 
-(import-macros std/lazy/stream
+(import std/lazy
+  naturals
   stream-cons)
-(import std/lazy/stream
-  naturals)
 
 (defn sieve (stream)
   (stream-cons
     (head stream)
     (sieve (filter
-	  (fn (x) (/= (% x (head stream)) 0))
+	  (fn (x) (/= (mod x (head stream)) 0))
 	  (tail stream)))))
 
 (def primes (sieve (skip 2 naturals)))

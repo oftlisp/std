@@ -1,9 +1,11 @@
 (module std/lazy
+  force
   naturals
   stream
+  stream-cons
   thunk)
 
-(import-macros std/fp/monad
+(import std/fp/monad
   do)
 (import std/stm
   stm-read
@@ -29,7 +31,7 @@
 		  (def val (i))
 		  (stm-write evaled? t)
 		  (stm-write inner val)
-		  (mreturn val)))))
+		  (mreturn val))))))
 
 ;;; The Stream class
 
