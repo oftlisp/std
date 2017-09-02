@@ -17,7 +17,7 @@
   (val evaled?)
 
   (ctor (func)
-    (list (stm-var func) (stm-var f)))
+    [(stm-var func) (stm-var f)])
 
   (defn force ()
     (do
@@ -38,7 +38,7 @@
   (val cdr)
 
   (ctor (car cdr)
-    (list car (thunk cdr)))
+    [car (thunk cdr)])
 
   (defn head () car)
   (defn tail () (force cdr)))
