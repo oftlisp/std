@@ -1,11 +1,21 @@
 ;; TODO THIS SHOULD BE GENERATED.
 (module std/prelude
+  *
+  +
+  -
+  /
+  =
+  1+
+  1-
   f
   filter
-  fold
+  foldl
+  foldr
   for-each
   map
+  mod
   nil
+  otherwise
   print
   println
   reverse
@@ -15,15 +25,27 @@
 (import std/internal/prelude/constants
   f
   nil
+  otherwise
   t)
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
   filter
-  fold
+  foldl
+  foldr
   for-each
   map
   reverse)
+(import std/internal/prelude/math
+  *
+  +
+  -
+  /
+  1+
+  1-
+  mod)
 (import std/internal/prelude/print
   print
   println)
+(import std/internal/primitives
+  =)

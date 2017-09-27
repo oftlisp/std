@@ -1,0 +1,39 @@
+;; Mathematical functions.
+(module std/internal/prelude/math
+  *
+  +
+  -
+  /
+  1+
+  1-
+  mod)
+
+(import std/internal/prelude/fp
+  foldl)
+(import std/internal/primitives
+  */2
+  +/2
+  -/2
+  //2
+  mod/2)
+
+;; Multiplies numbers.
+(defn * (n ... ns) (foldl */2 n ns))
+
+;; Adds numbers.
+(defn + (n ... ns) (foldl +/2 n ns))
+
+;; Subtracts numbers.
+(defn - (n ... ns) (foldl -/2 n ns))
+
+;; Divides numbers.
+(defn / (n ... ns) (foldl //2 n ns))
+
+;; Takes the modulus between numbers.
+(defn mod (n ... ns) (foldl mod/2 n ns))
+
+;; Adds one to the given number.
+(defn 1+ (n) (+ n 1))
+
+;; Subtracts one from the given number.
+(defn 1- (n) (- n 1))

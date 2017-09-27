@@ -2,6 +2,7 @@
 (module std/internal/prelude/constants
   f
   nil
+  otherwise
   t)
 
 ;; The true constant.
@@ -12,3 +13,6 @@
 
 ;; The empty list constant.
 (def nil '())
+
+;; A useful alias for true.
+(def otherwise 't)

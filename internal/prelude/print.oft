@@ -3,7 +3,8 @@
   ; display
   ; displayln
   print
-  println)
+  println
+  write-string)
 
 (import std/internal/prelude/constants
   nil)
@@ -12,18 +13,23 @@
 (import std/internal/prelude/fp
   for-each)
 (import std/internal/primitives
-  write-str)
+  bytes<-string
+  write-bytes)
+
+;; Writes a string to stdout.
+(defn write-string (str)
+  (write-bytes (bytes<-string str)))
 
 (defn print-one (val)
-  (write-str (show val)))
+  (write-string (show val)))
 
 ;; Prints values without an ending newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
-(defn print (vals)
+(defn print (... vals)
   (for-each print-one vals))
 
 ;; Prints a value, followed by a newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
-(defn println (vals)
+(defn println (... vals)
   (for-each print-one vals)
-  (write-str "\n"))
+  (write-string "\n"))
