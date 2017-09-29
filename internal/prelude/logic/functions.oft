@@ -1,0 +1,27 @@
+(module std/internal/prelude/logic/functions
+  and
+  not
+  or)
+
+(module std/internal/prelude/constants
+  f
+  t)
+(import std/internal/prelude/fp
+  foldl)
+
+(defn and/2 (x y)
+  (if x y f))
+(defn or/2 (x y)
+  (if x t y))
+
+;; Boolean and.
+(defn and (x ... xs)
+  (foldl and/2 x xs))
+
+;; Boolean not.
+(defn not (x)
+  (if x f t))
+
+;; Boolean or.
+(defn or (x ... xs)
+  (foldl or/2 x xs))

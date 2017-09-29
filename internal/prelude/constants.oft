@@ -14,5 +14,5 @@
 ;; The empty list constant.
 (def nil '())
 
-;; A useful alias for true.
-(def otherwise 't)
+;; A useful alias for true, used in conds.
+(def otherwise 'otherwise)

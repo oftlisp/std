@@ -9,6 +9,8 @@
 
 (import std/internal/prelude/constants
   nil)
+(import std/internal/prelude/utils
+  todo)
 (import std/internal/primitives
   car
   cdr
@@ -23,7 +25,7 @@
       (helper (cdr in) (cons (car in) out))))
   (helper l nil))
 
-(defn filter () (panic "TODO filter"))
+(defn filter () (todo))
 
 (defn for-each (f l)
   (if (nil? l)

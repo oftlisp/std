@@ -2,6 +2,12 @@
   ->
   todo)
 
+(import std/internal/primitives
+  car
+  cdr
+  cons?
+  nil?)
+
 ;; The arrow macro of Clojure. Equivalents exist in ML, Elixir, and probably in
 ;; other languages.
 ;;
@@ -20,12 +26,12 @@
   (defn helper (x xs)
     (if (nil? xs) x
       (progn
-        (def car (head xs))
-        (def cdr (tail xs))
-        (def next (if (cons? car)
-          `(,(head car) ,x ,@(tail car))
-          `(,car ,x)))
-        (helper next cdr))))
+        (def hd (car xs))
+        (def tl (cdr xs))
+        (def next (if (cons? hd)
+          `(,(car hd) ,x ,@(cdr hd))
+          `(,hd ,x)))
+        (helper next tl))))
   (helper fst rest))
 
 ;; Panics with the string "TODO".

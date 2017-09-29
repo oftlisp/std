@@ -3,18 +3,19 @@
 
 (import std/internal/prelude/constants
   t)
+(import std/internal/prelude/objects
+  object-call-func)
 (import std/internal/primitives
   object?
-  object-get-property
-  object-has-property?
+  object-has-func?
   panic
   show-primitive
   string?)
 
 (defn show (val)
   (if (object? val)
-    (if (object-has-property? val 'to-string)
-      ((object-get-property val 'to-string) val)
+    (if (object-has-func? val 'to-string)
+      (object-call-func val 'to-string)
       "#<object>")
     (if (string? val)
       val
