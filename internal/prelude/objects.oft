@@ -2,10 +2,13 @@
   defclass
   object-call-func)
 
-(module std/internal/prelude/utils
+(import std/internal/prelude/fp
+  group-by)
+(import std/internal/prelude/utils
   todo)
 (import std/internal/primitives
   apply
+  car
   cons
   object-get-func
   object-seal
@@ -18,7 +21,7 @@
 ;; and foo?, where foo is the constructor and foo? checks if an arbitrary value
 ;; is an object of the given class.
 (defmacro defclass (name ... decls)
-  (def decls (group-by head vals))
+  (def decls (group-by car decls))
   (todo))
 
 ;; Calls a function by name. Panics if the function is not found.

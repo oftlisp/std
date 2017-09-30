@@ -3,7 +3,7 @@
   not
   or)
 
-(module std/internal/prelude/constants
+(import std/internal/prelude/constants
   f
   t)
 (import std/internal/prelude/fp

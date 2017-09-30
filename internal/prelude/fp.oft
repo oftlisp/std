@@ -4,6 +4,7 @@
   foldl
   foldr
   for-each
+  group-by
   map
   reverse)
 
@@ -50,6 +51,9 @@
     (progn
       (f (car l))
       (for-each f (cdr l)))))
+
+(defn group-by ()
+  (todo))
 
 (defn map (f l)
   (defn helper (in out)
