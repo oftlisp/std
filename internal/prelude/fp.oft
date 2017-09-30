@@ -26,7 +26,8 @@
       (helper (cdr in) (cons (car in) out))))
   (helper l nil))
 
-(defn filter () (todo))
+(defn filter ()
+  (todo))
 
 (defn for-each (f l)
   (if (nil? l)
