@@ -4,7 +4,7 @@
 
 (import std/internal/prelude/fp
   group-by)
-(import std/internal/prelude/utils
+(import std/internal/prelude/utils/macros
   todo)
 (import std/internal/primitives
   apply

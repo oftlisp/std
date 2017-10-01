@@ -3,10 +3,12 @@
   *
   +
   -
+  ->
   /
-  =
   1+
   1-
+  <-
+  =
   f
   filter
   foldl
@@ -47,5 +49,11 @@
 (import std/internal/prelude/print
   print
   println)
+(import std/internal/prelude/utils
+  list)
+(import std/internal/prelude/utils/macros
+  ->
+  <-
+  todo)
 (import std/internal/primitives
   =)

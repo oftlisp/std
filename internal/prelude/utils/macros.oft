@@ -1,0 +1,55 @@
+(module std/internal/prelude/utils/macros
+  ->
+  <-
+  todo)
+
+(import std/internal/prelude/utils
+  list)
+(import std/internal/primitives
+  car
+  cdr
+  cons
+  cons?
+  nil?)
+
+;; The arrow macro of Clojure. An equivalent infix operator exists in Elixir,
+;; and probably in other languages.
+;;
+;; # Example
+;;
+;; ```
+;; (-> (get-list)
+;;   (map 1+)
+;;   (filter (fn (x) (< x 0))))
+;;
+;; ; is equivalent to
+;;
+;; (filter (map (get-list) 1+) (fn (x) (< x 0)))
+;; ```
+(defmacro -> (fst ... rest)
+  (defn helper (x xs)
+    (if (nil? xs) x
+      (progn
+        (def hd (car xs))
+        (def tl (cdr xs))
+        (def next (if (cons? hd)
+          (cons (car hd) (cons x (cdr hd)))
+          (list hd x)))
+        (helper next tl))))
+  (helper fst rest))
+
+;; Assigns `var` to the result of `(func var)`.
+;;
+;; # Example
+;;
+;; ```
+;; (def x 0)
+;; (<- x 1+)
+;; (assert-eq x 1)
+;; ```
+(defmacro <- (var func)
+  `(def ,var (,func ,var)))
+
+;; Panics with the string "TODO".
+(defmacro todo ()
+  '(panic "TODO"))

@@ -10,7 +10,7 @@
 
 (import std/internal/prelude/constants
   nil)
-(import std/internal/prelude/utils
+(import std/internal/prelude/utils/macros
   todo)
 (import std/internal/primitives
   car
