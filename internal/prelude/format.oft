@@ -1,8 +1,6 @@
 (module std/internal/prelude/format
   show)
 
-(import std/internal/prelude/constants
-  t)
 (import std/internal/prelude/objects
   object-call-func)
 (import std/internal/primitives
@@ -12,11 +10,11 @@
   show-primitive
   string?)
 
-(defn show (val)
-  (if (object? val)
-    (if (object-has-func? val 'to-string)
-      (object-call-func val 'to-string)
+(defn show (value)
+  (if (object? value)
+    (if (object-has-func? value 'to-string)
+      (object-call-func value 'to-string)
       "#<object>")
-    (if (string? val)
-      val
-      (show-primitive val))))
+    (if (string? value)
+      value
+      (show-primitive value))))

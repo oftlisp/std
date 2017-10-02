@@ -17,7 +17,8 @@
   cdr
   cons
   nil?
-  panic)
+  panic
+  show-primitive)
 
 (defn reverse (l)
   (defn helper (in out)
@@ -53,12 +54,14 @@
       (f (car l))
       (for-each f (cdr l)))))
 
-(defn group-by ()
-  (todo))
-
 (defn map (f l)
   (defn helper (in out)
     (if (nil? in)
       (reverse out)
       (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))
+
+(defn group-by (f l)
+  (def tagged (map (fn (x) (cons (f x) x)) l))
+  (todo (show-primitive tagged))
+  (todo "TODO group-by"))

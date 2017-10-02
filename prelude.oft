@@ -16,7 +16,7 @@
   cons
   defclass
   defmethod
-  f
+  false
   filter
   foldl
   foldr
@@ -35,14 +35,16 @@
   reverse
   shl?
   show
-  t
-  todo)
+  sort
+  sort-by
+  todo
+  true)
 
 (import std/internal/prelude/constants
-  f
+  false
   nil
   otherwise
-  t)
+  true)
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
@@ -69,6 +71,9 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
+(import std/internal/prelude/sort
+  sort
+  sort-by)
 (import std/internal/prelude/utils
   shl?)
 (import std/internal/prelude/utils/macros

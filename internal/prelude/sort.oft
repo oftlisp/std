@@ -1,0 +1,21 @@
+(module std/internal/prelude/sort
+  sort
+  sort-by)
+
+(import std/internal/prelude/utils/macros
+  cond
+  todo)
+
+;; Merges two lists into an accumulator.
+;;
+;; Tail recursive.
+(defn merge (l r acc)
+  (todo))
+
+;; Sorts lists by the given function.
+(defn sort-by (f l)
+  l)
+
+;; Sorts a list.
+(defn sort (l)
+  (sort-by (fn (x) x) l))

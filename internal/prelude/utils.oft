@@ -3,8 +3,7 @@
   shl?)
 
 (import std/internal/prelude/constants
-  f
-  t)
+  false)
 (import std/internal/primitives
   car
   cons?
@@ -15,10 +14,10 @@
 (defn any-shl? (value)
   (if (cons? value)
     (symbol? (car value))
-    f))
+    false))
 
 ;; Checks if a value is a list headed by the given symbol.
 (defn shl? (sym value)
   (if (cons? value)
     (eq (car value) sym)
-    f))
+    false))

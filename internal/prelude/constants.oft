@@ -1,15 +1,15 @@
 ;; Constants contained in the prelude.
 (module std/internal/prelude/constants
-  f
+  false
   nil
   otherwise
-  t)
+  true)
 
 ;; The true constant.
-(def t 't)
+(def true 'true)
 
 ;; The false constant.
-(def f '())
+(def false '())
 
 ;; The empty list constant.
 (def nil '())
