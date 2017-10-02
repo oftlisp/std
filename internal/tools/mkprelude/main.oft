@@ -32,4 +32,10 @@
     (map exports-of)))
 
 (defn main ()
+  (def vals (prelude-exports))
+  (def imports (map vals (fn (x) (cons 'import x))))
+  (def prelude `(
+    (module std/prelude ,@exports)
+    ,@imports))
+  (println prelude)
   (todo))
