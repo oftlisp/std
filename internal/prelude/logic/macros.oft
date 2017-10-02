@@ -1,0 +1,19 @@
+(module std/internal/prelude/logic/macros
+  and
+  or)
+
+(import std/internal/prelude/utils
+  list)
+(import std/internal/primitives
+  cons
+  nil?)
+
+;; n-way logical and.
+(defmacro and (x ... xs)
+  (if (nil? xs) x
+    (list 'if x (cons 'and xs) 'f)))
+
+;; n-way logical or.
+(defmacro or (x ... xs)
+  (if (nil? xs) x
+    (list 'if x 't (cons 'or xs))))

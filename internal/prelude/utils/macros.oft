@@ -1,16 +1,18 @@
 (module std/internal/prelude/utils/macros
   ->
   <-
+  cond
   todo)
 
-(import std/internal/prelude/utils
+(import std/internal/prelude/utils/pseudoprims
   list)
 (import std/internal/primitives
   car
   cdr
   cons
   cons?
-  nil?)
+  nil?
+  panic)
 
 ;; The arrow macro of Clojure. An equivalent infix operator exists in Elixir,
 ;; and probably in other languages.
@@ -48,8 +50,23 @@
 ;; (assert-eq x 1)
 ;; ```
 (defmacro <- (var func)
-  `(def ,var (,func ,var)))
+  (list 'def var (list func var)))
 
 ;; Panics with the string "TODO".
-(defmacro todo ()
-  '(panic "TODO"))
+(defmacro todo ((msg ()))
+  (def msg (if (nil? msg)
+    "TODO"
+    msg))
+  (list 'panic msg))
+
+(defmacro cond (... forms)
+  (defn helper (forms)
+    (if (cons? forms)
+      (if (cons? (cdr forms))
+        (list 'if
+          (car forms)
+          (car (cdr forms))
+          (helper (cdr (cdr forms))))
+        (car forms))
+      ''()))
+  (helper forms))

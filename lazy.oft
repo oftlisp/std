@@ -9,7 +9,7 @@
   do)
 (import std/stm
   stm-read
-  stm-var
+  stm-new
   stm-write)
 
 ;;; The Thunk class
@@ -19,7 +19,7 @@
   (val evaled?)
 
   (ctor (func)
-    [(stm-var func) (stm-var f)])
+    [(stm-new func) (stm-new f)])
 
   (defn force ()
     (do

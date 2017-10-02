@@ -1,0 +1,17 @@
+(module std/stm
+  stm-new
+  stm-read
+  stm-run
+  stm-write)
+
+(defn stm-new (initial-value)
+  (todo))
+
+(defn stm-read (stm)
+  (todo))
+
+(defn stm-run (stm)
+  (todo))
+
+(defn stm-write (stm value)
+  (todo))

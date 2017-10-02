@@ -1,0 +1,44 @@
+(module std/internal/prelude/utils/pseudoprims
+  append
+  list
+  list?
+  reverse)
+
+(import std/internal/prelude/constants
+  nil)
+(import std/internal/primitives
+  apply
+  car
+  cdr
+  cons
+  cons?
+  nil?)
+
+;; Reverses a list.
+(defn reverse (l)
+  (defn loop (acc l)
+    (if (cons? l)
+      (loop (cons (car l) acc) (cdr l))
+      acc))
+  (loop nil l))
+
+;; Appends lists.
+(defn append (... xs)
+  (defn append/2 (x y)
+    (defn helper (acc l)
+      (if (cons? l)
+        (helper (cons (car l) acc) (cdr l))
+        acc))
+    (helper y (reverse x)))
+  (if (cons? xs)
+    (append/2 (car xs) (apply append (cdr xs)))
+    nil))
+
+;; Constructs a list.
+(defn list (... xs) xs)
+
+;; Checks if a value is a list.
+(defn list? (value)
+  (if (cons? value)
+    't
+    (nil? value)))

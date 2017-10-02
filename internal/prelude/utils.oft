@@ -1,5 +1,24 @@
 (module std/internal/prelude/utils
-  list)
+  any-shl?
+  shl?)
 
-;; Constructs a list.
-(defn list (... xs) xs)
+(import std/internal/prelude/constants
+  f
+  t)
+(import std/internal/primitives
+  car
+  cons?
+  eq
+  symbol?)
+
+;; Checks if a value is a list headed by any symbol.
+(defn any-shl? (value)
+  (if (cons? value)
+    (symbol? (car value))
+    f))
+
+;; Checks if a value is a list headed by the given symbol.
+(defn shl? (sym value)
+  (if (cons? value)
+    (eq (car value) sym)
+    f))

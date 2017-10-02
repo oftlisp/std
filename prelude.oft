@@ -9,20 +9,34 @@
   1-
   <-
   =
+  append
+  apply
+  car
+  cdr
+  cons
+  defclass
+  defmethod
   f
   filter
   foldl
   foldr
   for-each
+  list
+  list?
   map
   mod
   nil
+  object-call-func
   otherwise
+  panic
   print
   println
+  quasiquote
   reverse
+  shl?
   show
-  t)
+  t
+  todo)
 
 (import std/internal/prelude/constants
   f
@@ -46,14 +60,29 @@
   1+
   1-
   mod)
+(import std/internal/prelude/objects
+  defclass
+  defmethod
+  object-call-func)
 (import std/internal/prelude/print
   print
   println)
+(import std/internal/prelude/quasiquote
+  quasiquote)
 (import std/internal/prelude/utils
-  list)
+  shl?)
 (import std/internal/prelude/utils/macros
   ->
   <-
   todo)
+(import std/internal/prelude/utils/pseudoprims
+  append
+  list
+  list?)
 (import std/internal/primitives
-  =)
+  =
+  apply
+  car
+  cdr
+  cons
+  panic)

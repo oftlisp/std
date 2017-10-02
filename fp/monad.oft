@@ -1,0 +1,22 @@
+(module std/fp/monad
+  <$>
+  <*>
+  >>=
+  do
+  pure)
+
+(defmethod <$>)
+(defmethod <*>)
+(defmethod >>=)
+(defmethod pure)
+
+;; Monadic do notation.
+;;
+;; TODO: Implement ApplicativeDo
+(defmacro do (hd ... tl)
+  (if (shl? 'mdef hd)
+    (progn
+      (def var (car (cdr hd)))
+      (def val (car (cdr (cdr hd))))
+      'todo)
+    (progn)))
