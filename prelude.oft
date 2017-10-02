@@ -9,6 +9,7 @@
   1-
   <-
   =
+  and
   append
   apply
   car
@@ -16,6 +17,7 @@
   cons
   defclass
   defmethod
+  else
   false
   filter
   foldl
@@ -27,7 +29,7 @@
   mod
   nil
   object-call-func
-  otherwise
+  or
   panic
   print
   println
@@ -41,9 +43,9 @@
   true)
 
 (import std/internal/prelude/constants
+  else
   false
   nil
-  otherwise
   true)
 (import std/internal/prelude/format
   show)
@@ -54,6 +56,9 @@
   for-each
   map
   reverse)
+(import std/internal/prelude/logic/macros
+  and
+  or)
 (import std/internal/prelude/math
   *
   +

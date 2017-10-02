@@ -1,8 +1,8 @@
 ;; Constants contained in the prelude.
 (module std/internal/prelude/constants
+  else
   false
   nil
-  otherwise
   true)
 
 ;; The true constant.
@@ -14,5 +14,5 @@
 ;; The empty list constant.
 (def nil '())
 
-;; A useful alias for true, used in conds.
-(def otherwise 'otherwise)
+;; A useful alias for true in cond.
+(def else 'else)

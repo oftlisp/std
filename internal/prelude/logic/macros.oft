@@ -2,7 +2,7 @@
   and
   or)
 
-(import std/internal/prelude/utils
+(import std/internal/prelude/utils/pseudoprims
   list)
 (import std/internal/primitives
   cons
