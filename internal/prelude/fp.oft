@@ -9,14 +9,18 @@
   lookup
   lookup-by
   map
+  skip
   sort
-  sort-by)
+  sort-by
+  take)
 
 (import std/internal/prelude/constants
   else
   nil)
 (import std/internal/prelude/logic
   and)
+(import std/internal/prelude/objects/list-methods
+  tail)
 (import std/internal/prelude/utils
   caar
   cdar
@@ -32,7 +36,9 @@
   list)
 (import std/internal/primitives
   +/2
+  -/2
   //2
+  =
   <>
   car
   cdr
@@ -107,6 +113,20 @@
       (leq (cdar l) (cdar r)) (loop (cdr l) r (cons (car l) acc))
       else                    (loop l (cdr r) (cons (car r) acc))))
   (loop l r nil))
+
+;; Skips n elements in a list.
+(defn skip (n lst)
+  (if (= n 0)
+    lst
+    (skip (-/2 n 1) (tail lst))))
+
+;; Takes the first n elements in a list.
+(defn take (n lst)
+  (defn loop (n lst acc)
+    (if (= n 0)
+      (reverse acc)
+      (take (-/2 n 1) (cdr lst) (cons (car lst) acc))))
+    (loop n lst nil))
 
 ;; Sorts lists by the given function.
 ;;

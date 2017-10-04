@@ -4,6 +4,7 @@
   +
   -
   /
+  /=
   0?
   1+
   1-
@@ -11,6 +12,8 @@
 
 (import std/internal/prelude/fp
   foldl)
+(import std/internal/prelude/utils/pseudoprims
+  not)
 (import std/internal/primitives
   */2
   +/2
@@ -33,6 +36,9 @@
 
 ;; Takes the modulus between numbers.
 (defn mod (n ... ns) (foldl mod/2 n ns))
+
+;; Numeric not-equal.
+(defn /= (a b) (not (= a b)))
 
 ;; Checks if a value is numerically equal to zero.
 (defn 0? (n) (= n 0))

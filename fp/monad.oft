@@ -14,9 +14,7 @@
 ;;
 ;; TODO: Implement ApplicativeDo
 (defmacro do (hd ... tl)
-  (if (shl? 'mdef hd)
-    (progn
-      (def var (car (cdr hd)))
-      (def val (car (cdr (cdr hd))))
-      'todo)
-    (progn)))
+  (cond
+    (nil? tl)       hd
+    (shl? 'mdef hd) `(>>= ,(caddr hd) (fn (,(cadr hd)) (do ,@tl)))
+    else            `(progn ,hd (do ,@tl))))

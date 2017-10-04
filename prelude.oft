@@ -5,6 +5,7 @@
   -
   ->
   /
+  /=
   0?
   1+
   1-
@@ -57,6 +58,7 @@
   geq
   greater
   group-by
+  head
   id
   leq
   less
@@ -66,10 +68,13 @@
   lookup-by
   map
   mod
+  not
   nil
   nil?
+  object?
   object-call-func
   object-get-data
+  object-get-func
   object-seal
   object-unseal
   or
@@ -79,9 +84,12 @@
   quasiquote
   reverse
   shl?
+  skip
   show
   sort
   sort-by
+  tail
+  take
   todo
   true
   unless
@@ -103,8 +111,10 @@
   lookup
   lookup-by
   map
+  skip
   sort
-  sort-by)
+  sort-by
+  take)
 (import std/internal/prelude/logic
   and
   or)
@@ -113,14 +123,19 @@
   +
   -
   /
+  /=
   0?
   1+
   1-
   mod)
 (import std/internal/prelude/objects
   defclass
-  defmethod
+  defmethod)
+(import std/internal/prelude/objects/call
   object-call-func)
+(import std/internal/prelude/objects/list-methods
+  head
+  tail)
 (import std/internal/prelude/print
   print
   println)
@@ -174,7 +189,8 @@
   append
   id
   list
-  list?)
+  list?
+  not)
 (import std/internal/primitives
   =
   apply
@@ -182,8 +198,10 @@
   cdr
   concat-strings
   cons
+  object?
   nil?
   object-get-data
+  object-get-func
   object-seal
   object-unseal
   panic)

@@ -1,0 +1,18 @@
+(module std/internal/prelude/objects/call
+  object-call-func)
+
+(import std/internal/primitives
+  apply
+  concat-strings
+  cons
+  nil?
+  object-get-func
+  panic
+  string<-symbol)
+
+;; Calls a function by name. Panics if the function is not found.
+(defn object-call-func (obj func-name ... args)
+  (def func (object-get-func obj func-name))
+  (if (nil? func)
+    (panic (concat-strings "No such method " (string<-symbol func-name)))
+    (apply func (cons obj args))))

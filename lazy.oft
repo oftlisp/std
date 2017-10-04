@@ -1,16 +1,18 @@
 (module std/lazy
-  force
   naturals
   stream
   stream-cons
-  thunk)
+  thunk
+  thunk.force)
 
 (import std/fp/monad
-  do)
+  >>=
+  do
+  pure)
 (import std/stm
-  stm-read
-  stm-new
-  stm-write)
+  stm
+  stm.read
+  stm.write)
 
 ;;; The Thunk class
 
@@ -19,18 +21,19 @@
   (val evaled?)
 
   (ctor (func)
-    [(stm-new func) (stm-new false)])
+    [(stm func) (stm false)])
 
   (defn force ()
     (do
-      (mdef e (stm-read evaled?))
-      (mdef i (stm-read inner))
-      (if e i ; i is an already-evaluated value.
-        (do ; i is a function that will return the value.
+      (mdef e (stm.read evaled?))
+      (mdef i (stm.read inner))
+      (if e
+        (pure i) ; i is an already-evaluated value.
+        (progn ; i is a function that will return the value.
           (def val (i))
-          (stm-write evaled? t)
-          (stm-write inner val)
-          (mreturn val))))))
+          (stm.write evaled? true)
+          (stm.write inner val)
+          (pure val))))))
 
 ;;; The Stream class
 
@@ -42,11 +45,12 @@
     [car (thunk cdr)])
 
   (defn head () car)
-  (defn tail () (force cdr)))
+  (defn tail () (thunk.force cdr)))
 
 (defmacro stream-cons (car cdr)
   `(stream ,car (fn () ,cdr)))
 
 ;;; Predefined Streams
 
-(def naturals (stream-cons 1 (1+ (head naturals))))
+; (def naturals (stream-cons 1 (1+ (head naturals))))
+(def naturals (stream-cons 1 (1+ (head (todo)))))

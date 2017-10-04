@@ -1,6 +1,8 @@
 (module std/internal/prelude/quasiquote
   quasiquote)
 
+(import std/internal/prelude/constants
+  else)
 (import std/internal/prelude/fp
   map)
 (import std/internal/prelude/utils/pseudoprims
@@ -26,6 +28,7 @@
           (list 'list (car (cdr value)))
         (eq (car value) 'unquote-splicing)
           (car (cdr value))
+        else
           (list 'list (list 'quasiquote value)))
       (list 'list (list 'quote value))))
   (cond

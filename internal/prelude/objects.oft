@@ -1,9 +1,9 @@
 (module std/internal/prelude/objects
   defclass
-  defmethod
-  object-call-func)
+  defmethod)
 
 (import std/internal/prelude/constants
+  else
   nil)
 (import std/internal/prelude/fp
   enumerate
@@ -42,7 +42,6 @@
   eq
   gensym
   nil?
-  object-get-func
   object-seal
   panic
   string<-symbol
@@ -68,7 +67,7 @@
     (cond
       (nil? l)         (cons nil decls)
       (= (length l) 1) (cons (car l) decls)
-                       (panic "Invalid defclass")))
+      else             (panic "Invalid defclass")))
 
   ; Process the body and perform basic validation.
   (unless (symbol? name)
@@ -166,10 +165,18 @@
 
 ;; Defines a method.
 (defmacro defmethod (name)
+  (def no-method (concat-strings
+    "No such method "
+    (string<-symbol name)
+    " on value "))
   `(defn ,name (obj ... args)
-    (apply object-call-func (cons obj (cons ',name args)))))
-
-;; Calls a function by name. Panics if the function is not found.
-(defn object-call-func (obj func-name ... args)
-  (def func (object-get-func obj func-name))
-  (apply func (cons obj args)))
+    (if (not (object? obj))
+      (panic (concat-strings
+        "Non-object "
+        (show obj)
+        " does not have method "
+        ,(string<-symbol name))))
+    (def func (object-get-func obj ,name))
+    (if (nil? func)
+      (panic (concat-strings ,no-method (show obj)))
+      (apply func (cons obj args)))))

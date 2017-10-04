@@ -1,17 +1,15 @@
 (module std/stm
-  stm-new
-  stm-read
-  stm-run
-  stm-write)
+  stm
+  stm.read
+  stm.write)
 
-(defn stm-new (initial-value)
-  (todo))
+(defclass stm
+  (val value)
 
-(defn stm-read (stm)
-  (todo))
+  (ctor (initial-value)
+    [initial-value])
 
-(defn stm-run (stm)
-  (todo))
-
-(defn stm-write (stm value)
-  (todo))
+  (defn read ()
+    value)
+  (defn write (value)
+    (todo "actually implement stm")))

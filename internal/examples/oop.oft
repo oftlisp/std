@@ -4,14 +4,32 @@
 (defclass range
   (val start)
   (val end)
+
   (ctor (s e)
     [s e])
+
   (defn size ()
     (- end start))
   (defn to-string ()
     (concat-strings "(" (show start) " - " (show end) ")")))
 
+(defclass rectangle
+  (val height)
+  (val width)
+
+  (ctor (h w)
+    [h w])
+
+  (defn area ()
+    (* height width)))
+
+(defn square (s)
+  (rectangle s s))
+
 (defn main (args)
   (def x (range 1 3))
   (println x)
-  (println (range.size x)))
+  (println (range.size x))
+  
+  (println (rectangle 1 2))
+  (println (square 3)))

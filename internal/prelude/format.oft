@@ -1,20 +1,35 @@
 (module std/internal/prelude/format
   show)
 
-(import std/internal/prelude/objects
+(import std/internal/prelude/constants
+  else)
+(import std/internal/prelude/utils/macros
+  cond
+  todo)
+(import std/internal/prelude/objects/call
   object-call-func)
 (import std/internal/primitives
+  cdr
+  cons
+  list<-vector
   object?
   object-has-func?
+  object-unseal
   panic
   show-primitive
   string?)
 
 (defn show (value)
+  (defn show-object-data (obj)
+    (def name (object-call-func obj 'class-name))
+    (def data (list<-vector (cdr (object-unseal obj))))
+    (show (cons name data)))
+
   (if (object? value)
-    (if (object-has-func? value 'to-string)
-      (object-call-func value 'to-string)
-      "#<object>")
+    (cond
+      (object-has-func? value 'to-string)  (object-call-func value 'to-string)
+      (object-has-func? value 'class-name) (show-object-data value)
+      else                                 "#<object>")
     (if (string? value)
       value
       (show-primitive value))))
