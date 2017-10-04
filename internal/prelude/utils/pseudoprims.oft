@@ -1,12 +1,18 @@
 (module std/internal/prelude/utils/pseudoprims
   append
+  id
+  length
   list
   list?
+  not
   reverse)
 
 (import std/internal/prelude/constants
-  nil)
+  false
+  nil
+  true)
 (import std/internal/primitives
+  +/2
   apply
   car
   cdr
@@ -34,8 +40,23 @@
     (append/2 (car xs) (apply append (cdr xs)))
     nil))
 
+;; The identity function.
+(defn id (x) x)
+
+;; Returns the length of a list.
+(defn length (l)
+  (defn loop (l n)
+    (if (nil? l)
+      n
+      (loop (cdr l) (+/2 n 1))))
+  (loop l 0))
+
 ;; Constructs a list.
 (defn list (... xs) xs)
+
+;; Logical not.
+(defn not (x)
+  (if x false true))
 
 ;; Checks if a value is a list.
 (defn list? (value)

@@ -19,7 +19,7 @@
   (val evaled?)
 
   (ctor (func)
-    [(stm-new func) (stm-new f)])
+    [(stm-new func) (stm-new false)])
 
   (defn force ()
     (do
@@ -45,7 +45,7 @@
   (defn tail () (force cdr)))
 
 (defmacro stream-cons (car cdr)
-  `(std/lazy/stream ,car (fn () ,cdr)))
+  `(stream ,car (fn () ,cdr)))
 
 ;;; Predefined Streams
 

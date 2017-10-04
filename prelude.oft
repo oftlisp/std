@@ -5,6 +5,7 @@
   -
   ->
   /
+  0?
   1+
   1-
   <-
@@ -14,6 +15,36 @@
   apply
   car
   cdr
+  caar
+  cadr
+  cdar
+  cddr
+  caaar
+  caadr
+  cadar
+  caddr
+  cdaar
+  cdadr
+  cddar
+  cdddr
+  caaaar
+  caaadr
+  caadar
+  caaddr
+  cadaar
+  cadadr
+  caddar
+  cadddr
+  cdaaar
+  cdaadr
+  cdadar
+  cdaddr
+  cddaar
+  cddadr
+  cdddar
+  cddddr
+  concat-strings
+  cond
   cons
   defclass
   defmethod
@@ -23,12 +54,24 @@
   foldl
   foldr
   for-each
+  geq
+  greater
+  group-by
+  id
+  leq
+  less
   list
   list?
+  lookup
+  lookup-by
   map
   mod
   nil
+  nil?
   object-call-func
+  object-get-data
+  object-seal
+  object-unseal
   or
   panic
   print
@@ -40,7 +83,9 @@
   sort
   sort-by
   todo
-  true)
+  true
+  unless
+  when)
 
 (import std/internal/prelude/constants
   else
@@ -54,9 +99,13 @@
   foldl
   foldr
   for-each
+  group-by
+  lookup
+  lookup-by
   map
-  reverse)
-(import std/internal/prelude/logic/macros
+  sort
+  sort-by)
+(import std/internal/prelude/logic
   and
   or)
 (import std/internal/prelude/math
@@ -64,6 +113,7 @@
   +
   -
   /
+  0?
   1+
   1-
   mod)
@@ -76,17 +126,53 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
-(import std/internal/prelude/sort
-  sort
-  sort-by)
 (import std/internal/prelude/utils
-  shl?)
+  any-shl?
+  caar
+  cadr
+  cdar
+  cddr
+  caaar
+  caadr
+  cadar
+  caddr
+  cdaar
+  cdadr
+  cddar
+  cdddr
+  caaaar
+  caaadr
+  caadar
+  caaddr
+  cadaar
+  cadadr
+  caddar
+  cadddr
+  cdaaar
+  cdaadr
+  cdadar
+  cdaddr
+  cddaar
+  cddadr
+  cdddar
+  cddddr
+  geq
+  greater
+  leq
+  less
+  reverse
+  shl?
+  split-at)
 (import std/internal/prelude/utils/macros
   ->
   <-
-  todo)
+  cond
+  todo
+  unless
+  when)
 (import std/internal/prelude/utils/pseudoprims
   append
+  id
   list
   list?)
 (import std/internal/primitives
@@ -94,5 +180,10 @@
   apply
   car
   cdr
+  concat-strings
   cons
+  nil?
+  object-get-data
+  object-seal
+  object-unseal
   panic)

@@ -1,31 +1,53 @@
 ;; Functional programming primitives.
 (module std/internal/prelude/fp
+  enumerate
   filter
   foldl
   foldr
   for-each
   group-by
+  lookup
+  lookup-by
   map
-  reverse)
+  sort
+  sort-by)
 
 (import std/internal/prelude/constants
+  else
   nil)
+(import std/internal/prelude/logic
+  and)
+(import std/internal/prelude/utils
+  caar
+  cdar
+  leq
+  reverse
+  split-at)
 (import std/internal/prelude/utils/macros
+  cond
   todo)
+(import std/internal/prelude/utils/pseudoprims
+  append
+  length
+  list)
 (import std/internal/primitives
+  +/2
+  //2
+  <>
   car
   cdr
   cons
+  eq
   nil?
   panic
   show-primitive)
 
-(defn reverse (l)
-  (defn helper (in out)
-    (if (nil? in)
-      out
-      (helper (cdr in) (cons (car in) out))))
-  (helper l nil))
+(defn enumerate (l)
+  (defn loop (l n acc)
+    (if (nil? l)
+      (reverse acc)
+      (loop (cdr l) (+/2 n 1) (cons (cons n (car l)) acc))))
+  (loop l 0 nil))
 
 (defn filter ()
   (todo))
@@ -54,6 +76,14 @@
       (f (car l))
       (for-each f (cdr l)))))
 
+(defn lookup-by (func assoc key)
+  (if (func (caar assoc) key)
+    (cdar assoc)
+    (lookup-by func (cdr assoc) key)))
+
+(defn lookup (assoc key)
+  (lookup-by eq assoc key))
+
 (defn map (f l)
   (defn helper (in out)
     (if (nil? in)
@@ -61,7 +91,61 @@
       (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))
 
+;; Merges two list pairs of (data, sortingCriterion).
+;;
+;; Tail recursive.
+;;
+;; TODO Optimize this... Any sort of type-driven optimization (or a
+;; purity-based subexpression elimination optimization pass) would
+;; probably do it fine.
+(defn merge (l r)
+  (defn loop (l r acc)
+    (cond
+      (and (nil? l) (nil? r)) (reverse acc)
+      (nil? l)                (loop l (cdr r) (cons (car r) acc))
+      (nil? r)                (loop (cdr l) r (cons (car l) acc))
+      (leq (cdar l) (cdar r)) (loop (cdr l) r (cons (car l) acc))
+      else                    (loop l (cdr r) (cons (car r) acc))))
+  (loop l r nil))
+
+;; Sorts lists by the given function.
+;;
+;; Uses O(log n) stack space.
+;;
+;; TODO: Try to optimize this, possibly make it a primitive? An optimized sort
+;; is probably worth it.
+(defn sort-by (f l)
+  (defn helper (lst len)
+    (if (eq (<> len 2) '<)
+      lst
+      (progn
+        (def tmp0 (//2 len 2))
+        (def tmp1 (//2 (+/2 len 1) 2))
+        (def tmp2 (split-at lst tmp0))
+        (def left (car tmp2))
+        (def right (cdr tmp2))
+        (merge (helper left tmp0)
+               (helper right tmp1)))))
+  (def tagged (map (fn (x) (cons x (f x))) l))
+  (map car (helper tagged (length tagged))))
+
+;; Sorts a list.
+(defn sort (l)
+  (sort-by (fn (x) x) l))
+
 (defn group-by (f l)
+  (defn loop (b as in bs)
+    (if (nil? in)
+      (cons (cons b as) bs)
+      (progn
+        (def hb (caar in))
+        (def ha (cdar in))
+        (def t (cdr in))
+        (if (eq b hb)
+          (loop b (cons ha as) t bs)
+          (loop hb (list ha) t (cons (cons b as) bs))))))
   (def tagged (map (fn (x) (cons (f x) x)) l))
-  (todo (show-primitive tagged))
-  (todo "TODO group-by"))
+  (def sorted (reverse (sort-by car tagged)))
+  (if (nil? sorted)
+    nil
+    (loop (caar sorted) nil sorted nil)))

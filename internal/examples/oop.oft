@@ -1,0 +1,17 @@
+(module std/internal/examples/oop
+  main)
+
+(defclass range
+  (val start)
+  (val end)
+  (ctor (s e)
+    [s e])
+  (defn size ()
+    (- end start))
+  (defn to-string ()
+    (concat-strings "(" (show start) " - " (show end) ")")))
+
+(defn main (args)
+  (def x (range 1 3))
+  (println x)
+  (println (range.size x)))

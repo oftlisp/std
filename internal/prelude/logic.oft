@@ -1,4 +1,4 @@
-(module std/internal/prelude/logic/macros
+(module std/internal/prelude/logic
   and
   or)
 
@@ -11,9 +11,9 @@
 ;; n-way logical and.
 (defmacro and (x ... xs)
   (if (nil? xs) x
-    (list 'if x (cons 'and xs) 'f)))
+    (list 'if x (cons 'and xs) ''())))
 
 ;; n-way logical or.
 (defmacro or (x ... xs)
   (if (nil? xs) x
-    (list 'if x 't (cons 'or xs))))
+    (list 'if x ''true (cons 'or xs))))

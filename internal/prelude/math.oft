@@ -4,6 +4,7 @@
   +
   -
   /
+  0?
   1+
   1-
   mod)
@@ -15,6 +16,7 @@
   +/2
   -/2
   //2
+  =
   mod/2)
 
 ;; Multiplies numbers.
@@ -31,6 +33,9 @@
 
 ;; Takes the modulus between numbers.
 (defn mod (n ... ns) (foldl mod/2 n ns))
+
+;; Checks if a value is numerically equal to zero.
+(defn 0? (n) (= n 0))
 
 ;; Adds one to the given number.
 (defn 1+ (n) (+ n 1))

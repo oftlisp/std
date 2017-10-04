@@ -3,22 +3,52 @@
   defmethod
   object-call-func)
 
+(import std/internal/prelude/constants
+  nil)
 (import std/internal/prelude/fp
-  group-by)
+  enumerate
+  group-by
+  lookup
+  map)
+(import std/internal/prelude/logic
+  and)
 (import std/internal/prelude/quasiquote
   quasiquote)
+(import std/internal/prelude/utils
+  caar
+  cadr
+  cdar
+  cddr
+  caddr
+  cdddr)
 (import std/internal/prelude/utils/macros
-  todo)
+  cond
+  todo
+  unless
+  when)
 (import std/internal/prelude/utils/pseudoprims
   append
+  length
   list)
 (import std/internal/primitives
+  =
   apply
   car
+  cdr
+  concat-strings
   cons
+  cons?
+  debug
+  eq
+  gensym
+  nil?
   object-get-func
   object-seal
-  panic)
+  panic
+  string<-symbol
+  symbol<-string
+  symbol?
+  unwind-protect)
 
 ;; The class declarator.
 ;;
@@ -27,8 +57,112 @@
 ;; and foo?, where foo is the constructor and foo? checks if an arbitrary value
 ;; is an object of the given class.
 (defmacro defclass (name ... decls)
+  (defn grab-if-head (sym decls)
+    (if (and (cons? decls) (eq (caar decls) sym))
+      (cons (cdar decls) (cdr decls))
+      (cons nil decls)))
+  (defn grab-one-if-head (sym decls)
+    (def tmp (grab-if-head sym decls))
+    (def l (car tmp))
+    (def decls (cdr tmp))
+    (cond
+      (nil? l)         (cons nil decls)
+      (= (length l) 1) (cons (car l) decls)
+                       (panic "Invalid defclass")))
+
+  ; Process the body and perform basic validation.
+  (unless (symbol? name)
+    (panic "Invalid defclass name"))
   (def decls (group-by car decls))
-  `(progn))
+  (unless (cons? decls)
+    (def msg (concat-strings
+      "Invalid defclass "
+      (string<-symbol name)
+      ": No body"))
+    (panic msg))
+  (unless (eq (caar decls) 'ctor)
+    (def msg (concat-strings
+      "Invalid defclass "
+      (string<-symbol name)
+      ": Unexpected "
+      (string<-symbol (caar decls))
+      " form"))
+    (panic msg))
+
+  ; Grab the values from the body.
+  ; TODO Define this using pattern matching.
+  (def tmp (grab-one-if-head 'ctor decls))
+  (def ctor (car tmp))
+  (when (nil? ctor)
+    (def msg (concat-strings
+      "Invalid defclass "
+      (string<-symbol name)
+      ": No ctor"))
+    (panic msg))
+  (def decls (cdr tmp))
+  (def tmp (grab-one-if-head 'dtor decls))
+  (def dtor (car tmp))
+  (def decls (cdr tmp))
+  (def tmp (grab-if-head 'defn decls))
+  (def defns (car tmp))
+  (def decls (cdr tmp))
+  (def tmp (grab-if-head 'val decls))
+  (def vals (map cadr (car tmp)))
+  (def decls (cdr tmp))
+
+  ; Perform a last bit of validation.
+  (unless (nil? decls)
+    (def msg (concat-strings
+      "Invalid defclass "
+      (string<-symbol name)
+      ": Unexpected "
+      (string<-symbol (caar decls))
+      " form"))
+    (panic msg))
+
+  ; Build the function prelude -- this is the piece of code that binds
+  ; variables to the data in the object.
+  (defn make-func-prelude (tmp)
+    (def n (car tmp))
+    (def name (cdr tmp))
+    `(def ,name (object-get-data this ,n)))
+  (def func-prelude (map make-func-prelude (enumerate vals)))
+
+  ; Build the member functions, as well as a vtable assoc.
+  (defn make-defn-pair (form)
+    (def name (symbol<-string (concat-strings
+      (string<-symbol name)
+      "."
+      (string<-symbol (cadr form)))))
+    (def args (cons 'this (caddr form)))
+    (def body (cdddr form))
+    (def func `(defn ,name ,args
+      ,@func-prelude
+      ,@body))
+    (def vtbl-entry `(cons ',(cadr form) ,name))
+    (cons func vtbl-entry))
+  (def tmp (map make-defn-pair defns))
+  (def member-funcs (map car tmp))
+  (def vtbl (cons 'list (map cdr tmp)))
+
+  ; Build the constructor.
+  (def ctor `(defn ,name ,(cadr ctor)
+    (def vtbl (list
+      (cons 'class-name (fn (this) ',name))))
+    (def vtbl (append ,vtbl vtbl))
+    (def data ,(cons 'progn (cddr ctor)))
+    (object-seal vtbl data)))
+
+  ; Build the destructor, if needed.
+  (def dtor (if (nil? dtor)
+    '(progn)
+    (todo "dtor in defclass")))
+
+  ; Build the final form.
+  `(progn
+    ,@member-funcs
+    ,ctor
+    ,dtor))
 
 ;; Defines a method.
 (defmacro defmethod (name)

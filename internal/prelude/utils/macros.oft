@@ -2,7 +2,9 @@
   ->
   <-
   cond
-  todo)
+  todo
+  unless
+  when)
 
 (import std/internal/prelude/utils/pseudoprims
   list)
@@ -70,3 +72,9 @@
         (car forms))
       ''()))
   (helper forms))
+
+(defmacro unless (c ... forms)
+  (list 'if c ''() (cons 'progn forms)))
+
+(defmacro when (c ... forms)
+  (list 'if c (cons 'progn forms)))

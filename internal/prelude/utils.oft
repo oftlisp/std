@@ -1,14 +1,97 @@
 (module std/internal/prelude/utils
   any-shl?
-  shl?)
+  caar
+  cadr
+  cdar
+  cddr
+  caaar
+  caadr
+  cadar
+  caddr
+  cdaar
+  cdadr
+  cddar
+  cdddr
+  caaaar
+  caaadr
+  caadar
+  caaddr
+  cadaar
+  cadadr
+  caddar
+  cadddr
+  cdaaar
+  cdaadr
+  cdadar
+  cdaddr
+  cddaar
+  cddadr
+  cdddar
+  cddddr
+  geq
+  greater
+  leq
+  less
+  reverse
+  shl?
+  split-at)
 
 (import std/internal/prelude/constants
-  false)
+  false
+  nil)
+(import std/internal/prelude/utils/pseudoprims
+  append
+  list
+  not)
 (import std/internal/primitives
+  -/2
+  =
+  apply
   car
+  cdr
+  compare
+  concat-strings
+  cons
   cons?
   eq
+  nil?
+  symbol<-string
   symbol?)
+
+(defmacro cxrs-at-level (n)
+  ; To avoid a circular import, we define our own map. Yes, it's dumb.
+  ; Yes, I know it's not tail-recursive.
+  (defn map (f l)
+    (if (cons? l)
+      (cons (f (car l)) (map f (cdr l)))
+      nil))
+
+  ; These functions define the transformation that adds a "level" to n.
+  (defn carify (x)
+    (cons (list 'car (car x)) (cons "a" (cdr x))))
+  (defn cdrify (x)
+    (cons (list 'cdr (car x)) (cons "d" (cdr x))))
+  (defn cxrify (x)
+    (list (carify x) (cdrify x)))
+
+  ; This function transforms the body and name-inner-list into a function
+  ; definition.
+  (defn finish (x)
+    (def body (car x))
+    (def name (apply concat-strings (cons "c" (cdr x))))
+    (def name (symbol<-string name))
+    (list 'defn name '(x) body))
+  
+  ; The main loop.
+  (defn list-helper (n)
+    (if (= n 0)
+      (list (cons 'x (list "r")))
+      (apply append (map cxrify (list-helper (-/2 n 1))))))
+  (cons 'progn (map finish (list-helper n))))
+
+(cxrs-at-level 2)
+(cxrs-at-level 3)
+(cxrs-at-level 4)
 
 ;; Checks if a value is a list headed by any symbol.
 (defn any-shl? (value)
@@ -16,8 +99,41 @@
     (symbol? (car value))
     false))
 
+;; Checks if a value is greater than another.
+(defn greater (a b) (eq (compare a b) '>))
+
+;; Checks if a value is less than another.
+(defn less (a b) (eq (compare a b) '<))
+
+;; Checks if a value is greater than or equal to another.
+(defn geq (a b) (not (less a b)))
+
+;; Checks if a value is less than or equal to another.
+(defn leq (a b) (not (greater a b)))
+
+;; Reverses a list.
+;; 
+;; Tail-recursive.
+(defn reverse (l)
+  (defn helper (in out)
+    (if (nil? in)
+      out
+      (helper (cdr in) (cons (car in) out))))
+  (helper l nil))
+
 ;; Checks if a value is a list headed by the given symbol.
 (defn shl? (sym value)
   (if (cons? value)
     (eq (car value) sym)
     false))
+
+;; Splits a linked-list at the given index. If the index is greater than the
+;; length of the string.
+;;
+;; Tail-recursive.
+(defn split-at (lst idx)
+  (defn loop (lst i accum)
+    (if (= i 0)
+      (cons (reverse accum) lst)
+      (loop (cdr lst) (-/2 i 1) (cons (car lst) accum))))
+  (loop lst idx nil))
