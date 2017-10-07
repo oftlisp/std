@@ -28,6 +28,7 @@
   cddadr
   cdddar
   cddddr
+  exit
   geq
   greater
   leq
@@ -37,8 +38,11 @@
   split-at)
 
 (import std/internal/prelude/constants
+  else
   false
   nil)
+(import std/internal/prelude/utils/macros
+  cond)
 (import std/internal/prelude/utils/pseudoprims
   append
   list
@@ -47,6 +51,8 @@
   -/2
   =
   apply
+  byte<-fixnum
+  byte?
   car
   cdr
   compare
@@ -54,7 +60,10 @@
   cons
   cons?
   eq
+  exit-with
+  fixnum?
   nil?
+  panic
   symbol<-string
   symbol?)
 
@@ -98,6 +107,14 @@
   (if (cons? value)
     (symbol? (car value))
     false))
+
+;; Exits with the given exit code. If no exit code is given, exits with zero.
+(defn exit ((n 0))
+  (def code (cond
+    (byte? n)   n
+    (fixnum? n) (byte<-fixnum n)
+    else        (panic n)))
+  (exit-with code))
 
 ;; Checks if a value is greater than another.
 (defn greater (a b) (eq (compare a b) '>))

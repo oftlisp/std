@@ -50,6 +50,7 @@
   defclass
   defmethod
   else
+  exit
   false
   filter
   foldl
@@ -171,6 +172,7 @@
   cddadr
   cdddar
   cddddr
+  exit
   geq
   greater
   leq
