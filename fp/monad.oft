@@ -2,13 +2,11 @@
   <$>
   <*>
   >>=
-  do
-  pure)
+  do)
 
 (defmethod <$>)
 (defmethod <*>)
 (defmethod >>=)
-(defmethod pure)
 
 ;; Monadic do notation.
 ;;

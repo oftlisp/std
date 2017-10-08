@@ -14,6 +14,10 @@
   and
   append
   apply
+  atomic-word
+  atomic-word.cas
+  atomic-word.load
+  atomic-word.store
   car
   cdr
   caar
@@ -50,6 +54,7 @@
   defclass
   defmethod
   else
+  eq
   exit
   false
   filter
@@ -196,10 +201,15 @@
 (import std/internal/primitives
   =
   apply
+  atomic-word
+  atomic-word.cas
+  atomic-word.load
+  atomic-word.store
   car
   cdr
   concat-strings
   cons
+  eq
   object?
   nil?
   object-get-data

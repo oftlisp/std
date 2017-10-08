@@ -1,15 +1,82 @@
+;; An implementation of STM using the algorithm described in Transactional
+;; Locking II.
 (module std/stm
+  atomically
   stm
   stm.read
-  stm.write)
+  stm.write
+  transaction.or-else
+  transaction.pure
+  transaction.retry)
+
+(import std/atomic/id
+  generator)
+
+(def next-transaction-id (generator (fn (x) (* 2 x))))
+(def version-clock (atomic-word 0))
 
 (defclass stm
+  (val lock)
   (val value)
+  (val write-stamp)
 
+  ;; Creates the STM cell with the given value.
   (ctor (initial-value)
-    [initial-value])
+    [(atomic-word 0) initial-value (todo)])
 
+  ;; Returns a transaction that performs a read.
   (defn read ()
-    value)
+    (todo))
+
+  ;; Returns a transaction that performs a write.
   (defn write (value)
-    (todo "actually implement stm")))
+    (transaction (fn (state)
+      (todo)))))
+
+(defclass transaction
+  (val state-func)
+
+  ;; Creates a transaction.
+  (ctor (state-func) [state-func])
+
+  ;; The monad bind operation.
+  (defn >>= (f)
+    (transaction (fn (state)
+      (def result (state-func state))
+      (if (eq (car result 'valid))
+        ((transaction.unwrap (f (caddr result))) (cadr result))
+        result))))
+  
+  ;; If this transaction fails, executes the other.
+  (defn or-else (other)
+    (todo))
+  
+  ;; Instantly fails the transaction. It will re-run once one of the variables
+  ;; in the read-set has changed.
+  (defn retry ()
+    (todo))
+
+  ;; The helper method for running the transaction.
+  (defn run (read-set write-set)
+    (todo))
+
+  ;; Gets the state transformer function from the monad.
+  (defn unwrap ()
+    state-func))
+
+;; Returns a new transaction with no side-effects. (i.e. it does not actually
+;; read to or write from and STM cells).
+(defn transaction.pure (value)
+  (transaction (fn (state) (list 'valid value))))
+
+(defclass state
+  (val read-state)
+  (val read-set)
+  (val write-set)
+
+  (todo))
+
+;; Atomically executes the transaction.
+(defn atomically (txn)
+  (def read-version (atomic-word.load version-clock))
+  (todo))

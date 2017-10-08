@@ -1,0 +1,12 @@
+(module std/atomic/id
+  generator)
+
+(import std/atomic
+  atomic-word.inc)
+
+;; Returns a function that, when called, yields one more than the previous time
+;; it was called. On the first call, it returns zero.
+(defn generator ((f ()))
+  (def current (atomic-word 0))
+  (def f (if (nil? f) id f))
+  (fn () (f (atomic-word.inc current))))

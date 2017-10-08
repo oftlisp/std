@@ -10,6 +10,7 @@
   do
   pure)
 (import std/stm
+  atomically
   stm
   stm.read
   stm.write)
@@ -20,11 +21,13 @@
   (val inner)
   (val evaled?)
 
+  ;; Note that the function may be evaluated more than once, in the case that
+  ;; the thunk is demanded in two separate threads at the same time.
   (ctor (func)
     [(stm func) (stm false)])
 
   (defn force ()
-    (do
+    (atomically (do
       (mdef e (stm.read evaled?))
       (mdef i (stm.read inner))
       (if e
@@ -33,7 +36,7 @@
           (def val (i))
           (stm.write evaled? true)
           (stm.write inner val)
-          (pure val))))))
+          (pure val)))))))
 
 ;;; The Stream class
 

@@ -1,0 +1,10 @@
+(module std/atomic
+  atomic-word.inc)
+
+;; A postincrement to an atomic word.
+(defn atomic-word.inc (a)
+  (def prev (atomic-word.load a))
+  (def now (1+ prev))
+  (if (= (atomic-word.cas a prev now) prev)
+    prev
+    (atomic-word.inc a)))
