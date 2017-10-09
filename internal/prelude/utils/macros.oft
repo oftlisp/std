@@ -7,6 +7,7 @@
   when)
 
 (import std/internal/prelude/utils/pseudoprims
+  append
   list)
 (import std/internal/primitives
   car
@@ -37,7 +38,7 @@
         (def hd (car xs))
         (def tl (cdr xs))
         (def next (if (cons? hd)
-          (cons (car hd) (cons x (cdr hd)))
+          (append hd (list x))
           (list hd x)))
         (helper next tl))))
   (helper fst rest))
