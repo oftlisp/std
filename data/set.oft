@@ -1,0 +1,22 @@
+;; This module implements a set based on the Red-Black Tree presented in
+;; Chris Okasaki's Purely Functional Data Structures, with the deletion
+;; algorithm proposed by Matt Might.
+(module std/data/set
+  set
+  set.contains?)
+
+(import std/data/tree
+  tree-contains?)
+
+(defclass set
+  (val eq?)
+  (val lt?)
+  (val tree)
+
+  (ctor ((tree ()) (eq? ()) (lt? ()))
+    (<- eq? (or-default eq))
+    (<- lt? (or-default less))
+    [eq? lt? tree])
+
+  (defn contains? (value)
+    (tree-contains? value tree eq? lt?)))

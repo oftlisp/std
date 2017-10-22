@@ -14,6 +14,8 @@
   and
   append
   apply
+  assert
+  assert-eq
   atomic-word
   atomic-word.cas
   atomic-word.load
@@ -73,6 +75,7 @@
   lookup
   lookup-by
   map
+  match
   mod
   not
   nil
@@ -84,6 +87,7 @@
   object-seal
   object-unseal
   or
+  or-default
   panic
   print
   println
@@ -101,6 +105,9 @@
   unless
   when)
 
+(import std/internal/prelude/assert
+  assert
+  assert-eq)
 (import std/internal/prelude/constants
   else
   false
@@ -124,6 +131,8 @@
 (import std/internal/prelude/logic
   and
   or)
+(import std/internal/prelude/match
+  match)
 (import std/internal/prelude/math
   *
   +
@@ -182,6 +191,7 @@
   greater
   leq
   less
+  or-default
   reverse
   shl?
   split-at)

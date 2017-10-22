@@ -33,6 +33,7 @@
   greater
   leq
   less
+  or-default
   reverse
   shl?
   split-at)
@@ -96,7 +97,7 @@
     (if (= n 0)
       (list (cons 'x (list "r")))
       (apply append (map cxrify (list-helper (-/2 n 1))))))
-  (cons 'progn (map finish (list-helper n))))
+  (cons 'macro-progn (map finish (list-helper n))))
 
 (cxrs-at-level 2)
 (cxrs-at-level 3)
@@ -127,6 +128,10 @@
 
 ;; Checks if a value is less than or equal to another.
 (defn leq (a b) (not (greater a b)))
+
+;; A helper, mainly for the `<-` macro.
+(defn or-default (d)
+  (fn (x) (if x x d)))
 
 ;; Reverses a list.
 ;; 

@@ -14,5 +14,5 @@
 
 (def primes (sieve (skip 2 naturals)))
 
-(defn main ()
+(defn main (args)
   (last (map println primes)))

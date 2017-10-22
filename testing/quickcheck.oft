@@ -1,0 +1,42 @@
+(module std/testing/quickcheck
+  quickcheck)
+
+;; Defines a QuickCheck test.
+;;
+;; The first argument is the name of the test, which must be a symbol.
+;; 
+;; The second argument is a list of lists, where each sublist is of the form:
+;; 
+;;   (VAR-NAME ...ARBPROPS)
+;;
+;; where each ARBPROP is one of the functions defined in this module whose name
+;; starts with `arbitrary-`.
+;;
+;; The remaining arguments are a block of code which defines the actual test.
+;; If it yields nil, the test fails. If it yields the symbol `discard`, the
+;; test is run again with different values for the vars. If it yields any other
+;; value, the test passes.
+;;
+;; TODO: Implement most of this.
+;; TODO: Allow customizing the number of iterations.
+;; TODO: Use pattern-matching deconstruction.
+(defmacro quickcheck (name vars ... body)
+  (def test-name (gensym))
+  (def loop-fn-name (gensym))
+  `(deftest name
+    (defn ,test-name ,var-names
+      ,@body)
+    (defn ,loop-fn-name (n rng seed)
+      (if (= n 0)
+        true
+        (progn
+          (def result (,test-runner-name rng))
+          (def status (car result))
+          (def rng (cdr result))
+          (cond
+            (eq status nil)      (list nil n seed)
+            (eq status 'discard) (,loop-fn-name n rng seed)
+            else                 (,loop-fn-name (1- n) rng seed)))))
+    (def seed (todo))
+    (def status (,loop-fn-name 1000 (rng-from seed) seed)
+    (car status))))

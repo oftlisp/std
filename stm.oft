@@ -26,7 +26,8 @@
 
   ;; Returns a transaction that performs a read.
   (defn read ()
-    (todo))
+    (transaction (fn (state)
+      (todo))))
 
   ;; Returns a transaction that performs a write.
   (defn write (value)

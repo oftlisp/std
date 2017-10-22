@@ -7,13 +7,13 @@
 
 (import std/fp/monad
   >>=
-  do
-  pure)
+  do)
 (import std/stm
   atomically
   stm
   stm.read
-  stm.write)
+  stm.write
+  transaction.pure)
 
 ;;; The Thunk class
 
@@ -31,12 +31,12 @@
       (mdef e (stm.read evaled?))
       (mdef i (stm.read inner))
       (if e
-        (pure i) ; i is an already-evaluated value.
+        (transaction.pure i) ; i is an already-evaluated value.
         (progn ; i is a function that will return the value.
           (def val (i))
           (stm.write evaled? true)
           (stm.write inner val)
-          (pure val)))))))
+          (transaction.pure val)))))))
 
 ;;; The Stream class
 

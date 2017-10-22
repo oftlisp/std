@@ -1,0 +1,12 @@
+(module std/testing
+  deftest
+  run-tests)
+
+;; Defines a test. The first argument is the name of the test.
+(defmacro deftest (name ... body)
+  (todo))
+
+;; Runs all tests for the given modules. If no modules are passed, runs all
+;; tests defined by any imported (or transitively imported) modules.
+(defn run-tests (... modules)
+  (todo))

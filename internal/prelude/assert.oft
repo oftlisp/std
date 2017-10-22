@@ -1,0 +1,24 @@
+(module std/internal/prelude/assert
+  assert
+  assert-eq)
+
+(import std/internal/prelude/format
+  show)
+(import std/internal/prelude/quasiquote
+  quasiquote)
+(import std/internal/prelude/utils/pseudoprims
+  append
+  list)
+(import std/internal/primitives
+  concat-strings
+  panic)
+
+(defmacro assert (condition)
+  (def message (concat-strings
+    "Assertion failed: "
+    (show condition)))
+  `(unless ,condition
+    (panic ,message)))
+
+(defmacro assert-eq (left right)
+  `(assert (eq ,left ,right)))

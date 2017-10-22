@@ -1,0 +1,40 @@
+;; This module implements a red-black tree based on the one presented in Chris
+;; Okasaki's Purely Functional Data Structures, with the deletion algorithm
+;; proposed by Matt Might.
+;;
+;; You probably don't want to import this module directly; rather, use
+;; `std/data/map` or `std/data/set`.
+(module std/data/tree
+  tree-contains?
+  tree-insert)
+
+; TREE = (COLOR TREE VALUE TREE)
+;      | ()
+; COLOR = 0 | 1 | -1 | 2
+; Note: 0 = red, 1 = black, 2 = double black, -1 = negative black
+
+(defn tree-balance (color left value right eq? lt?)
+  (todo))
+
+(defn tree-contains? (value tree eq? lt?)
+  (when tree
+    (def node-value (caddr tree))
+    (cond
+      (eq? node-value value) true
+      (lt? node-value value) (tree-contains? value (cadr tree) eq? lt?)
+      else                   (tree-contains? value (cadddr tree) eq? lt?))))
+
+(defn tree-insert (value tree eq? lt?)
+  (defn helper (tree)
+    (if (nil? tree)
+      (list 0 nil value nil)
+      (progn ; TODO: Use pattern-matching destructuring.
+        (def color (car tree))
+        (def a (cadr tree))
+        (def y (caddr tree))
+        (def b (cadddr tree))
+        (cond
+          (eq? x y) tree
+          (lt? x y) (tree-balance color (helper a) y b eq? lt?)
+          else      (tree-balance color a y (helper b) eq? lt?)))))
+  (cons 1 (cdr (helper tree))))
