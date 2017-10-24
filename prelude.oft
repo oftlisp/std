@@ -74,6 +74,7 @@
   list?
   lookup
   lookup-by
+  make-vector
   map
   match
   mod
@@ -220,10 +221,11 @@
   concat-strings
   cons
   eq
-  object?
+  make-vector
   nil?
   object-get-data
   object-get-func
   object-seal
   object-unseal
+  object?
   panic)
