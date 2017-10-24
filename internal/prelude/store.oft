@@ -1,0 +1,16 @@
+(module std/internal/prelude/store
+  get
+  put)
+
+(import std/internal/prelude/utils/macros
+  todo)
+(import std/internal/primitives
+  panic)
+
+;; Gets a value from the global store.
+(defn get (name)
+  (todo))
+
+;; Puts a value to the global store.
+(defn put (name value)
+  (todo))

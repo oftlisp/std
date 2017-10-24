@@ -1,5 +1,6 @@
 ;; Functional programming primitives.
 (module std/internal/prelude/fp
+  .
   enumerate
   filter
   foldl
@@ -28,8 +29,7 @@
   reverse
   split-at)
 (import std/internal/prelude/utils/macros
-  cond
-  todo)
+  cond)
 (import std/internal/prelude/utils/pseudoprims
   append
   length
@@ -44,10 +44,21 @@
   cdr
   cons
   eq
+  gensym
   nil?
   panic
   show-primitive)
 
+;; Function composition.
+(defn . (... l)
+  (def funcs (reverse l))
+  (defn loop (x l)
+    (if (nil? l)
+      x
+      (loop ((car l) x) (cdr l))))
+  (fn (x) (loop x funcs)))
+
+;; Converts a list of values to a list of index-value conses.
 (defn enumerate (l)
   (defn loop (l n acc)
     (if (nil? l)
@@ -55,8 +66,13 @@
       (loop (cdr l) (+/2 n 1) (cons (cons n (car l)) acc))))
   (loop l 0 nil))
 
-(defn filter ()
-  (todo))
+(defn filter (f l)
+  (defn loop (l r)
+    (cond
+      (nil? l)    (reverse r)
+      (f (car l)) (loop (cdr l) (cons (car l) r))
+      else        (loop (cdr l) r)))
+  (loop l nil))
 
 (defn for-each (f l)
   (if (nil? l)
@@ -82,13 +98,14 @@
       (f (car l))
       (for-each f (cdr l)))))
 
-(defn lookup-by (func assoc key)
-  (if (func (caar assoc) key)
-    (cdar assoc)
-    (lookup-by func (cdr assoc) key)))
+(defn lookup-by (f key assoc)
+  (cond
+    (nil? assoc)         nil
+    (f key (caar assoc)) (cdar assoc)
+    else                 (lookup-by f key (cdr assoc))))
 
-(defn lookup (assoc key)
-  (lookup-by eq assoc key))
+(defn lookup (key assoc)
+  (lookup-by eq key assoc))
 
 (defn map (f l)
   (defn helper (in out)

@@ -5,13 +5,21 @@
 (import std/internal/prelude/constants
   else
   nil)
+(import std/internal/prelude/format
+  show)
 (import std/internal/prelude/fp
+  .
   enumerate
+  filter
+  for-each
   group-by
   lookup
   map)
 (import std/internal/prelude/logic
   and)
+(import std/internal/prelude/print
+  print
+  println)
 (import std/internal/prelude/quasiquote
   quasiquote)
 (import std/internal/prelude/utils
@@ -20,16 +28,20 @@
   cdar
   cddr
   caddr
-  cdddr)
+  cdddr
+  cddar)
 (import std/internal/prelude/utils/macros
+  ->
   cond
   todo
   unless
   when)
 (import std/internal/prelude/utils/pseudoprims
   append
+  contains?
   length
-  list)
+  list
+  not)
 (import std/internal/primitives
   =
   apply
@@ -42,141 +54,112 @@
   eq
   gensym
   nil?
-  object-seal
   panic
   string<-symbol
   symbol<-string
   symbol?
   unwind-protect)
 
-;; The class declarator.
+;; The class declarator. Of the form:
 ;;
-;; This expands into two function definitions, and potentially method
-;; definitions as well. For a class named foo, the functions defined are foo
-;; and foo?, where foo is the constructor and foo? checks if an arbitrary value
-;; is an object of the given class.
-(defmacro defclass (name ... decls)
-  (defn grab-if-head (sym decls)
-    (if (and (cons? decls) (eq (caar decls) sym))
-      (cons (cdar decls) (cdr decls))
-      (cons nil decls)))
-  (defn grab-one-if-head (sym decls)
-    (def tmp (grab-if-head sym decls))
-    (def l (car tmp))
-    (def decls (cdr tmp))
-    (cond
-      (nil? l)         (cons nil decls)
-      (= (length l) 1) (cons (car l) decls)
-      else             (panic "Invalid defclass")))
-
-  ; Process the body and perform basic validation.
-  (unless (symbol? name)
+;;   (defclass NAME
+;;     DECLS...)
+;;
+;; Each DECL is one of:
+;;
+;;   (ctor ARGS BODY-EXPR...)
+;;   (named-ctor NAME ARGS BODY-EXPR...)
+;;   (defn NAME ARGS BODY-EXPR...)
+;;   (val NAME)
+;;
+;; A ctor form expands to a function with the name of the class, which
+;; constructs an instance of the class.
+;;
+;; A named-ctor is equivalent to a ctor, but the name of the constructor is
+;; `CLASS-NAME`-`NAME`.
+;;
+;; A defn form causes a function whose name is of the form `CLASS-NAME`.`NAME`
+;; to be defined. This function has all the class variables defined by val
+;; forms to be in scope.
+;;
+;; A val form defines a class variable.
+;;
+;; TODO: Should `this` exist?
+;; TODO: Automatic getters/setters?
+(defmacro defclass (class-name ... decls)
+  ; Check the name.
+  (unless (symbol? class-name)
     (panic "Invalid defclass name"))
+
+  ; Group the decls together.
   (def decls (group-by car decls))
   (unless (cons? decls)
-    (def msg (concat-strings
+    (panic (concat-strings
       "Invalid defclass "
-      (string<-symbol name)
-      ": No body"))
-    (panic msg))
-  (unless (eq (caar decls) 'ctor)
-    (def msg (concat-strings
+      (string<-symbol class-name)
+      ": No body")))
+
+  ; Check that the decls are all of known types.
+  (def unknown-decl-types (filter
+    (fn (x) (not (contains? x '(ctor defn named-ctor val))))
+    (map car decls)))
+  (unless (nil? unknown-decl-types)
+    (panic (concat-strings
       "Invalid defclass "
-      (string<-symbol name)
-      ": Unexpected "
-      (string<-symbol (caar decls))
-      " form"))
-    (panic msg))
+      (string<-symbol class-name)
+      ": Unexpected form types: "
+      (show unknown-decl-types))))
 
-  ; Grab the values from the body.
-  ; TODO Define this using pattern matching.
-  (def tmp (grab-one-if-head 'ctor decls))
-  (def ctor (car tmp))
-  (when (nil? ctor)
-    (def msg (concat-strings
-      "Invalid defclass "
-      (string<-symbol name)
-      ": No ctor"))
-    (panic msg))
-  (def decls (cdr tmp))
-  (def tmp (grab-one-if-head 'dtor decls))
-  (def dtor (car tmp))
-  (def decls (cdr tmp))
-  (def tmp (grab-if-head 'defn decls))
-  (def defns (car tmp))
-  (def decls (cdr tmp))
-  (def tmp (grab-if-head 'val decls))
-  (def vals (map cadr (car tmp)))
-  (def decls (cdr tmp))
+  ; Process the constructors.
+  (defn build-ctor (form)
+    (def name (if (nil? (car form))
+      class-name
+      (symbol<-string
+        (concat-strings
+          (string<-symbol class-name)
+          "-"
+          (string<-symbol (car form))))))
+    (def args (cadr form))
+    (def body (cddr form))
+    `(,name ,args
+      (cons ',class-name
+        (progn ,@body))))
+  (def ctors (cons
+    (build-ctor (cons nil (cdar (lookup 'ctor decls))))
+    (map (. build-ctor cdr) (lookup 'named-ctor decls))))
 
-  ; Perform a last bit of validation.
-  (unless (nil? decls)
-    (def msg (concat-strings
-      "Invalid defclass "
-      (string<-symbol name)
-      ": Unexpected "
-      (string<-symbol (caar decls))
-      " form"))
-    (panic msg))
-
-  ; Build the function prelude -- this is the piece of code that binds
-  ; variables to the data in the object.
-  (defn make-func-prelude (tmp)
-    (def n (car tmp))
-    (def name (cdr tmp))
-    `(def ,name (object-get-data this ,n)))
-  (def func-prelude (map make-func-prelude (enumerate vals)))
-
-  ; Build the member functions, as well as a vtable assoc.
-  (defn make-defn-pair (form)
-    (def name (symbol<-string (concat-strings
-      (string<-symbol name)
-      "."
-      (string<-symbol (cadr form)))))
-    (def args (cons 'this (caddr form)))
-    (def body (cdddr form))
-    (def func `(defn ,name ,args
-      ,@func-prelude
+  ; Process the member functions.
+  (defn build-member-defn (form)
+    (def name (symbol<-string
+      (concat-strings
+        (string<-symbol class-name)
+        "."
+        (string<-symbol (car form)))))
+    (def args (cadr form))
+    (def body (cddr form))
+    `(,name ,args
+      ; TODO Define member variables.
       ,@body))
-    (def vtbl-entry `(cons ',(cadr form) ,name))
-    (cons func vtbl-entry))
-  (def tmp (map make-defn-pair defns))
-  (def member-funcs (map car tmp))
-  (def vtbl (cons 'list (map cdr tmp)))
+  (def defns (-> decls
+    (lookup 'defn)
+    (map cdr)
+    (map build-member-defn)))
 
-  ; Build the constructor.
-  (def ctor `(defn ,name ,(cadr ctor)
-    (def vtbl (list
-      (cons 'class-name (fn (this) ',name))))
-    (def vtbl (append ,vtbl vtbl))
-    (def data ,(cons 'progn (cddr ctor)))
-    (object-seal vtbl data)))
+  ; Add a function to check for class membership.
+  (def is-class? (progn
+    (def name (symbol<-string
+      (concat-strings (string<-symbol class-name) "?")))
+    `(,name (obj)
+      (and
+        (cons? obj)
+        (eq (car obj) ,class-name)))))
 
-  ; Build the destructor, if needed.
-  (def dtor (if (nil? dtor)
-    '(progn)
-    (todo "dtor in defclass")))
-
-  ; Build the final form.
-  `(progn
-    ,@member-funcs
-    ,ctor
-    ,dtor))
+  ; Build the final expression.
+  `(defnrec
+    ,@ctors
+    ,@defns
+    ,is-class?))
 
 ;; Defines a method.
 (defmacro defmethod (name)
-  (def no-method (concat-strings
-    "No such method "
-    (string<-symbol name)
-    " on value "))
-  `(defn ,name (obj ... args)
-    (if (not (object? obj))
-      (panic (concat-strings
-        "Non-object "
-        (show obj)
-        " does not have method "
-        ,(string<-symbol name))))
-    (def func (object-get-func obj ,name))
-    (if (nil? func)
-      (panic (concat-strings ,no-method (show obj)))
-      (apply func (cons obj args)))))
+  (todo (concat-strings "TODO: defmethod " name)))

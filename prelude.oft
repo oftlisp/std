@@ -4,6 +4,7 @@
   +
   -
   ->
+  .
   /
   /=
   0?
@@ -20,42 +21,44 @@
   atomic-word.cas
   atomic-word.load
   atomic-word.store
-  car
-  cdr
-  caar
-  cadr
-  cdar
-  cddr
-  caaar
-  caadr
-  cadar
-  caddr
-  cdaar
-  cdadr
-  cddar
-  cdddr
   caaaar
   caaadr
+  caaar
   caadar
   caaddr
+  caadr
+  caar
   cadaar
   cadadr
+  cadar
   caddar
   cadddr
+  caddr
+  cadr
+  car
   cdaaar
   cdaadr
+  cdaar
   cdadar
   cdaddr
+  cdadr
+  cdar
   cddaar
   cddadr
+  cddar
   cdddar
   cddddr
+  cdddr
+  cddr
+  cdr
+  concat
   concat-strings
   cond
   cons
   defclass
   defmethod
   else
+  enumerate
   eq
   exit
   false
@@ -64,12 +67,18 @@
   foldr
   for-each
   geq
+  get
   greater
   group-by
   head
   id
+  init
+  last
   leq
   less
+  let
+  let1
+  letrec
   list
   list?
   lookup
@@ -78,25 +87,20 @@
   map
   match
   mod
-  not
   nil
   nil?
-  object?
-  object-call-func
-  object-get-data
-  object-get-func
-  object-seal
-  object-unseal
+  not
   or
   or-default
   panic
   print
   println
+  put
   quasiquote
   reverse
   shl?
-  skip
   show
+  skip
   sort
   sort-by
   tail
@@ -117,6 +121,8 @@
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
+  .
+  enumerate
   filter
   foldl
   foldr
@@ -157,6 +163,9 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
+(import std/internal/prelude/store
+  get
+  put)
 (import std/internal/prelude/utils
   any-shl?
   caar
@@ -200,12 +209,18 @@
   ->
   <-
   cond
+  let
+  let1
+  letrec
   todo
   unless
   when)
 (import std/internal/prelude/utils/pseudoprims
   append
+  concat
   id
+  init
+  last
   list
   list?
   not)
@@ -223,9 +238,4 @@
   eq
   make-vector
   nil?
-  object-get-data
-  object-get-func
-  object-seal
-  object-unseal
-  object?
   panic)

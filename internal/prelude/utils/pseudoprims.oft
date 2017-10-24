@@ -1,7 +1,11 @@
 (module std/internal/prelude/utils/pseudoprims
   append
+  concat
+  contains?
   id
+  init
   length
+  last
   list
   list?
   not
@@ -18,7 +22,9 @@
   cdr
   cons
   cons?
-  nil?)
+  eq
+  nil?
+  panic)
 
 ;; Reverses a list.
 (defn reverse (l)
@@ -39,6 +45,16 @@
   (if (cons? xs)
     (append/2 (car xs) (apply append (cdr xs)))
     nil))
+
+;; Concatenates a list of lists.
+(defn concat (l)
+  (apply append l))
+
+;; Checks if a value is contained in a list.
+(defn contains? (x l)
+  (if (nil? l) false
+    (if (eq (car l) x) true
+      (contains? x (cdr l)))))
 
 ;; The identity function.
 (defn id (x) x)
@@ -63,3 +79,19 @@
   (if (cons? value)
     't
     (nil? value)))
+
+;; Returns every element except for the last.
+(defn init (l)
+  (if (nil? l)
+    (panic "Can't take init of nil")
+    (if (nil? (cdr l))
+      nil
+      (cons (car l) (init (cdr l))))))
+
+;; Returns the last element of the given list.
+(defn last (l)
+  (if (nil? l)
+    (panic "Can't take last of nil")
+    (if (nil? (cdr l))
+      (car l)
+      (last (cdr l)))))

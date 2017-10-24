@@ -6,7 +6,9 @@
   (val end)
 
   (ctor (s e)
-    [s e])
+    (list s e))
+  (named-ctor empty ()
+    (range 0 0))
 
   (defn size ()
     (- end start))
@@ -18,7 +20,7 @@
   (val width)
 
   (ctor (h w)
-    [h w])
+    (list h w))
 
   (defn area ()
     (* height width)))

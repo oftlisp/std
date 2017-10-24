@@ -2,14 +2,24 @@
   ->
   <-
   cond
+  let
+  let1
+  letrec
   todo
   unless
   when)
 
+(import std/internal/prelude/constants
+  nil)
 (import std/internal/prelude/utils/pseudoprims
   append
+  concat
+  init
+  last
+  length
   list)
 (import std/internal/primitives
+  =
   car
   cdr
   cons
@@ -73,6 +83,62 @@
         (car forms))
       ''()))
   (helper forms))
+
+;; A let-expression. Of the form:
+;;
+;;   (let CLAUSES
+;;        ...
+;;      BODY-EXPR)
+;;
+;; where CLAUSES... represents one or more clauses of the form:
+;;
+;;   (VAR EXPR)
+;;
+;; and BODY-EXPR is a single expression.
+(defmacro let (h ... t)
+  (defn to-def (clause)
+    (if (= (length clause) 2)
+      (cons 'def clause)
+      (panic "Invalid let clause")))
+  (defn to-defs (clauses)
+    (if (nil? clauses)
+      nil
+      (cons (to-def (car clauses))
+        (to-defs (cdr clauses)))))
+
+  (def l (cons h t))
+  (append
+    (list 'progn)
+    (to-defs (init l))
+    (list (last l))))
+
+;; A let-expression with a single binding. Of the form:
+;;
+;;   (let1 (VAR EXPR)
+;;     BODY-EXPRS...)
+(defmacro let1 (clause ... body)
+  (def var (car clause))
+  (def expr (car (cdr clause)))
+  (if (= (length clause) 2)
+    (cons 'progn (cons (list 'def var expr) body))
+    (panic "Invalid let1 clause")))
+
+;; A recursive let-expression. Of the form:
+;;
+;;   (letrec CLAUSES
+;;           ...
+;;     BODY-EXPR)
+;;
+;; where CLAUSES... represents one or more clauses of the form:
+;;
+;;   (NAME ARGS EXPR...)
+;;
+;; and BODY-EXPR is a single expression.
+(defmacro letrec (h ... t)
+  (def l (cons h t))
+  (list 'progn
+    (cons 'defnrec (init l))
+    (last l)))
 
 (defmacro unless (c ... forms)
   (list 'if c ''() (cons 'progn forms)))
