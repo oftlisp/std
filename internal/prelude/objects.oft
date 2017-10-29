@@ -17,6 +17,9 @@
   map)
 (import std/internal/prelude/logic
   and)
+(import std/internal/prelude/math
+  /=
+  1+)
 (import std/internal/prelude/print
   print
   println)
@@ -41,7 +44,8 @@
   contains?
   length
   list
-  not)
+  not
+  reverse)
 (import std/internal/primitives
   =
   apply
@@ -86,6 +90,7 @@
 ;;
 ;; TODO: Should `this` exist?
 ;; TODO: Automatic getters/setters?
+;; TODO: This needs more safety checks.
 (defmacro defclass (class-name ... decls)
   ; Check the name.
   (unless (symbol? class-name)
@@ -110,6 +115,13 @@
       ": Unexpected form types: "
       (show unknown-decl-types))))
 
+  ; Check for != 1 unnamed constructors.
+  (when (/= (length (lookup 'ctor decls)) 1)
+    (panic (concat-strings
+      "Invalid defclass "
+      (string<-symbol class-name)
+      ": Must have exactly one unnamed constructor")))
+
   ; Process the constructors.
   (defn build-ctor (form)
     (def name (if (nil? (car form))
@@ -129,6 +141,14 @@
     (map (. build-ctor cdr) (lookup 'named-ctor decls))))
 
   ; Process the member functions.
+  (def member-prelude (progn
+    (defn loop (n l a)
+      (if (nil? l)
+        (reverse a)
+        (loop (1+ n) (cdr l)
+          (cons `(def ,(car l) (nth ,n this)) a))))
+    (def vals (map cadr (lookup 'val decls)))
+    (loop 1 vals nil)))
   (defn build-member-defn (form)
     (def name (symbol<-string
       (concat-strings
@@ -137,8 +157,8 @@
         (string<-symbol (car form)))))
     (def args (cadr form))
     (def body (cddr form))
-    `(,name ,args
-      ; TODO Define member variables.
+    `(,name ,(cons 'this args)
+      ,@member-prelude
       ,@body))
   (def defns (-> decls
     (lookup 'defn)

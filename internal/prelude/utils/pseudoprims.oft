@@ -9,6 +9,7 @@
   list
   list?
   not
+  nth
   reverse)
 
 (import std/internal/prelude/constants
@@ -17,6 +18,9 @@
   true)
 (import std/internal/primitives
   +/2
+  -/2
+  <>
+  =
   apply
   car
   cdr
@@ -95,3 +99,13 @@
     (if (nil? (cdr l))
       (car l)
       (last (cdr l)))))
+
+;; Gets the nth value from a list.
+(defn nth (n l)
+  (defn loop (n l)
+    (if (= n 0)
+      (car l)
+      (loop (-/2 n 1) (cdr l))))
+  (if (eq (<> n 0) '<)
+    (panic "Can't get the list value at a negative index")
+    (loop n l)))

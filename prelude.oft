@@ -7,11 +7,15 @@
   .
   /
   /=
+  <
+  <-
+  <=
+  =
+  >
+  >=
   0?
   1+
   1-
-  <-
-  =
   and
   append
   apply
@@ -55,6 +59,7 @@
   concat-strings
   cond
   cons
+  cons?
   defclass
   defmethod
   else
@@ -90,6 +95,7 @@
   nil
   nil?
   not
+  nth
   or
   or-default
   panic
@@ -146,6 +152,10 @@
   -
   /
   /=
+  <
+  <=
+  >
+  >=
   0?
   1+
   1-
@@ -223,7 +233,8 @@
   last
   list
   list?
-  not)
+  not
+  nth)
 (import std/internal/primitives
   =
   apply
@@ -235,6 +246,7 @@
   cdr
   concat-strings
   cons
+  cons?
   eq
   make-vector
   nil?

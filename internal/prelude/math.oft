@@ -5,11 +5,17 @@
   -
   /
   /=
+  <
+  <=
+  >
+  >=
   0?
   1+
   1-
   mod)
 
+(import std/internal/prelude/constants
+  true)
 (import std/internal/prelude/fp
   foldl)
 (import std/internal/prelude/utils/pseudoprims
@@ -19,7 +25,9 @@
   +/2
   -/2
   //2
+  <>
   =
+  eq
   mod/2)
 
 ;; Multiplies numbers.
@@ -48,3 +56,13 @@
 
 ;; Subtracts one from the given number.
 (defn 1- (n) (- n 1))
+
+(defn < (l r) (eq (<> l r) '<))
+(defn > (l r) (eq (<> l r) '>))
+
+(defn <= (l r)
+  (def c (<> l r))
+  (if (eq c '<) true (eq c '=)))
+(defn >= (l r)
+  (def c (<> l r))
+  (if (eq c '>) true (eq c '=)))

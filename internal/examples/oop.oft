@@ -8,7 +8,7 @@
   (ctor (s e)
     (list s e))
   (named-ctor empty ()
-    (range 0 0))
+    (list 0 0))
 
   (defn size ()
     (- end start))
@@ -32,6 +32,10 @@
   (def x (range 1 3))
   (println x)
   (println (range.size x))
+
+  (def y (range-empty))
+  (println y)
+  (println (range.size y))
   
   (println (rectangle 1 2))
   (println (square 3)))
