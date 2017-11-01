@@ -20,8 +20,6 @@
   nil)
 (import std/internal/prelude/logic
   and)
-(import std/internal/prelude/objects/list-methods
-  tail)
 (import std/internal/prelude/utils
   caar
   cdar
@@ -135,7 +133,7 @@
 (defn skip (n lst)
   (if (= n 0)
     lst
-    (skip (-/2 n 1) (tail lst))))
+    (skip (-/2 n 1) (cdr lst))))
 
 ;; Takes the first n elements in a list.
 (defn take (n lst)

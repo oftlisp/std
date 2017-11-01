@@ -1,4 +1,4 @@
-(module std/lazy
+(module std/fp/lazy
   naturals
   stream
   stream-cons

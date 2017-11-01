@@ -21,10 +21,6 @@
   apply
   assert
   assert-eq
-  atomic-word
-  atomic-word.cas
-  atomic-word.load
-  atomic-word.store
   caaaar
   caaadr
   caaar
@@ -71,11 +67,11 @@
   foldl
   foldr
   for-each
+  gensym
   geq
   get
   greater
   group-by
-  head
   id
   init
   last
@@ -109,7 +105,7 @@
   skip
   sort
   sort-by
-  tail
+  symbol?
   take
   todo
   true
@@ -163,11 +159,6 @@
 (import std/internal/prelude/objects
   defclass
   defmethod)
-(import std/internal/prelude/objects/call
-  object-call-func)
-(import std/internal/prelude/objects/list-methods
-  head
-  tail)
 (import std/internal/prelude/print
   print
   println)
@@ -238,16 +229,14 @@
 (import std/internal/primitives
   =
   apply
-  atomic-word
-  atomic-word.cas
-  atomic-word.load
-  atomic-word.store
   car
   cdr
   concat-strings
   cons
   cons?
   eq
+  gensym
   make-vector
   nil?
-  panic)
+  panic
+  symbol?)

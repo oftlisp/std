@@ -1,0 +1,22 @@
+;; Simple synchronization primitives. This module is likely overridden by any
+;; runtime that actually supports parallelism.
+;;
+;; TODO: Specify whether parallelism or interpreter-level concurrency are
+;; requirements. I'm leaning towards no?
+(module std/sync/parallelism
+  parallel-cons
+  thread-yield-timeslice)
+
+;; The basic parallel function. Takes two thunks, returns their values consed
+;; together. The two thunks *may* be evaluated in parallel, although this may
+;; not occur for a variety of reasons.
+(defn parallel-cons (a b)
+  ; In the absence of runtime support for parallelism, just run the functions
+  ; serially.
+  (cons (a) (b)))
+
+;; Attempts to yield the thread's timeslice. This may be a no-op on systems
+;; that do not support parallelism.
+(defn thread-yield-timeslice ()
+  ; No-op if we don't support parallelism.
+  nil)

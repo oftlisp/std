@@ -182,4 +182,7 @@
 
 ;; Defines a method.
 (defmacro defmethod (name)
-  (todo (concat-strings "TODO: defmethod " name)))
+  (def obj (gensym))
+  (def args (gensym))
+  `(defn ,name (,obj ... ,args)
+    (apply (get (car ,obj) ',name) ,args)))

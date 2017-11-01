@@ -6,8 +6,6 @@
 (import std/internal/prelude/utils/macros
   cond
   todo)
-(import std/internal/prelude/objects/call
-  object-call-func)
 (import std/internal/primitives
   cdr
   cons

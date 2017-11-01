@@ -1,0 +1,48 @@
+;; An implementation of simple mutual exclusion locks. Note that mutexes do NOT
+;; compose; that is, in general, if you're using more than one locked variable,
+;; you are walking through a minefield of potential deadlocks.
+;;
+;; TODO: with-mutex macro
+(module std/sync/mutex
+  mutex
+  mutex.lock
+  mutex.unlock
+  mutex-var.read
+  mutex-var.write)
+
+(import std/sync/atomic
+  atomic-pointer
+  atomic-pointer.load
+  atomic-pointer.store
+  atomic-word
+  atomic-word.cas)
+(import std/sync/parallelism
+  thread-yield-timeslice)
+
+;; TODO: Should we lock with some sort of ID representing local control? Maybe
+;; give each thread a non-zero ID number?
+(defclass mutex
+  (val value)
+  (val atom)
+
+  (ctor (initial-value)
+    (list
+      (atomic-pointer initial-value)
+      (atomic-word 0)))
+
+  (defn lock ()
+    (if (0? (atomic-word.cas atom 0 1))
+      (list 'mutex-var value)
+      (progn
+        (thread-yield-timeslice)
+        (mutex.lock this))))
+
+  (defn unlock ()
+    (unless (= (atomic-word.cas atom 1 0) 1)
+      (panic "Unlocked a mutex that was not locked!"))))
+
+(defn mutex-var.read (var)
+  (atomic-pointer.load (cadr var)))
+
+(defn mutex-var.write (var value)
+  (atomic-pointer.store (cadr var) value))

@@ -1,6 +1,6 @@
 ;; An implementation of STM using the algorithm described in Transactional
 ;; Locking II.
-(module std/stm
+(module std/sync/stm
   atomically
   stm
   stm.read
