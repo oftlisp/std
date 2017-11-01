@@ -1,7 +1,8 @@
-(module std/atomic/id
+(module std/sync/atomic/id
   generator)
 
-(import std/atomic
+(import std/sync/atomic
+  atomic-word
   atomic-word.inc)
 
 ;; Returns a function that, when called, yields one more than the previous time
