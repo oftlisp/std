@@ -1,0 +1,5 @@
+(module std/parsing/cfg
+  defsyntax)
+
+(defmacro defsyntax (name ... clauses)
+  (todo "TODO: defsyntax"))

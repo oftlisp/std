@@ -1,6 +1,8 @@
 ;; Functional programming primitives.
 (module std/internal/prelude/fp
   .
+  all
+  any
   enumerate
   filter
   foldl
@@ -17,7 +19,9 @@
 
 (import std/internal/prelude/constants
   else
-  nil)
+  false
+  nil
+  true)
 (import std/internal/prelude/logic
   and)
 (import std/internal/prelude/utils
@@ -55,6 +59,20 @@
       x
       (loop ((car l) x) (cdr l))))
   (fn (x) (loop x funcs)))
+
+(defn all (f l)
+  (if (nil? l)
+    true
+    (if (f (car l))
+      (all f (cdr l))
+      false)))
+
+(defn any (f l)
+  (if (nil? l)
+    false
+    (if (f (car l))
+      true
+      (any f (cdr l)))))
 
 ;; Converts a list of values to a list of index-value conses.
 (defn enumerate (l)

@@ -1,0 +1,52 @@
+(module std/lang/json
+  json-parse)
+
+(import std/parsing/cfg
+  defsyntax)
+
+(defsyntax json-parse
+  (terminal lbrace "{")
+  (terminal rbrace "}")
+  (terminal lbrack "[")
+  (terminal rbrack "]")
+  (terminal lparen "(")
+  (terminal rparen ")")
+  (terminal colon ":")
+  (terminal comma ",")
+  (terminal literal-true "true")
+  (terminal literal-false "false")
+  (terminal literal-null "null")
+
+  (terminal string
+    (regex "\"([^\\\\\"]|\\[\"\\\\/bfnrt]|\\u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])\""))
+  (terminal number
+    (regex "-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"))
+
+  (ignore terminal whitespace
+    ; TODO: Support unicode whitespace?
+    (regex " \n\r\t"))
+
+  (root nonterminal value
+    (string)
+    (number)
+    (object)
+    (array)
+    (literal-true)
+    (literal-false)
+    (literal-null))
+
+  (nonterminal object
+    (lbrace rbrace)
+    (lbrace object-pairs rbrace))
+  (nonterminal object-pairs
+    (object-pair)
+    (object-pair comma object-pairs))
+  (nonterminal object-pair
+    (string colon value))
+
+  (nonterminal array
+    (lbrack rbrack)
+    (lbrack array-elems rbrack))
+  (nonterminal array-elems
+    (value)
+    (value comma array-elems)))

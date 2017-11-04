@@ -140,6 +140,15 @@
     (build-ctor (cons nil (cdar (lookup 'ctor decls))))
     (map (. build-ctor cdr) (lookup 'named-ctor decls))))
 
+  ; Add a function to check for class membership.
+  (def is-class?-name (symbol<-string
+    (concat-strings (string<-symbol class-name) "?")))
+  (def is-class? (progn
+    `(,is-class?-name (obj)
+      (and
+        (cons? obj)
+        (eq (car obj) ,class-name)))))
+
   ; Process the member functions.
   (def member-prelude (progn
     (defn loop (n l a)
@@ -148,7 +157,9 @@
         (loop (1+ n) (cdr l)
           (cons `(def ,(car l) (nth ,n this)) a))))
     (def vals (map cadr (lookup 'val decls)))
-    (loop 1 vals nil)))
+    (cons
+      `(assert (,is-class?-name ,class-name))
+      (loop 1 vals nil))))
   (defn build-member-defn (form)
     (def name (symbol<-string
       (concat-strings
@@ -164,15 +175,6 @@
     (lookup 'defn)
     (map cdr)
     (map build-member-defn)))
-
-  ; Add a function to check for class membership.
-  (def is-class? (progn
-    (def name (symbol<-string
-      (concat-strings (string<-symbol class-name) "?")))
-    `(,name (obj)
-      (and
-        (cons? obj)
-        (eq (car obj) ,class-name)))))
 
   ; Build the final expression.
   `(defnrec

@@ -2,6 +2,10 @@
 ;; compose; that is, in general, if you're using more than one locked variable,
 ;; you are walking through a minefield of potential deadlocks.
 ;;
+;; XXX: Note that these are currently implemented as spinlocks, but they may
+;; request their thread to be suspended. Don't use this if you care about
+;; performance!
+;;
 ;; TODO: with-mutex macro
 (module std/sync/mutex
   mutex
@@ -41,8 +45,13 @@
     (unless (= (atomic-word.cas atom 1 0) 1)
       (panic "Unlocked a mutex that was not locked!"))))
 
-(defn mutex-var.read (var)
-  (atomic-pointer.load (cadr var)))
+(defn mutex-var? (this)
+  (and (cons? this) (eq (car this) 'mutex-var)))
 
-(defn mutex-var.write (var value)
-  (atomic-pointer.store (cadr var) value))
+(defn mutex-var.read (this)
+  (assert (mutex-var? this))
+  (atomic-pointer.load (cadr this)))
+
+(defn mutex-var.write (this value)
+  (assert (mutex-var? this))
+  (atomic-pointer.store (cadr this) value))

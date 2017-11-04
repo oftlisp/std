@@ -1,0 +1,16 @@
+(module std/internal/prelude/objects/common-methods
+  empty?
+  head
+  tail)
+
+(import std/internal/primitives
+  panic)
+
+(defn empty? (x)
+  (panic "TODO: empty?"))
+
+(defn head (x)
+  (panic "TODO: head"))
+
+(defn tail (x)
+  (panic "TODO: tail"))

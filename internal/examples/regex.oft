@@ -1,0 +1,21 @@
+(module std/internal/examples/regex
+  main)
+
+(import std/parsing/regex
+  regex-matches?)
+
+(defn test (regex string)
+  (println "regex = " regex)
+  (println "string = " string)
+  (if (regex-matches? regex string)
+    (println "Matched!")
+    (println "Did not match!"))
+  (println "======="))
+
+(defn main (args)
+  (def tests '(
+    ("123" "123")
+    ("12+3" "13")
+    ("12+3" "123")
+    ("12+3" "12223")))
+  (for-each \(test (car $) (cadr $)) tests))

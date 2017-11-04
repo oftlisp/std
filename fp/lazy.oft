@@ -1,59 +1,64 @@
 (module std/fp/lazy
   naturals
   stream
+  stream?
+  stream.head
+  stream.tail
   stream-cons
   thunk
+  thunk?
   thunk.force)
 
-(import std/fp/monad
-  >>=
-  do)
-(import std/stm
-  atomically
-  stm
-  stm.read
-  stm.write
-  transaction.pure)
+(import std/sync/mutex
+  mutex
+  mutex.lock
+  mutex.unlock
+  mutex-var.read
+  mutex-var.write)
 
-;;; The Thunk class
-
+;;; The Thunk class.
+;;;
+;;; TODO: Use std/sync/stm instead of std/sync/mutex.
 (defclass thunk
   (val inner)
-  (val evaled?)
 
   ;; Note that the function may be evaluated more than once, in the case that
   ;; the thunk is demanded in two separate threads at the same time.
+  ;;
+  ;; XXX: This isn't actually true with the current implementation.
   (ctor (func)
-    [(stm func) (stm false)])
+    (list (mutex (cons false func))))
 
   (defn force ()
-    (atomically (do
-      (mdef e (stm.read evaled?))
-      (mdef i (stm.read inner))
-      (if e
-        (transaction.pure i) ; i is an already-evaluated value.
-        (progn ; i is a function that will return the value.
-          (def val (i))
-          (stm.write evaled? true)
-          (stm.write inner val)
-          (transaction.pure val)))))))
+    (def inner-lock (mutex.lock inner))
+    (def inner-val (mutex-var.read inner-lock))
+    (def result (if (car inner-val)
+      (cdr inner-val)
+      (progn
+        (def value ((cdr inner-val)))
+        (mutex-var.write inner-lock (cons true value))
+        value)))
+    (mutex.unlock inner)
+    result))
 
 ;;; The Stream class
 
 (defclass stream
-  (val car)
-  (val cdr)
+  (val h)
+  (val t)
 
-  (ctor (car cdr)
-    [car (thunk cdr)])
+  (ctor (h t)
+    (list h (thunk t)))
 
-  (defn head () car)
-  (defn tail () (thunk.force cdr)))
+  (defn head () h)
+  (defn tail () (thunk.force t)))
 
-(defmacro stream-cons (car cdr)
-  `(stream ,car (fn () ,cdr)))
+(defmacro stream-cons (h t)
+  `(stream ,h (fn () ,t)))
 
 ;;; Predefined Streams
 
-; (def naturals (stream-cons 1 (1+ (head naturals))))
-(def naturals (stream-cons 1 (1+ (head (todo)))))
+(defn nats-from (n)
+  (stream-cons n (nats-from (1+ n))))
+
+(def naturals (nats-from 0))

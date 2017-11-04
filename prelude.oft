@@ -16,7 +16,10 @@
   0?
   1+
   1-
+  all
   and
+  any-shl?
+  any
   append
   apply
   assert
@@ -59,6 +62,7 @@
   defclass
   defmethod
   else
+  empty?
   enumerate
   eq
   exit
@@ -72,6 +76,7 @@
   get
   greater
   group-by
+  head
   id
   init
   last
@@ -106,6 +111,7 @@
   sort
   sort-by
   symbol?
+  tail
   take
   todo
   true
@@ -124,6 +130,8 @@
   show)
 (import std/internal/prelude/fp
   .
+  all
+  any
   enumerate
   filter
   foldl
@@ -159,6 +167,10 @@
 (import std/internal/prelude/objects
   defclass
   defmethod)
+(import std/internal/prelude/objects/common-methods
+  empty?
+  head
+  tail)
 (import std/internal/prelude/print
   print
   println)

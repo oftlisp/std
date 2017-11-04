@@ -2,8 +2,16 @@
 ;; Chris Okasaki's Purely Functional Data Structures, with the deletion
 ;; algorithm proposed by Matt Might.
 (module std/data/set
+  list<-set
   set
-  set.contains?)
+  set?
+  set.contains?
+  set.difference
+  set.filter
+  set.flat-map
+  set.intersection
+  set.union
+  set<-list)
 
 (import std/data/tree
   tree-contains?)
@@ -16,7 +24,28 @@
   (ctor ((tree ()) (eq? ()) (lt? ()))
     (<- eq? (or-default eq))
     (<- lt? (or-default less))
-    [eq? lt? tree])
+    (list eq? lt? tree))
 
   (defn contains? (value)
-    (tree-contains? value tree eq? lt?)))
+    (tree-contains? value tree eq? lt?))
+
+  (defn difference (... s)
+    (todo "TODO: set.difference"))
+
+  (defn filter (f)
+    (todo "TODO: set.filter"))
+
+  (defn flat-map (f)
+    (todo "TODO: set.flat-map"))
+
+  (defn intersection (... s)
+    (todo "TODO: set.intersection"))
+
+  (defn union (... s)
+    (todo "TODO: set.union")))
+
+(defn list<-set (s)
+  (todo "TODO: list<-set"))
+
+(defn set<-list (s)
+  (todo "TODO: list<-set"))
