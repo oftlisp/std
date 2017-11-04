@@ -39,6 +39,7 @@
   caddr
   cadr
   car
+  case
   cdaaar
   cdaadr
   cdaar
@@ -54,6 +55,7 @@
   cdddr
   cddr
   cdr
+  compile-time-eval
   concat
   concat-strings
   cond
@@ -221,6 +223,8 @@
 (import std/internal/prelude/utils/macros
   ->
   <-
+  case
+  compile-time-eval
   cond
   let
   let1

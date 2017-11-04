@@ -147,7 +147,7 @@
     `(,is-class?-name (obj)
       (and
         (cons? obj)
-        (eq (car obj) ,class-name)))))
+        (eq (car obj) ',class-name)))))
 
   ; Process the member functions.
   (def member-prelude (progn
@@ -158,7 +158,7 @@
           (cons `(def ,(car l) (nth ,n this)) a))))
     (def vals (map cadr (lookup 'val decls)))
     (cons
-      `(assert (,is-class?-name ,class-name))
+      `(assert (,is-class?-name this))
       (loop 1 vals nil))))
   (defn build-member-defn (form)
     (def name (symbol<-string

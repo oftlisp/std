@@ -9,12 +9,18 @@
   set.difference
   set.filter
   set.flat-map
+  set.insert
   set.intersection
+  set.remove
   set.union
   set<-list)
 
-(import std/data/tree
-  tree-contains?)
+(import std/data/low-level/tree
+  list<-tree
+  tree<-list
+  tree-contains?
+  tree-insert-many
+  tree-remove-many)
 
 (defclass set
   (val eq?)
@@ -38,14 +44,21 @@
   (defn flat-map (f)
     (todo "TODO: set.flat-map"))
 
+  (defn insert (... xs)
+    (set (tree-insert-many xs tree eq? lt?) eq? lt?))
+
   (defn intersection (... s)
     (todo "TODO: set.intersection"))
+
+  (defn remove (... xs)
+    (set (tree-remove-many xs tree eq? lt?) eq? lt?))
 
   (defn union (... s)
     (todo "TODO: set.union")))
 
 (defn list<-set (s)
-  (todo "TODO: list<-set"))
+  (assert (set? s))
+  (list<-tree (cadddr s)))
 
-(defn set<-list (s)
-  (todo "TODO: list<-set"))
+(defn set<-list (l)
+  (set (tree<-list l eq less) eq less))

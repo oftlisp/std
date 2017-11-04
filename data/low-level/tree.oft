@@ -1,0 +1,180 @@
+;; This module implements a red-black tree based on the one presented in Chris
+;; Okasaki's Purely Functional Data Structures, with the deletion algorithm
+;; proposed by Matt Might.
+;;
+;; You probably don't want to import this module directly; rather, use
+;; `std/data/map` or `std/data/set`.
+;;
+;; TODO: This needs a cleanup once pattern-matching is implemented.
+(module std/data/low-level/tree
+  list<-tree
+  tree<-list
+  tree-contains?
+  tree-insert
+  tree-insert-many
+  tree-remove
+  tree-remove-many)
+
+; TREE = (COLOR TREE VALUE TREE)
+;      | COLOR
+; COLOR = 0 | 1 | -1 | 2
+; Note: 0 = red, 1 = black, 2 = double black, -1 = negative black
+
+(def red 0)
+(def black 1)
+(def double-black 2)
+(def negative-black -1)
+
+(defn redden (tree)
+  (cond
+    (eq tree black)        (panic "Cannot redden empty tree")
+    (eq tree double-black) (panic "Cannot redden empty tree")
+    else                   (cond red (cdr tree))))
+(defn blacken (tree)
+  (cond
+    (eq tree black)        black
+    (eq tree double-black) black
+    else                   (cond black (cdr tree))))
+
+(defn blacker (color)
+  (case color
+    negative-black red
+    red            black
+    black          double-black
+    double-black   (panic "Can't make double-black blacker.")))
+(defn redder (color)
+  (case color
+    negative-black (panic "Can't make negative-black redder.")
+    red            negative-black
+    black          red
+    double-black   black))
+
+(defn blacker- (tree)
+  (if (eq tree black)
+    double-black
+    (cons (blacker (car tree)) (cdr tree))))
+(defn redder- (tree)
+  (if (eq tree double-black)
+    black
+    (cons (redder (car tree)) (cdr tree))))
+
+(defn double-black? (tree)
+  (or
+    (eq tree double-black)
+    (and
+      (cons? tree)
+      (eq (car tree) double-black))))
+
+(defn tree-contains? (x tree eq? lt?)
+  (when tree
+    (def node-value (caddr tree))
+    (cond
+      (eq? node-value x) true
+      (lt? node-value x) (tree-contains? x (cadr tree) eq? lt?)
+      else               (tree-contains? x (cadddr tree) eq? lt?))))
+
+(defn tree-balance (color l x r eq? lt?)
+  (case color
+    black
+      (todo)
+    double-black
+      (todo)
+      (list color l x r)))
+
+(defn tree-insert (x tree eq? lt?)
+  (defn helper (tree)
+    (if (cons? tree)
+      ; TODO: Use pattern-matching destructuring.
+      (let (color (car    tree))
+           (l     (cadr   tree))
+           (y     (caddr  tree))
+           (r     (cadddr tree))
+        (cond
+          (eq? x y) tree
+          (lt? x y) (tree-balance color (helper l) y r eq? lt?)
+          else      (tree-balance color l y (helper r) eq? lt?)))
+      (list red black x black)))
+  (cons red (cdr (helper tree))))
+
+(defn tree-insert-many (l tree eq? lt?)
+  (foldl (fn (tree x) (tree-insert x tree eq? lt?)) tree l))
+
+(defn tree-max (tree)
+  (if (cons? tree)
+    (if (eq (cadddr tree) black)
+      (caddr tree)
+      (tree-max (caddr tree)))
+    (panic "No largest element in an empty tree")))
+
+(defn tree-bubble (color l x r)
+  (if (or (double-black? l) (double-black? r))
+    (tree-balance (blacker color) (redder- l) x (redder- r))
+    (tree-balance color l x r)))
+
+(defn delete (tree)
+  (defn delete-max (tree)
+    (if (cons? tree)
+      (if (eq (cadddr tree) black)
+        (delete tree)
+        (tree-bubble
+          (car tree)
+          (cadr tree)
+          (caddr tree)
+          (delete-max (cadddr tree))))
+      (panic "No largest element to remove in an empty tree")))
+  (cond
+    (eq tree black)
+      black
+    (and (eq (car tree) red)
+          (eq (cadr tree)   black)
+          (eq (cadddr tree) black))
+      black
+    (and (eq (car tree) black)
+          (eq (cadr tree)   black)
+          (eq (cadddr tree) black))
+      double-black
+    (and (eq (car tree) black)
+          (eq (cadr tree) black)
+          (cons? (cadddr tree))
+          (eq (car (cadddr tree)) red))
+      (cons black (cdr (cadddr tree)))
+    (and (eq (car tree) black)
+          (eq (cadddr tree) black)
+          (cons? (cadr tree))
+          (eq (car (cadr tree)) red))
+      (cons black (cdr (cadr tree)))
+    else
+      (tree-bubble
+        (car tree)
+        (delete-max (cadr tree))
+        (tree-max (cadr tree))
+        (cadddr tree))))
+
+(defn tree-remove (x tree eq? lt?)
+  (defn helper (tree)
+    (println tree)
+    (if (cons? tree)
+      (let (color (car tree))
+           (l     (cadr tree))
+           (y     (caddr tree))
+           (r     (cadddr tree))
+        (cond
+          (eq? x y) tree
+          (lt? x y) (tree-balance color (helper l) y r eq? lt?)
+          else      (tree-balance color l y (helper r) eq? lt?)))
+      black))
+  (blacken (helper tree)))
+
+(defn tree-remove-many (l tree eq? lt?)
+  (foldl (fn (tree x) (tree-remove x tree eq? lt?)) tree l))
+
+(defn list<-tree (t)
+  (if (cons? t)
+    (append
+      (list<-tree (cadr t))
+      (list (caddr t))
+      (list<-tree (cadddr t)))
+    nil))
+
+(defn tree<-list (l eq? lt?)
+  (tree-insert-many l black eq? lt?))

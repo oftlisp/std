@@ -1,6 +1,8 @@
 (module std/internal/prelude/utils/macros
   ->
   <-
+  case
+  compile-time-eval
   cond
   let
   let1
@@ -24,6 +26,8 @@
   cdr
   cons
   cons?
+  debug
+  gensym
   nil?
   panic)
 
@@ -71,6 +75,30 @@
     "TODO"
     msg))
   (list 'panic msg))
+
+;; TODO: This should probably be a builtin, rather than being a macro; the progn
+;; could break things if used in a quote.
+(defmacro compile-time-eval (form)
+  (def macro-name (gensym))
+  (list 'progn
+    (list 'defmacro macro-name (list)
+        form)
+    (list macro-name)))
+
+(defmacro case (value ... forms)
+  (def name (gensym))
+  (defn helper (forms)
+    (if (cons? forms)
+      (if (cons? (cdr forms))
+        (list 'if
+          (list 'eq name (car forms))
+          (car (cdr forms))
+          (helper (cdr (cdr forms))))
+        (car forms))
+      ''()))
+  (list 'progn
+    (list 'def name value)
+    (helper forms)))
 
 (defmacro cond (... forms)
   (defn helper (forms)

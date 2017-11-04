@@ -1,5 +1,0 @@
-(module std/internal/examples/at-macro
-  main)
-
-(defn main (args)
-  (println '@this-is-the-at-macro))

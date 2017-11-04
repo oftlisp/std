@@ -1,0 +1,9 @@
+(module std/internal/examples/advanced-reader-macros
+  main)
+
+(defn main (args)
+  (println '@at-macro)
+  (println (\(list 'the $ 'macro) 'lambda))
+  !(progn
+    (println "This gets printed first, since the whole progn is evaluated at compile-time.")
+    "The value of the expression gets spliced in."))
