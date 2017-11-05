@@ -5,12 +5,12 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
-(import std/internal/prelude/utils
+(import std/internal/prelude/util
   cadr
   cddr)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   todo)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   list)
 (import std/internal/primitives

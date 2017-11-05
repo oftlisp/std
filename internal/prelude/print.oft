@@ -11,7 +11,7 @@
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
-  for-each)
+  each)
 (import std/internal/primitives
   bytes<-string
   write-bytes)
@@ -26,10 +26,10 @@
 ;; Prints values without an ending newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn print (... vals)
-  (for-each print-one vals))
+  (each print-one vals))
 
 ;; Prints a value, followed by a newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn println (... vals)
-  (for-each print-one vals)
+  (each print-one vals)
   (write-string "\n"))

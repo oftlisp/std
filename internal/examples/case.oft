@@ -21,4 +21,5 @@
       "unknown"))
 
 (defn main (args)
-  (for-each \(println $ ": " (number-name $)) (range 0 11)))
+  (for-each x (range 0 11)
+    (println x ": " (number-name x))))

@@ -1,0 +1,336 @@
+;; This module implements a red-black tree based on the one presented in Chris
+;; Okasaki's Purely Functional Data Structures, with the deletion algorithm
+;; proposed by Matt Might.
+;;
+;; You probably don't want to import this module directly; rather, use
+;; `std/data/map` or `std/data/set`.
+;;
+;; TODO: This needs a cleanup once pattern-matching is implemented.
+(module std/data/low-level/red-black-tree
+  list<-tree
+  tree<-list
+  tree-contains?
+  tree-delete
+  tree-delete-many
+  tree-empty
+  tree-insert
+  tree-insert-many)
+
+; TREE = (COLOR TREE VALUE TREE)
+;      | COLOR
+; COLOR = 0 | 1 | -1 | 2
+; Note: 0 = red, 1 = black, 2 = double black, -1 = negative black
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def red 0)
+(def black 1)
+(def double-black 2)
+(def negative-black -1)
+
+(def E black)
+(def EE double-black)
+(defn E? (tree) (eq tree E))
+(defn EE? (tree) (eq tree EE))
+(defn T (c l x r) (list c l x r))
+(def T? cons?)
+(def T-color car)
+(def T-left  cadr)
+(def T-value caddr)
+(def T-right cadddr)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn redden (tree)
+  (cond
+    (E? tree)  (panic "Cannot redden empty tree")
+    (EE? tree) (panic "Cannot redden empty tree")
+    else       (cons red (cdr tree))))
+(defn blacken (tree)
+  (cond
+    (E? tree)  E
+    (EE? tree) E
+    else       (cons black (cdr tree))))
+
+(defn blacker (color)
+  (case color
+    negative-black red
+    red            black
+    black          double-black
+    double-black   (panic "Can't make double-black blacker.")))
+(defn redder (color)
+  (case color
+    negative-black (panic "Can't make negative-black redder.")
+    red            negative-black
+    black          red
+    double-black   black))
+
+(defn blacker- (tree)
+  (if (E? tree)
+    double-black
+    (cons (blacker (T-color tree)) (cdr tree))))
+(defn redder- (tree)
+  (if (EE? tree)
+    black
+    (cons (redder (T-color tree)) (cdr tree))))
+
+(defn double-black? (tree)
+  (or
+    (EE? tree)
+    (and
+      (T? tree)
+      (eq (T-color tree) double-black))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn tree-balance (color l x r eq? lt?)
+  ; TODO: This *heavily* needs pattern-matching.
+  (println "---")
+  (println "balance: " color " " x)
+  (println l)
+  (println r)
+  (def out (cond
+    (and (eq color black)
+         (T? l)
+         (eq (T-color l) red)
+         (T? (T-left l))
+         (eq (T-color (T-left l)) red))
+      (T red
+        (T black
+          (T-left (T-left l))
+          (T-value (T-left l))
+          (T-right (T-left l)))
+        (T-value l)
+        (T black
+          (T-right l)
+          x
+          r))
+    (and (eq color black)
+         (T? l)
+         (eq (T-color l) red)
+         (T? (T-right l))
+         (eq (T-color (T-right l)) red))
+      (T red
+        (T black
+          (T-left l)
+          (T-value l)
+          (T-left (T-right l)))
+        (T-value (T-right l))
+        (T black
+          (T-right (T-right l))
+          x
+          r))
+    (and (eq color black)
+         (T? r)
+         (eq (T-color r) red)
+         (T? (T-left r))
+         (eq (T-color (T-left r)) red))
+      (T red
+        (T black
+          l
+          x
+          (T-left (T-left r)))
+        (T-value (T-left r))
+        (T black
+          (T-right (T-left r))
+          (T-value r)
+          (T-right r)))
+    (and (eq color black)
+         (T? r)
+         (eq (T-color r) red)
+         (T? (T-right r))
+         (eq (T-color (T-right r)) red))
+      (T red
+        (T black
+          l
+          x
+          (T-left r))
+        (T-value r)
+        (T black
+          (T-left (T-right r))
+          (T-value (T-right r))
+          (T-right (T-right r))))
+    (and (eq color double-black)
+         (T? l)
+         (eq (T-color l) red)
+         (T? (T-left l))
+         (eq (T-color (T-left l)) red))
+      (T black
+        (T black
+          (T-left (T-left l))
+          (T-value (T-left l))
+          (T-right (T-left l)))
+        (T-value l)
+        (T black
+          (T-right l)
+          x
+          r))
+    (and (eq color double-black)
+         (T? l)
+         (eq (T-color l) red)
+         (T? (T-right l))
+         (eq (T-color (T-right l)) red))
+      (T black
+        (T black
+          (T-left l)
+          (T-value l)
+          (T-left (T-right l)))
+        (T-value (T-right l))
+        (T black
+          (T-right (T-right l))
+          x
+          r))
+    (and (eq color double-black)
+         (T? r)
+         (eq (T-color r) red)
+         (T? (T-left r))
+         (eq (T-color (T-left r)) red))
+      (todo 3)
+    (and (eq color double-black)
+         (T? r)
+         (eq (T-color r) red)
+         (T? (T-right r))
+         (eq (T-color (T-right r)) red))
+      (todo 4)
+    (and (eq color double-black)
+         (T? l)
+         (eq (T-color l) negative-black)
+         (T? (T-left l))
+         (eq (T-color (T-left l)) black)
+         (T? (T-right l))
+         (eq (T-color (T-right l)) black))
+      (todo 5)
+    (and (eq color double-black)
+         (T? r)
+         (eq (T-color r) negative-black)
+         (T? (T-left r))
+         (eq (T-color (T-left r)) black)
+         (T? (T-right r))
+         (eq (T-color (T-right r)) black))
+      (todo 6)
+    else
+      (T color l x r)))
+    (println out)
+    out)
+
+(defn tree-bubble (color l x r eq? lt?)
+  (if (or (double-black? l) (double-black? r))
+    (tree-balance (blacker color) (redder- l) x (redder- r) eq? lt?)
+    (tree-balance color l x r eq? lt?)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def tree-empty E)
+
+(defn tree-contains? (x tree eq? lt?)
+  (if (E? tree)
+    false
+    (let (node-value (T-value tree))
+      (cond
+        (eq? node-value x)
+          true
+        (lt? node-value x)
+          (tree-contains? x (T-left  tree) eq? lt?)
+        else
+          (tree-contains? x (T-right tree) eq? lt?)))))
+
+(defn tree-max (tree)
+  (cond
+    (E? tree)
+      (panic "No largest element in an empty tree")
+    (E? (T-right tree))
+      (T-value tree)
+    else
+      (tree-max (T-right tree))))
+
+(defn tree-insert (x tree eq? lt?)
+  (defn helper (tree)
+    (if (E? tree)
+      (T red E x E)
+      ; TODO: Use pattern-matching destructuring.
+      (let (color (T-color tree))
+           (l     (T-left  tree))
+           (y     (T-value tree))
+           (r     (T-right tree))
+        (cond
+          (eq? x y) tree
+          (lt? x y) (tree-balance color (helper l) y r eq? lt?)
+          else      (tree-balance color l y (helper r) eq? lt?)))))
+  (blacken (helper tree)))
+
+(defn tree-insert-many (l tree eq? lt?)
+  (foldl (fn (tree x) (tree-insert x tree eq? lt?)) tree l))
+
+(defn remove (tree eq? lt?)
+  (defn remove-max (tree)
+    (if (E? tree)
+      (panic "No largest element to remove in an empty tree")
+      (if (E? (T-right tree))
+        (remove tree eq? lt?)
+        (tree-bubble
+          (T-color tree)
+          (T-left tree)
+          (T-value tree)
+          (remove-max (T-right tree))
+          eq? lt?))))
+  (if (E? tree)
+    E
+    (cond
+      (and (eq (T-color tree) red)
+           (E? (T-left  tree))
+           (E? (T-right tree)))
+        E
+      (and (eq (T-color tree) black)
+           (E? (T-left  tree))
+           (E? (T-right tree)))
+        EE
+      (and (eq (T-color tree) black)
+           (E? (T-left  tree))
+           (T? (T-right tree))
+           (eq (T-color (T-right tree)) red))
+        (todo 1)
+      (and (eq (T-color tree) black)
+           (T? (T-left tree))
+           (eq (T-color (T-left tree)) red)
+           (E? (T-left  tree)))
+        (todo 2)
+      else
+        (tree-bubble
+          (T-color tree)
+          (remove-max (T-left tree))
+          (tree-max tree)
+          (T-right tree)
+          eq? lt?))))
+
+(defn tree-delete (x tree eq? lt?)
+  (defn helper (tree)
+    (if (E? tree)
+      E
+      (let (color (T-color tree))
+           (l     (T-left  tree))
+           (y     (T-value tree))
+           (r     (T-right tree))
+        (cond
+          (eq? x y)
+            (remove tree eq? lt?)
+          (lt? x y)
+            (tree-bubble color (helper l) y r eq? lt?)
+          else
+            (tree-bubble color l y (helper r) eq? lt?)))))
+  (blacken (helper tree)))
+
+(defn tree-delete-many (l tree eq? lt?)
+  (foldl (fn (tree x) (tree-delete x tree eq? lt?)) tree l))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn list<-tree (t)
+  (if (T? t)
+    (append
+      (list<-tree (T-left t))
+      (list (T-value t))
+      (list<-tree (T-right t)))
+    nil))
+
+(defn tree<-list (l eq? lt?)
+  (tree-insert-many l E eq? lt?))

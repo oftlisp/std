@@ -18,4 +18,5 @@
     ("12+3" "13")
     ("12+3" "123")
     ("12+3" "12223")))
-  (for-each \(test (car $) (cadr $)) tests))
+  (for-each t tests
+    (test (car t) (cadr t))))

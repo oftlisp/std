@@ -5,10 +5,10 @@
   else)
 (import std/internal/prelude/fp
   map)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   list
   list?)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   cond)
 (import std/internal/primitives
   car

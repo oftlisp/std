@@ -18,7 +18,7 @@
   true)
 (import std/internal/prelude/fp
   foldl)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   not)
 (import std/internal/primitives
   */2

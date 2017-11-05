@@ -6,11 +6,12 @@
   show)
 (import std/internal/prelude/quasiquote
   quasiquote)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   list)
 (import std/internal/primitives
   concat-strings
+  gensym
   panic)
 
 (defmacro assert (condition)
@@ -21,4 +22,22 @@
     (panic ,message)))
 
 (defmacro assert-eq (left right)
-  `(assert (eq ,left ,right)))
+  (def left-name (gensym))
+  (def right-name (gensym))
+
+  `(let (,left-name  ,left)
+        (,right-name ,right)
+    (unless (eq ,left-name ,right-name)
+      (panic (concat-strings
+        "Assertion failed: (eq "
+        ,(show left)
+        " "
+        ,(show right)
+        ")\n\t"
+        ,(show left)
+        " = "
+        (show ,left-name)
+        "\n\t"
+        ,(show right)
+        " = "
+        (show ,right-name))))))

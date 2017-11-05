@@ -1,9 +1,10 @@
-(module std/internal/prelude/utils/macros
+(module std/internal/prelude/util/macros
   ->
   <-
   case
   compile-time-eval
   cond
+  for-each
   let
   let1
   letrec
@@ -13,7 +14,7 @@
 
 (import std/internal/prelude/constants
   nil)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   concat
   init
@@ -70,11 +71,26 @@
   (list 'def var (list func var)))
 
 ;; Panics with the string "TODO".
-(defmacro todo ((msg ()))
+(defmacro todo (... msg)
   (def msg (if (nil? msg)
-    "TODO"
-    msg))
-  (list 'panic msg))
+    '("TODO")
+    (cons "TODO: " msg)))
+  (cons 'panic msg))
+
+(defmacro case (value ... forms)
+  (def name (gensym))
+  (defn helper (forms)
+    (if (cons? forms)
+      (if (cons? (cdr forms))
+        (list 'if
+          (list 'eq (car forms) name)
+          (car (cdr forms))
+          (helper (cdr (cdr forms))))
+        (car forms))
+      ''()))
+  (list 'progn
+    (list 'def name value)
+    (helper forms)))
 
 ;; TODO: This should probably be a builtin, rather than being a macro; the progn
 ;; could break things if used in a quote.
@@ -84,21 +100,6 @@
     (list 'defmacro macro-name (list)
         form)
     (list macro-name)))
-
-(defmacro case (value ... forms)
-  (def name (gensym))
-  (defn helper (forms)
-    (if (cons? forms)
-      (if (cons? (cdr forms))
-        (list 'if
-          (list 'eq name (car forms))
-          (car (cdr forms))
-          (helper (cdr (cdr forms))))
-        (car forms))
-      ''()))
-  (list 'progn
-    (list 'def name value)
-    (helper forms)))
 
 (defmacro cond (... forms)
   (defn helper (forms)
@@ -111,6 +112,9 @@
         (car forms))
       ''()))
   (helper forms))
+
+(defmacro for-each (x-var xs-var ... body)
+  (list 'each (cons 'fn (cons (list x-var) body)) xs-var))
 
 ;; A let-expression. Of the form:
 ;;

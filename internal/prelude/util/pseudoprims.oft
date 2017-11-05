@@ -1,4 +1,4 @@
-(module std/internal/prelude/utils/pseudoprims
+(module std/internal/prelude/util/pseudoprims
   append
   concat
   contains?

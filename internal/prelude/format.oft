@@ -3,7 +3,7 @@
 
 (import std/internal/prelude/constants
   else)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   cond
   todo)
 (import std/internal/primitives

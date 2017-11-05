@@ -11,7 +11,6 @@
   .
   enumerate
   filter
-  for-each
   group-by
   lookup
   map)
@@ -25,7 +24,7 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
-(import std/internal/prelude/utils
+(import std/internal/prelude/util
   caar
   cadr
   cdar
@@ -33,13 +32,13 @@
   caddr
   cdddr
   cddar)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   ->
   cond
   todo
   unless
   when)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   contains?
   length

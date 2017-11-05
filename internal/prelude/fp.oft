@@ -7,7 +7,7 @@
   filter
   foldl
   foldr
-  for-each
+  each
   group-by
   lookup
   lookup-by
@@ -24,15 +24,15 @@
   true)
 (import std/internal/prelude/logic
   and)
-(import std/internal/prelude/utils
+(import std/internal/prelude/util
   caar
   cdar
   leq
   reverse
   split-at)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   cond)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   length
   list)
@@ -74,6 +74,13 @@
       true
       (any f (cdr l)))))
 
+(defn each (f l)
+  (if (nil? l)
+    nil
+    (progn
+      (f (car l))
+      (each f (cdr l)))))
+
 ;; Converts a list of values to a list of index-value conses.
 (defn enumerate (l)
   (defn loop (l n acc)
@@ -90,13 +97,6 @@
       else        (loop (cdr l) r)))
   (loop l nil))
 
-(defn for-each (f l)
-  (if (nil? l)
-    nil
-    (progn
-      (f (car l))
-      (for-each f (cdr l)))))
-
 (defn foldl (f x xs)
   (if (nil? xs)
     x
@@ -107,12 +107,12 @@
     x
     (f x (foldr f (car xs) (cdr xs)))))
 
-(defn for-each (f l)
+(defn each (f l)
   (if (nil? l)
     nil
     (progn
       (f (car l))
-      (for-each f (cdr l)))))
+      (each f (cdr l)))))
 
 (defn lookup-by (f key assoc)
   (cond

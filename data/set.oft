@@ -15,12 +15,13 @@
   set.union
   set<-list)
 
-(import std/data/low-level/tree
+(import std/data/low-level/red-black-tree
   list<-tree
   tree<-list
   tree-contains?
-  tree-insert-many
-  tree-remove-many)
+  tree-delete-many
+  tree-empty
+  tree-insert-many)
 
 (defclass set
   (val eq?)
@@ -30,6 +31,7 @@
   (ctor ((tree ()) (eq? ()) (lt? ()))
     (<- eq? (or-default eq))
     (<- lt? (or-default less))
+    (<- tree (or-default tree-empty))
     (list eq? lt? tree))
 
   (defn contains? (value)
@@ -51,7 +53,7 @@
     (todo "TODO: set.intersection"))
 
   (defn remove (... xs)
-    (set (tree-remove-many xs tree eq? lt?) eq? lt?))
+    (set (tree-delete-many xs tree eq? lt?) eq? lt?))
 
   (defn union (... s)
     (todo "TODO: set.union")))

@@ -2,7 +2,7 @@
   get
   put)
 
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   todo)
 (import std/internal/primitives
   panic)

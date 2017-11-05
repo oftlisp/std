@@ -63,6 +63,7 @@
   cons?
   defclass
   defmethod
+  each
   else
   empty?
   enumerate
@@ -134,11 +135,11 @@
   .
   all
   any
+  each
   enumerate
   filter
   foldl
   foldr
-  for-each
   group-by
   lookup
   lookup-by
@@ -181,7 +182,7 @@
 (import std/internal/prelude/store
   get
   put)
-(import std/internal/prelude/utils
+(import std/internal/prelude/util
   any-shl?
   caar
   cadr
@@ -220,19 +221,20 @@
   reverse
   shl?
   split-at)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   ->
   <-
   case
   compile-time-eval
   cond
+  for-each
   let
   let1
   letrec
   todo
   unless
   when)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   concat
   id

@@ -1,4 +1,4 @@
-(module std/internal/prelude/utils
+(module std/internal/prelude/util
   any-shl?
   caar
   cadr
@@ -42,9 +42,9 @@
   else
   false
   nil)
-(import std/internal/prelude/utils/macros
+(import std/internal/prelude/util/macros
   cond)
-(import std/internal/prelude/utils/pseudoprims
+(import std/internal/prelude/util/pseudoprims
   append
   list
   not)
@@ -91,7 +91,7 @@
     (def name (apply concat-strings (cons "c" (cdr x))))
     (def name (symbol<-string name))
     (list 'defn name '(x) body))
-  
+
   ; The main loop.
   (defn list-helper (n)
     (if (= n 0)
@@ -134,7 +134,7 @@
   (fn (x) (if x x d)))
 
 ;; Reverses a list.
-;; 
+;;
 ;; Tail-recursive.
 (defn reverse (l)
   (defn helper (in out)
