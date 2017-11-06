@@ -151,7 +151,7 @@
 (import std/internal/prelude/logic
   and
   or)
-(import std/internal/prelude/match
+(import std/internal/prelude/patterns/match
   match)
 (import std/internal/prelude/math
   *

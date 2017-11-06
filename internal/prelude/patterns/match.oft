@@ -1,0 +1,43 @@
+(module std/internal/prelude/patterns/match
+  match)
+
+(import std/internal/prelude/patterns
+  pattern-bind
+  pattern-matches?
+  pattern-validate)
+(import std/internal/prelude/print
+  println)
+(import std/internal/prelude/quasiquote
+  quasiquote)
+(import std/internal/prelude/util
+  cadr
+  cddr)
+(import std/internal/prelude/util/macros
+  todo)
+(import std/internal/prelude/util/pseudoprims
+  append
+  length
+  list)
+(import std/internal/primitives
+  car
+  cons
+  gensym
+  panic)
+
+;; The pattern-matching macro.
+(defmacro match (input ... pats)
+  (def input-name (gensym))
+
+  (defn loop (l)
+    (def pat (car l))
+    (def expr (cadr l))
+    (pattern-validate pat)
+    `(if ,(pattern-matches? input-name pat)
+      (progn
+        ,@(pattern-bind input-name pat)
+        ,expr)
+      ,(loop (cddr l))))
+
+  `(progn
+    (def ,input-name ,input)
+    ,(loop pats)))

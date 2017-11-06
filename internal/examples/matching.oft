@@ -3,13 +3,18 @@
 
 (def counter (atomic-word 0))
 
-(defn test (in)
-  (def value (match in
-    x x))
-  (assert-eq value (atomic-word.inc counter)))
+(defn test (x)
+  (def tmp (match x
+    [2 x 4] x
+    (3 x 5) x
+    (x y)   (+ x y)
+    [x y]   (* x y)
+    _       0))
+  (assert-eq tmp (atomic-word.inc counter)))
 
 (defn main (args)
-  (test 0)
-  (test 1)
-  (test 2)
-  (test 3))
+  (test '(banana [] []))
+  (test [1 1])
+  (test '(1 1))
+  (test [2 3 4])
+  (test '(3 4 5)))

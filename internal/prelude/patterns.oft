@@ -1,0 +1,77 @@
+;; Helpers for parsing and doing things with patterns.
+;;
+;;   PATTERN = VAR
+;;           | (quote SYM)
+;;           | (PATTERN...)
+;;           | [PATTERN...]
+;;           | PRIM
+;;   VAR = _
+;;       | SYM
+;;
+;; Examples:
+;;
+;;   VALUE             PATTERN       BINDINGS
+;;   (1 2 3)           x             x = (1 2 3)
+;;   (1 2 3)           (1 x y)       x = 2, y = 3
+;;   (x y z)           (z y x)       x = z, y = y, z = x
+;;   (1 (2 1) (3 2 1)) (_ _ (x _ _)) x = 3
+;;   (1 (2 1) (3 2 1)) (_ _ x)       x = (3 2 1)
+(module std/internal/prelude/patterns
+  pattern-bind
+  pattern-matches?
+  pattern-validate)
+
+(import std/internal/prelude/constants
+  else
+  nil)
+(import std/internal/prelude/format
+  show)
+(import std/internal/prelude/fp
+  all)
+(import std/internal/prelude/util/macros
+  cond
+  todo)
+(import std/internal/prelude/util/pseudoprims
+  contains?
+  list?)
+(import std/internal/primitives
+  concat-strings
+  cons
+  eq
+  panic
+  string?
+  symbol?
+  vector?)
+
+;; Generates code that binds the variables for the pattern `pat` to the value
+;; stored in the variable `input-name`.
+(defn pattern-bind (input-name pat)
+  (todo "pattern-bind"))
+
+;; Generates code to determine if the value stored in the variable
+;; `input-name` matches the pattern `pat`.
+(defn pattern-matches? (input-name pat)
+  (todo "pattern-matches?"))
+
+;; Checks if a pattern is valid. Panics if the pattern is invalid.
+(defn pattern-validate (pat)
+  ; Returns a string error or a list of used variables.
+  (defn helper (pat used-variables)
+    (cond
+      (eq pat '_)
+        used-variables
+      (symbol? pat)
+        (if (contains? pat used-variables)
+          (concat-strings "Cannot bind to variable " (show pat) " twice")
+          (cons pat used-variables))
+      else
+        (concat-strings "Unknown pattern: " (show pat))))
+
+  (def tmp (helper pat nil))
+  (if (string? tmp)
+    (panic (concat-strings
+      "In pattern "
+      (show pat)
+      ": "
+      tmp))
+    nil))

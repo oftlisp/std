@@ -28,7 +28,9 @@
   cons?
   eq
   nil?
-  panic)
+  panic
+  vector?
+  vector.nth)
 
 ;; Reverses a list.
 (defn reverse (l)
@@ -101,7 +103,7 @@
       (last (cdr l)))))
 
 ;; Gets the nth value from a list.
-(defn nth (n l)
+(defn list.nth (n l)
   (defn loop (n l)
     (if (= n 0)
       (car l)
@@ -109,3 +111,9 @@
   (if (eq (<> n 0) '<)
     (panic "Can't get the list value at a negative index")
     (loop n l)))
+
+;; Gets the nth value from a list or vector.
+(defn nth (n l)
+  (if (vector? l)
+    (vector.nth n l)
+    (list.nth n l)))
