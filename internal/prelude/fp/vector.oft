@@ -1,0 +1,68 @@
+(module std/internal/prelude/fp/vector
+  vector.all
+  vector.any
+  vector.enumerate
+  vector.filter
+  vector.foldl
+  vector.foldr
+  vector.each
+  vector.group-by
+  vector.lookup
+  vector.lookup-by
+  vector.map
+  vector.skip
+  vector.sort
+  vector.sort-by
+  vector.take)
+
+(import std/internal/prelude/util/macros
+  todo)
+(import std/internal/primitives
+  panic
+  vector.length
+  vector.slice)
+
+(defn vector.all (f v)
+  (todo))
+
+(defn vector.any (f v)
+  (todo))
+
+(defn vector.each (f v)
+  (todo))
+
+(defn vector.group-by (f v)
+  (todo))
+
+(defn vector.enumerate (v)
+  (todo))
+
+(defn vector.filter (f v)
+  (todo))
+
+(defn vector.foldl (f x xs)
+  (todo))
+
+(defn vector.foldr (f x xs)
+  (todo))
+
+(defn vector.lookup-by (f key assoc)
+  (todo))
+
+(defn vector.lookup (key assoc)
+  (todo))
+
+(defn vector.map (f v)
+  (todo))
+
+(defn vector.skip (n v)
+  (todo))
+
+(defn vector.sort-by (f v)
+  (todo))
+
+(defn vector.sort (v)
+  (vector.sort-by (fn (x) x) v))
+
+(defn vector.take (n v)
+  (todo))

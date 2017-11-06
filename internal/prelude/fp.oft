@@ -17,39 +17,52 @@
   sort-by
   take)
 
-(import std/internal/prelude/constants
-  else
-  false
-  nil
-  true)
-(import std/internal/prelude/logic
-  and)
+(import std/internal/prelude/fp/list
+  list.all
+  list.any
+  list.enumerate
+  list.filter
+  list.foldl
+  list.foldr
+  list.each
+  list.group-by
+  list.lookup
+  list.lookup-by
+  list.map
+  list.skip
+  list.sort
+  list.sort-by
+  list.take)
+(import std/internal/prelude/fp/vector
+  vector.all
+  vector.any
+  vector.enumerate
+  vector.filter
+  vector.foldl
+  vector.foldr
+  vector.each
+  vector.group-by
+  vector.lookup
+  vector.lookup-by
+  vector.map
+  vector.skip
+  vector.sort
+  vector.sort-by
+  vector.take)
 (import std/internal/prelude/util
-  caar
-  cdar
-  leq
-  reverse
-  split-at)
-(import std/internal/prelude/util/macros
-  cond)
+  reverse)
 (import std/internal/prelude/util/pseudoprims
-  append
-  length
+  last
   list)
 (import std/internal/primitives
-  +/2
-  -/2
-  //2
-  =
-  <>
   car
   cdr
+  concat-strings
   cons
-  eq
-  gensym
   nil?
-  panic
-  show-primitive)
+  string<-symbol
+  symbol<-string
+  vector?)
 
 ;; Function composition.
 (defn . (... l)
@@ -60,145 +73,29 @@
       (loop ((car l) x) (cdr l))))
   (fn (x) (loop x funcs)))
 
-(defn all (f l)
-  (if (nil? l)
-    true
-    (if (f (car l))
-      (all f (cdr l))
-      false)))
+(defmacro deffpgeneric (name args)
+  (def last-name (last args))
+  (def list-op (symbol<-string
+    (concat-strings "list." (string<-symbol name))))
+  (def vector-op (symbol<-string
+    (concat-strings "vector." (string<-symbol name))))
+  (list 'defn name args
+    (list 'if (list 'vector? last-name)
+      (cons vector-op args)
+      (cons list-op args))))
 
-(defn any (f l)
-  (if (nil? l)
-    false
-    (if (f (car l))
-      true
-      (any f (cdr l)))))
-
-(defn each (f l)
-  (if (nil? l)
-    nil
-    (progn
-      (f (car l))
-      (each f (cdr l)))))
-
-;; Converts a list of values to a list of index-value conses.
-(defn enumerate (l)
-  (defn loop (l n acc)
-    (if (nil? l)
-      (reverse acc)
-      (loop (cdr l) (+/2 n 1) (cons (cons n (car l)) acc))))
-  (loop l 0 nil))
-
-(defn filter (f l)
-  (defn loop (l r)
-    (cond
-      (nil? l)    (reverse r)
-      (f (car l)) (loop (cdr l) (cons (car l) r))
-      else        (loop (cdr l) r)))
-  (loop l nil))
-
-(defn foldl (f x xs)
-  (if (nil? xs)
-    x
-    (foldl f (f x (car xs)) (cdr xs))))
-
-(defn foldr (f x xs)
-  (if (nil? xs)
-    x
-    (f x (foldr f (car xs) (cdr xs)))))
-
-(defn each (f l)
-  (if (nil? l)
-    nil
-    (progn
-      (f (car l))
-      (each f (cdr l)))))
-
-(defn lookup-by (f key assoc)
-  (cond
-    (nil? assoc)         nil
-    (f key (caar assoc)) (cdar assoc)
-    else                 (lookup-by f key (cdr assoc))))
-
-(defn lookup (key assoc)
-  (lookup-by eq key assoc))
-
-(defn map (f l)
-  (defn helper (in out)
-    (if (nil? in)
-      (reverse out)
-      (helper (cdr in) (cons (f (car in)) out))))
-  (helper l nil))
-
-;; Merges two list pairs of (data, sortingCriterion).
-;;
-;; Tail recursive.
-;;
-;; TODO Optimize this... Any sort of type-driven optimization (or a
-;; purity-based subexpression elimination optimization pass) would
-;; probably do it fine.
-(defn merge (l r)
-  (defn loop (l r acc)
-    (cond
-      (and (nil? l) (nil? r)) (reverse acc)
-      (nil? l)                (loop l (cdr r) (cons (car r) acc))
-      (nil? r)                (loop (cdr l) r (cons (car l) acc))
-      (leq (cdar l) (cdar r)) (loop (cdr l) r (cons (car l) acc))
-      else                    (loop l (cdr r) (cons (car r) acc))))
-  (loop l r nil))
-
-;; Skips n elements in a list.
-(defn skip (n lst)
-  (if (= n 0)
-    lst
-    (skip (-/2 n 1) (cdr lst))))
-
-;; Takes the first n elements in a list.
-(defn take (n lst)
-  (defn loop (n lst acc)
-    (if (= n 0)
-      (reverse acc)
-      (take (-/2 n 1) (cdr lst) (cons (car lst) acc))))
-    (loop n lst nil))
-
-;; Sorts lists by the given function.
-;;
-;; Uses O(log n) stack space.
-;;
-;; TODO: Try to optimize this, possibly make it a primitive? An optimized sort
-;; is probably worth it.
-(defn sort-by (f l)
-  (defn helper (lst len)
-    (if (eq (<> len 2) '<)
-      lst
-      (progn
-        (def tmp0 (//2 len 2))
-        (def tmp1 (//2 (+/2 len 1) 2))
-        (def tmp2 (split-at lst tmp0))
-        (def left (car tmp2))
-        (def right (cdr tmp2))
-        (merge (helper left tmp0)
-               (helper right tmp1)))))
-  (def tagged (map (fn (x) (cons x (f x))) l))
-  (map car (helper tagged (length tagged))))
-
-;; Sorts a list.
-(defn sort (l)
-  (sort-by (fn (x) x) l))
-
-(defn group-by (f l)
-  (defn loop (b as in bs)
-    (if (nil? in)
-      (cons (cons b as) bs)
-      (progn
-        (def hb (caar in))
-        (def ha (cdar in))
-        (def t (cdr in))
-        (if (eq b hb)
-          (loop b (cons ha as) t bs)
-          (loop hb (list ha) t (cons (cons b as) bs))))))
-  (def tagged (map (fn (x) (cons (f x) x)) l))
-  (def sorted (reverse (sort-by car tagged)))
-  (if (nil? sorted)
-    nil
-    (loop (caar sorted) nil sorted nil)))
+(deffpgeneric all (f l))
+(deffpgeneric any (f l))
+(deffpgeneric each (f l))
+(deffpgeneric enumerate (l))
+(deffpgeneric filter (f l))
+(deffpgeneric foldl (f x xs))
+(deffpgeneric foldr (f x xs))
+(deffpgeneric group-by (f l))
+(deffpgeneric lookup (x xs))
+(deffpgeneric lookup-by (f x xs))
+(deffpgeneric map (f l))
+(deffpgeneric skip (n l))
+(deffpgeneric sort (l))
+(deffpgeneric sort-by (f l))
+(deffpgeneric take (n l))

@@ -27,7 +27,12 @@
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
-  all)
+  foldl)
+(import std/internal/prelude/logic
+  and
+  or)
+(import std/internal/prelude/util
+  cddr)
 (import std/internal/prelude/util/macros
   cond
   todo)
@@ -35,9 +40,14 @@
   contains?
   list?)
 (import std/internal/primitives
+  byte?
+  car
+  cdr
   concat-strings
   cons
+  cons?
   eq
+  fixnum?
   panic
   string?
   symbol?
@@ -56,16 +66,28 @@
 ;; Checks if a pattern is valid. Panics if the pattern is invalid.
 (defn pattern-validate (pat)
   ; Returns a string error or a list of used variables.
-  (defn helper (pat used-variables)
-    (cond
-      (eq pat '_)
+  (defnrec
+    (helper (pat used-variables)
+      (cond
+        (eq pat '_)
+          used-variables
+        (symbol? pat)
+          (if (contains? pat used-variables)
+            (concat-strings "Cannot bind to variable " (show pat) " twice")
+            (cons pat used-variables))
+        (and (cons? pat)
+            (eq (car pat) 'quote)
+            (cons? (cdr pat))
+            (eq (cddr pat) nil))
+          used-variables
+        (or (list? pat) (vector? pat))
+          (foldl fold-helper used-variables pat)
+        else
+          (concat-strings "Unknown pattern: " (show pat))))
+    (fold-helper (used-variables pat)
+      (if (string? used-variables)
         used-variables
-      (symbol? pat)
-        (if (contains? pat used-variables)
-          (concat-strings "Cannot bind to variable " (show pat) " twice")
-          (cons pat used-variables))
-      else
-        (concat-strings "Unknown pattern: " (show pat))))
+        (helper pat used-variables))))
 
   (def tmp (helper pat nil))
   (if (string? tmp)
