@@ -1,8 +1,6 @@
 (module std/internal/examples/set
   main)
 
-(import std/data/low-level/red-black-tree/print-tree
-  print-tree)
 (import std/data/set
   list<-set
   set
@@ -16,6 +14,62 @@
   set.remove
   set.union
   set<-list)
+(import std/sync/atomic/id
+  generator)
+
+(def make-name
+  (generator \(concat-strings "node" (show $))))
+
+(defn name-for-color (color)
+  (case color
+    0  "red"
+    1  "black"
+    2  "black:gray"
+    -1 "gray"))
+
+(defn process (node-name tree)
+  (if (cons? tree)
+    (progn
+      (def left-name (make-name))
+      (def right-name (make-name))
+      (def left (process left-name (cadr tree)))
+      (def right (process right-name (cadddr tree)))
+      (cons
+        (cons
+          (list node-name (car tree) (caddr tree) "circle")
+          (append (car left) (car right)))
+        (append
+          (list
+            (cons node-name left-name)
+            (cons node-name right-name))
+          (cdr left)
+          (cdr right))))
+    (cons
+      (list (list node-name tree "\"\"" "rect, height = 0.25, width = 0.25"))
+      nil)))
+
+(defn print-tree (tree)
+  (def tmp (process (make-name) tree))
+
+  (println "strict digraph {")
+  (for-each node (car tmp)
+    (def node-id (car node))
+    (def color (name-for-color (cadr node)))
+    (def name (caddr node))
+    (def shape (cadddr node))
+    (print "\t" node-id " [")
+    (print "color = " color ", ")
+    (print "fontcolor = white, ")
+    (print "label = " name ", ")
+    (print "shape = " shape ", ")
+    (print "style = filled")
+    (println "];"))
+  (println)
+  (for-each edge (cdr tmp)
+    (def from (car edge))
+    (def to (cdr edge))
+    (println "\t" from " -> " to ";"))
+  (println "}"))
 
 (defn main (args)
   (def s (set<-list '(1 2 3 4 9 10 20)))
