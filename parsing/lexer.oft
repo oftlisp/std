@@ -1,0 +1,2 @@
+;; A lexer for the `std/parsing/cfg` and `std/parsing/peg` modules.
+(module std/parsing/lexer)

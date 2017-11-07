@@ -1,5 +1,9 @@
+;; A parser macro for parsing context-free languages. Note that since
+;; context-free languages may in general be ambiguous, parsers defined by this
+;; module return parse forests. If you want a parser for an unambiguous
+;; context-free language, you usually want `std/parsing/peg`.
 (module std/parsing/cfg
-  defsyntax)
+  defsyntax-cfg)
 
-(defmacro defsyntax (name ... clauses)
+(defmacro defsyntax-cfg (name ... clauses)
   (todo "TODO: defsyntax"))

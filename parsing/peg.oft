@@ -1,0 +1,7 @@
+;; A parser macro for parsing context-free languages, based on Parsing
+;; Expression Grammars.
+(module std/parsing/peg
+  defsyntax-peg)
+
+(defmacro defsyntax-peg (name ... clauses)
+  (todo "TODO: defsyntax"))

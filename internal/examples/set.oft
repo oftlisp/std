@@ -34,8 +34,11 @@
 (defn main (args)
   (def s (set<-list '(1 2 3 4 9 10 20)))
 
+  (println "=== === ===")
+  (println (cadddr s))
+  (println "=== === ===")
   (def s (set.remove s 2))
-  (-> s cadddr print-tree)
+  ;; (-> s cadddr print-tree)
 
   (def l (list<-set s))
-  (assert-eq l '(1 3)))
+  (assert-eq l '(1 3 4 9 10 20)))
