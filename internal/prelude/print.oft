@@ -26,10 +26,10 @@
 ;; Prints values without an ending newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn print (... vals)
-  (each print-one vals))
+  (each vals print-one))
 
 ;; Prints a value, followed by a newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn println (... vals)
-  (each print-one vals)
+  (each vals print-one)
   (write-string "\n"))

@@ -17,28 +17,11 @@
   set.union
   set<-list)
 
-;(defn main (args)
-;  (def initial '(1 4))
-;  (def s (set<-list initial))
-;  (def s (set.insert s 0 10 5 3))
-;
-;  (def l (list<-set s))
-;  (assert-eq l '(0 1 3 4 5 10))
-;
-;  (def s (set.remove s 2 3 4))
-;  (-> s cadddr print-tree)
-;
-;  (def l (list<-set s))
-;  (assert-eq l '(0 1 5 10)))
-
 (defn main (args)
   (def s (set<-list '(1 2 3 4 9 10 20)))
 
-  (println "=== === ===")
-  (println (cadddr s))
-  (println "=== === ===")
   (def s (set.remove s 2))
-  ;; (-> s cadddr print-tree)
+  (-> s cadddr print-tree)
 
   (def l (list<-set s))
   (assert-eq l '(1 3 4 9 10 20)))

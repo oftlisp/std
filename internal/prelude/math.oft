@@ -31,19 +31,19 @@
   mod/2)
 
 ;; Multiplies numbers.
-(defn * (n ... ns) (foldl */2 n ns))
+(defn * (n ... ns) (foldl ns */2 n))
 
 ;; Adds numbers.
-(defn + (n ... ns) (foldl +/2 n ns))
+(defn + (n ... ns) (foldl ns +/2 n))
 
 ;; Subtracts numbers.
-(defn - (n ... ns) (foldl -/2 n ns))
+(defn - (n ... ns) (foldl ns -/2 n))
 
 ;; Divides numbers.
-(defn / (n ... ns) (foldl //2 n ns))
+(defn / (n ... ns) (foldl ns //2 n))
 
 ;; Takes the modulus between numbers.
-(defn mod (n ... ns) (foldl mod/2 n ns))
+(defn mod (n ... ns) (foldl ns mod/2 n))
 
 ;; Numeric not-equal.
 (defn /= (a b) (not (= a b)))

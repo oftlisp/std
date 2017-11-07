@@ -22,47 +22,47 @@
   vector.length
   vector.slice)
 
-(defn vector.all (f v)
+(defn vector.all (v f)
   (todo))
 
-(defn vector.any (f v)
+(defn vector.any (v f)
   (todo))
 
-(defn vector.each (f v)
+(defn vector.each (v f)
   (todo))
 
-(defn vector.group-by (f v)
+(defn vector.group-by (v f)
   (todo))
 
 (defn vector.enumerate (v)
   (todo))
 
-(defn vector.filter (f v)
+(defn vector.filter (v f)
   (todo))
 
-(defn vector.foldl (f x xs)
+(defn vector.foldl (xs f x)
   (todo))
 
-(defn vector.foldr (f x xs)
+(defn vector.foldr (xs f x)
   (todo))
 
-(defn vector.lookup-by (f key assoc)
+(defn vector.lookup-by (v f key)
   (todo))
 
-(defn vector.lookup (key assoc)
+(defn vector.lookup (v key)
   (todo))
 
-(defn vector.map (f v)
+(defn vector.map (v f)
   (todo))
 
-(defn vector.skip (n v)
+(defn vector.skip (v n)
   (todo))
 
-(defn vector.sort-by (f v)
+(defn vector.sort-by (v f)
   (todo))
 
 (defn vector.sort (v)
   (vector.sort-by (fn (x) x) v))
 
-(defn vector.take (n v)
+(defn vector.take (v n)
   (todo))

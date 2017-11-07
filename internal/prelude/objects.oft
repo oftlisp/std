@@ -96,7 +96,7 @@
     (panic "Invalid defclass name"))
 
   ; Group the decls together.
-  (def decls (group-by car decls))
+  (def decls (group-by decls car))
   (unless (cons? decls)
     (panic (concat-strings
       "Invalid defclass "
@@ -105,8 +105,8 @@
 
   ; Check that the decls are all of known types.
   (def unknown-decl-types (filter
-    (fn (x) (not (contains? x '(ctor defn named-ctor val))))
-    (map car decls)))
+    (map decls car)
+    (fn (x) (not (contains? x '(ctor defn named-ctor val))))))
   (unless (nil? unknown-decl-types)
     (panic (concat-strings
       "Invalid defclass "
@@ -115,7 +115,7 @@
       (show unknown-decl-types))))
 
   ; Check for != 1 unnamed constructors.
-  (when (/= (length (lookup 'ctor decls)) 1)
+  (when (/= (length (lookup decls 'ctor)) 1)
     (panic (concat-strings
       "Invalid defclass "
       (string<-symbol class-name)
@@ -136,8 +136,8 @@
       (cons ',class-name
         (progn ,@body))))
   (def ctors (cons
-    (build-ctor (cons nil (cdar (lookup 'ctor decls))))
-    (map (. build-ctor cdr) (lookup 'named-ctor decls))))
+    (build-ctor (cons nil (cdar (lookup decls 'ctor))))
+    (map (lookup decls 'named-ctor) (. build-ctor cdr))))
 
   ; Add a function to check for class membership.
   (def is-class?-name (symbol<-string
@@ -155,7 +155,7 @@
         (reverse a)
         (loop (1+ n) (cdr l)
           (cons `(def ,(car l) (nth ,n this)) a))))
-    (def vals (map cadr (lookup 'val decls)))
+    (def vals (map (lookup decls 'val) cadr))
     (cons
       `(assert (,is-class?-name this))
       (loop 1 vals nil))))

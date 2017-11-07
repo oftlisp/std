@@ -33,5 +33,5 @@
       (list 'list (list 'quote value))))
   (cond
     (vector? value) (panic "TODO quasiquote a vector")
-    (list? value)   (cons 'append (map helper value))
+    (list? value)   (cons 'append (map value helper))
                     (panic "TODO quasiquote value")))

@@ -1,5 +1,6 @@
 (module std/internal/prelude/util/macros
   ->
+  ->>
   <-
   case
   compile-time-eval
@@ -47,6 +48,18 @@
 ;; (filter (map (get-list) 1+) (fn (x) (< x 0)))
 ;; ```
 (defmacro -> (fst ... rest)
+  (defn helper (x xs)
+    (if (nil? xs) x
+      (progn
+        (def hd (car xs))
+        (def tl (cdr xs))
+        (def next (if (cons? hd)
+          (cons (car hd) (cons x (cdr hd)))
+          (list hd x)))
+        (helper next tl))))
+  (helper fst rest))
+
+(defmacro ->> (fst ... rest)
   (defn helper (x xs)
     (if (nil? xs) x
       (progn
@@ -114,7 +127,7 @@
   (helper forms))
 
 (defmacro for-each (x-var xs-var ... body)
-  (list 'each (cons 'fn (cons (list x-var) body)) xs-var))
+  (list 'each xs-var (cons 'fn (cons (list x-var) body))))
 
 ;; A let-expression. Of the form:
 ;;

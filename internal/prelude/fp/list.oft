@@ -49,26 +49,26 @@
   panic
   show-primitive)
 
-(defn list.all (f l)
+(defn list.all (l f)
   (if (nil? l)
     true
     (if (f (car l))
-      (list.all f (cdr l))
+      (list.all (cdr l) f)
       false)))
 
-(defn list.any (f l)
+(defn list.any (l f)
   (if (nil? l)
     false
     (if (f (car l))
       true
-      (list.any f (cdr l)))))
+      (list.any (cdr l) f))))
 
-(defn list.each (f l)
+(defn list.each (l f)
   (if (nil? l)
     nil
     (progn
       (f (car l))
-      (list.each f (cdr l)))))
+      (list.each (cdr l) f))))
 
 ;; Converts a list of values to a list of index-value conses.
 (defn list.enumerate (l)
@@ -78,7 +78,7 @@
       (loop (cdr l) (+/2 n 1) (cons (cons n (car l)) acc))))
   (loop l 0 nil))
 
-(defn list.filter (f l)
+(defn list.filter (l f)
   (defn loop (l r)
     (cond
       (nil? l)    (reverse r)
@@ -86,26 +86,26 @@
       else        (loop (cdr l) r)))
   (loop l nil))
 
-(defn list.foldl (f x xs)
+(defn list.foldl (xs f x)
   (if (nil? xs)
     x
-    (list.foldl f (f x (car xs)) (cdr xs))))
+    (list.foldl (cdr xs) f (f x (car xs)))))
 
-(defn list.foldr (f x xs)
+(defn list.foldr (xs f x)
   (if (nil? xs)
     x
-    (f x (list.foldr f (car xs) (cdr xs)))))
+    (f x (list.foldr (cdr xs) f (car xs)))))
 
-(defn list.lookup-by (f key assoc)
+(defn list.lookup-by (assoc f key)
   (cond
     (nil? assoc)         nil
     (f key (caar assoc)) (cdar assoc)
-    else                 (list.lookup-by f key (cdr assoc))))
+    else                 (list.lookup-by (cdr assoc) f key)))
 
-(defn list.lookup (key assoc)
-  (list.lookup-by eq key assoc))
+(defn list.lookup (assoc key)
+  (list.lookup-by assoc eq key))
 
-(defn list.map (f l)
+(defn list.map (l f)
   (defn helper (in out)
     (if (nil? in)
       (reverse out)
@@ -130,18 +130,18 @@
   (loop l r nil))
 
 ;; Skips n elements in a list.
-(defn list.skip (n lst)
+(defn list.skip (l n)
   (if (= n 0)
-    lst
-    (list.skip (-/2 n 1) (cdr lst))))
+    l
+    (list.skip (cdr l) (-/2 n 1))))
 
 ;; Takes the first n elements in a list.
-(defn list.take (n lst)
-  (defn loop (n lst acc)
+(defn list.take (l n)
+  (defn loop (l n acc)
     (if (= n 0)
       (reverse acc)
-      (list.take (-/2 n 1) (cdr lst) (cons (car lst) acc))))
-    (loop n lst nil))
+      (loop (cdr l) (-/2 n 1) (cons (car l) acc))))
+    (loop l n nil))
 
 ;; Sorts lists by the given function.
 ;;
@@ -149,7 +149,7 @@
 ;;
 ;; TODO: Try to optimize this, possibly make it a primitive? An optimized sort
 ;; is probably worth it.
-(defn list.sort-by (f l)
+(defn list.sort-by (l f)
   (defn helper (lst len)
     (if (eq (<> len 2) '<)
       lst
@@ -161,14 +161,14 @@
         (def right (cdr tmp2))
         (merge (helper left tmp0)
                (helper right tmp1)))))
-  (def tagged (list.map (fn (x) (cons x (f x))) l))
-  (list.map car (helper tagged (length tagged))))
+  (def tagged (list.map l (fn (x) (cons x (f x)))))
+  (list.map (helper tagged (length tagged)) car))
 
 ;; Sorts a list.
 (defn list.sort (l)
-  (list.sort-by (fn (x) x) l))
+  (list.sort-by l (fn (x) x)))
 
-(defn list.group-by (f l)
+(defn list.group-by (l f)
   (defn loop (b as in bs)
     (if (nil? in)
       (cons (cons b as) bs)
@@ -179,8 +179,8 @@
         (if (eq b hb)
           (loop b (cons ha as) t bs)
           (loop hb (list ha) t (cons (cons b as) bs))))))
-  (def tagged (list.map (fn (x) (cons (f x) x)) l))
-  (def sorted (reverse (list.sort-by car tagged)))
+  (def tagged (list.map l (fn (x) (cons (f x) x))))
+  (def sorted (reverse (list.sort-by tagged car)))
   (if (nil? sorted)
     nil
     (loop (caar sorted) nil sorted nil)))
