@@ -2,10 +2,13 @@
 ;;
 ;; Regular expressions are of the form:
 ;;
-;;   REGEX ::= EMPTY
-;;          |  BRANCH
-;;          |  BRANCH "|" REGEX
-;;   BRANCH ::= PIECE+
+;;   REGEX ::= AND-BRANCHES
+;;          |  "^" AND-BRANCHES
+;;   AND-BRANCHES ::= AND-BRANCH
+;;                 |  AND-BRANCH "&" AND-BRANCHES
+;;   AND-BRANCH ::= OR-BRANCH
+;;               |  OR-BRANCH "|" AND-BRANCH
+;;   OR-BRANCH ::= PIECE*
 ;;   PIECE ::= ATOM QUALIFIER
 ;;   QUALIFIER ::= EMPTY | "+" | "*" | "?"
 ;;   ATOM ::= LITERAL-CHAR
@@ -13,8 +16,8 @@
 ;;         |  "."
 ;;         |  "(" REGEX ")"
 ;;   LITERAL-CHAR ::= any character not in SPECIAL-CHAR
-;;   SPECIAL-CHAR ::= "|" | "+" | "*" | "?" | "." | "(" | ")" | "[" | "]" | "&"
-;;                 |  "^"
+;;   SPECIAL-CHAR ::= "|" | "+" | "*" | "?" | "." | "("
+;;                 |  ")" | "[" | "]" | "&" |  "^"
 ;;
 ;; A regex AST looks like:
 ;;
@@ -42,8 +45,10 @@
         (eq regex 'none))
       regex
     (shl? regex 'and)
-      ; TODO
-      (cons 'and (map (cdr regex) simplify-regex))
+      (let1 asts (cdr regex)
+        (if (= (length regex) 2)
+          (simplify-regex (cadr regex))
+          (cons 'and (map (cdr regex) simplify-regex))))
     (shl? regex 'concat)
       (let1 asts (-> (cdr regex)
                      (map simplify-regex)
@@ -68,7 +73,7 @@
         (cond
           (nil? asts)
             'none
-          (= (length asts) 1)
+          (nil? (cdr asts))
             (simplify-regex (car asts))
           else
             (cons 'or (map asts simplify-regex))))
@@ -86,6 +91,14 @@
 ;; symbol `err` and whose tail is the error (which may be nil).
 (defn parse-regex (regex)
   (defnrec
+    (ast<-and-branch (cst)
+      (if (nil? cst)
+        'empty
+        (cons 'or (map cst ast<-or-branch))))
+    (ast<-and-branches (cst)
+      (if (nil? cst)
+        'empty
+        (cons 'and (map cst ast<-and-branch))))
     (ast<-atom (cst)
       (cond
         (eq cst 'any-char) 'any-char
@@ -93,7 +106,7 @@
         (nil? cst)         'empty
         (cons? cst)        (ast<-regex cst)
         else               (panic "Unknown atom: " cst)))
-    (ast<-branch (cst)
+    (ast<-or-branch (cst)
       (cons 'concat (map cst ast<-piece)))
     (ast<-piece (cst)
       ((ast<-qualifier (cdr cst)) (ast<-atom (car cst))))
@@ -105,9 +118,11 @@
         nil id
             (panic "Unknown qualifier: " cst)))
     (ast<-regex (cst)
-      (if (nil? cst)
-        'empty
-        (cons 'or (map cst ast<-branch)))))
+      (def inner (ast<-and-branches (cadr cst)))
+      (case (car cst)
+        'just inner
+        'not  (list 'not inner)
+              (panic "Unknown regex: " cst))))
   (def cst (parse-cst-regex regex))
   (cond
     (err? cst)
@@ -118,4 +133,4 @@
         simplify-regex
         ok)
     else
-      (err (concat-strings "Unparsed input: " (caddr cst)))))
+      (err (concat-strings "Unparsed input: " (show (caddr cst))))))

@@ -1,8 +1,11 @@
 ;; A regex parsing module based on Regular-expression derivatives re-examined.
 (module std/parsing/regex
+  accepts-empty-string?
   build-regex-matcher
   build-regex-matcher-for-ast
+  derivative
   must-build-regex-matcher
+  parse-regex
   regex-matches?)
 
 (import std/data/set

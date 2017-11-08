@@ -7,8 +7,10 @@
 ;; TODO: Once general monads are implemented, rewrite this to use the result
 ;; monad.
 (module std/lang/regex/parser
+  parse-cst-and-branch
+  parse-cst-and-branches
   parse-cst-atom
-  parse-cst-branch
+  parse-cst-or-branch
   parse-cst-literal-char
   parse-cst-piece
   parse-cst-qualifier
@@ -44,6 +46,18 @@
   (helper str nil))
 
 (defnrec
+  (parse-cst-and-branch (str)
+    (let1 fst (parse-cst-or-branch str)
+      (if (err? fst)
+        fst
+        (let1 rst (kleene parse-cst-rest-or-branches (caddr fst))
+          (ok (cons (cadr fst) (cadr rst)) (caddr rst))))))
+  (parse-cst-and-branches (str)
+    (let1 fst (parse-cst-and-branch str)
+      (if (err? fst)
+        fst
+        (let1 rst (kleene parse-cst-rest-and-branches (caddr fst))
+          (ok (cons (cadr fst) (cadr rst)) (caddr rst))))))
   (parse-cst-atom (str)
     (if (empty? str)
       (err "Unexpected EOF")
@@ -52,7 +66,7 @@
         "\\" (parse-cst-special-char (tail str))
         "("  (parse-cst-paren-regex (tail str))
              (parse-cst-literal-char str))))
-  (parse-cst-branch (str)
+  (parse-cst-or-branch (str)
     (def fst (parse-cst-piece str))
     (if (err? fst)
       (ok nil str)
@@ -89,16 +103,35 @@
           "?" (ok '? tl)
               (err (concat-strings "Unexpected character: `" ch "'"))))))
   (parse-cst-regex (str)
-    (let1 fst (parse-cst-branch str)
-      (if (err? fst)
-        fst
-        (let1 rst (kleene parse-cst-rest-branches (caddr fst))
-          (ok (cons (cadr fst) (cadr rst)) (caddr rst))))))
-  (parse-cst-rest-branches (str)
+    (cond
+      (empty? str)
+        (let1 re (parse-cst-and-branches str)
+          (if (err? re)
+            re
+            (ok (list 'just (cadr re)) (caddr re))))
+      (eq (head str) "^")
+        (let1 re (parse-cst-and-branches (tail str))
+          (if (err? re)
+            re
+            (ok (list 'not (cadr re)) (caddr re))))
+      else
+        (let1 re (parse-cst-and-branches str)
+          (if (err? re)
+            re
+            (ok (list 'just (cadr re)) (caddr re))))))
+  (parse-cst-rest-and-branches (str)
+    (cond
+      (empty? str)
+        (err "Unexpected EOF")
+      (eq (head str) "&")
+        (parse-cst-and-branch (tail str))
+      else
+        (err (concat-strings "Unexpected character: `" (head str) "'"))))
+  (parse-cst-rest-or-branches (str)
     (cond
       (empty? str)
         (err "Unexpected EOF")
       (eq (head str) "|")
-        (parse-cst-branch (tail str))
+        (parse-cst-or-branch (tail str))
       else
         (err (concat-strings "Unexpected character: `" (head str) "'")))))
