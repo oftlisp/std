@@ -1,0 +1,29 @@
+(module std/internal/prelude/result
+  err
+  err?
+  ok
+  ok?)
+
+(import std/internal/prelude/util
+  shl?)
+(import std/internal/prelude/util/macros
+  case)
+(import std/internal/prelude/util/pseudoprims
+  length)
+(import std/internal/primitives
+  car
+  cons
+  eq)
+
+(defn err (msg)
+  (cons 'err msg))
+
+(defn err? (x) (shl? x 'err))
+
+(defn ok (... vals)
+  (case (length vals)
+    0 'ok
+    1 (cons 'ok (car vals))
+      (cons 'ok vals)))
+
+(defn ok? (x) (shl? x 'ok))

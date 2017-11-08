@@ -5,6 +5,7 @@
   case
   compile-time-eval
   cond
+  debug-trace
   for-each
   let
   let1
@@ -14,7 +15,10 @@
   when)
 
 (import std/internal/prelude/constants
+  else
   nil)
+(import std/internal/prelude/logic
+  and)
 (import std/internal/prelude/util/pseudoprims
   append
   concat
@@ -26,12 +30,15 @@
   =
   car
   cdr
+  concat-strings
   cons
   cons?
-  debug
   gensym
   nil?
-  panic)
+  panic
+  string?
+  string<-symbol
+  symbol?)
 
 ;; The arrow macro of Clojure. An equivalent infix operator exists in Elixir,
 ;; and probably in other languages.
@@ -83,13 +90,6 @@
 (defmacro <- (var func)
   (list 'def var (list func var)))
 
-;; Panics with the string "TODO".
-(defmacro todo (... msg)
-  (def msg (if (nil? msg)
-    '("TODO")
-    (cons "TODO: " msg)))
-  (cons 'panic msg))
-
 (defmacro case (value ... forms)
   (def name (gensym))
   (defn helper (forms)
@@ -126,6 +126,36 @@
       ''()))
   (helper forms))
 
+; (defmacro debug-trace (expr)
+;   (def value (gensym))
+;   (list 'progn
+;     (list 'def value expr)
+;     (list 'println (list 'quote expr) ": " value)
+;     value))
+
+(defmacro debug-trace (expr)
+  (def value (gensym))
+  (list 'progn
+    (list 'def value expr)
+    (list 'println value)
+    value))
+
+;; Panics with the string "TODO".
+(defmacro todo (... msg)
+  (cons 'panic (cond
+    (nil? msg)
+      '("TODO")
+    (and (cons? msg) (nil? (cdr msg)))
+      (progn
+        (def name (gensym))
+        (list (list 'progn
+          (list 'def name (car msg))
+          (list 'if (list 'string? name)
+            (list 'concat-strings "TODO: " name)
+            name))))
+    else
+      (cons "TODO: " msg))))
+
 (defmacro for-each (x-var xs-var ... body)
   (list 'each xs-var (cons 'fn (cons (list x-var) body))))
 
@@ -159,14 +189,10 @@
 
 ;; A let-expression with a single binding. Of the form:
 ;;
-;;   (let1 (VAR EXPR)
+;;   (let1 VAR EXPR
 ;;     BODY-EXPRS...)
-(defmacro let1 (clause ... body)
-  (def var (car clause))
-  (def expr (car (cdr clause)))
-  (if (= (length clause) 2)
-    (cons 'progn (cons (list 'def var expr) body))
-    (panic "Invalid let1 clause")))
+(defmacro let1 (var expr ... body)
+  (cons 'progn (cons (list 'def var expr) body)))
 
 ;; A recursive let-expression. Of the form:
 ;;

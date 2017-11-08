@@ -144,7 +144,7 @@
   (helper l nil))
 
 ;; Checks if a value is a list headed by the given symbol.
-(defn shl? (sym value)
+(defn shl? (value sym)
   (if (cons? value)
     (eq (car value) sym)
     false))

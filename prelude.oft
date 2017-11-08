@@ -63,6 +63,7 @@
   contains?
   cons
   cons?
+  debug-trace
   defclass
   defmethod
   each
@@ -70,6 +71,8 @@
   empty?
   enumerate
   eq
+  err
+  err?
   exit
   false
   filter
@@ -85,6 +88,7 @@
   id
   init
   last
+  length
   leq
   less
   let
@@ -102,6 +106,8 @@
   nil?
   not
   nth
+  ok
+  ok?
   or
   or-default
   panic
@@ -115,6 +121,7 @@
   skip
   sort
   sort-by
+  string?
   symbol?
   tail
   take
@@ -181,6 +188,11 @@
   println)
 (import std/internal/prelude/quasiquote
   quasiquote)
+(import std/internal/prelude/result
+  err
+  err?
+  ok
+  ok?)
 (import std/internal/prelude/store
   get
   put)
@@ -230,6 +242,7 @@
   case
   compile-time-eval
   cond
+  debug-trace
   for-each
   let
   let1
@@ -244,6 +257,7 @@
   id
   init
   last
+  length
   list
   list?
   not
@@ -261,4 +275,5 @@
   make-vector
   nil?
   panic
+  string?
   symbol?)

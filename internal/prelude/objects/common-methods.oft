@@ -3,14 +3,50 @@
   head
   tail)
 
+(import std/internal/prelude/constants
+  else
+  false
+  true)
+(import std/internal/prelude/util/macros
+  cond)
+(import std/internal/prelude/util/pseudoprims
+  length)
 (import std/internal/primitives
-  panic)
+  =
+  car
+  cdr
+  cons?
+  eq
+  nil?
+  panic
+  string?
+  string.scalar-head
+  string.scalar-tail
+  vector?
+  vector.length
+  vector.nth
+  vector.slice)
 
 (defn empty? (x)
-  (panic "TODO: empty?"))
+  (cond
+    (cons? x)   false
+    (nil? x)    true
+    (string? x) (eq x "")
+    (vector? x) (= (length x) 0)
+    else        (panic "Invalid type in call to empty?")))
 
 (defn head (x)
-  (panic "TODO: head"))
+  (cond
+    (cons? x)   (car x)
+    (nil? x)    (panic "Can't take head of nil")
+    (string? x) (string.scalar-head x)
+    (vector? x) (vector.nth x 0)
+    else        (panic "Invalid type in call to head")))
 
 (defn tail (x)
-  (panic "TODO: tail"))
+  (cond
+    (cons? x)   (cdr x)
+    (nil? x)    (panic "Can't take tail of nil")
+    (string? x) (string.scalar-tail x)
+    (vector? x) (vector.slice x 1 (vector.length x))
+    else        (panic "Invalid type in call to tail")))

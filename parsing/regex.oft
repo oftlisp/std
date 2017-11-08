@@ -1,64 +1,83 @@
-;; A regex parsing module based on Thompson's NFA construction.
+;; A regex parsing module based on Regular-expression derivatives re-examined.
 (module std/parsing/regex
-  build-regex-nfa
-  build-string-nfa
   build-regex-matcher
-  matcher-from-nfa
+  build-regex-matcher-for-ast
+  must-build-regex-matcher
   regex-matches?)
 
 (import std/data/set
   set
   set.contains?
   set.flat-map)
+(import std/lang/regex
+  parse-regex
+  simplify-regex)
 
-;; A regex AST looks like:
-;;
-;;   AST ::= (... FRAG)
-;;   FRAG ::= CHAR-STRING
-;;         |  concat
-;;         |  alt
-;;         |  opt
-;;         |  rep0
-;;         |  rep1
+(defn accepts-empty-string? (regex)
+  (cond
+    (or (eq regex 'empty) (shl? regex 'kleene))
+      true
+    (or (string? regex) (eq regex 'any-char) (eq regex 'none))
+      false
+    (or (shl? regex 'and) (shl? regex 'concat))
+      (all (cdr regex) accepts-empty-string?)
+    (shl? regex 'not)
+      (not (accepts-empty-string? (cadr regex)))
+    (shl? regex 'or)
+      (any (cdr regex) accepts-empty-string?)
+    else
+      (panic "Invalid regex: " regex)))
 
-;; Parses a regex's string version to an AST.
-(defn parse-regex (regex)
-  (todo "TODO: parse a regex"))
-
-;; Builds an NFA from a regex AST.
-(defn build-regex-nfa (regex-ast)
-  (todo "TODO: build the nfa"))
-
-;; Builds an NFA that matches a literal string.
-(defn build-string-nfa (string)
-  (todo "TODO: build the nfa"))
-
-;; Builds a matcher predicate from an NFA.
-(defn matcher-from-nfa (nfa)
-  ; TODO: Use pattern-matching here.
-  (def transition (car nfa))
-  (def start-state (cadr nfa))
-  (def accept-states (caddr nfa))
-
-  (defn loop (input current-states)
-    (if (empty? input)
-      (any \(set.contains? $ accept-states) current-states)
-      (progn
-        (def next-states (set.flat-map
-          \(transition $ (head input))
-          current-states))
-        (loop (tail input) next-states))))
-
-  (fn (input)
-    (loop input (set start-state))))
+(defn derivative (regex char)
+  (<- regex simplify-regex)
+  (simplify-regex (cond
+    (empty? char)
+      regex
+    (> (length char) 1)
+      (-> regex
+        (derivative (head char))
+        (derivative (tail char)))
+    (or (eq regex 'empty) (eq regex 'none))
+      'none
+    (eq regex 'any-char)
+      'empty
+    (string? regex)
+      (if (eq regex char)
+        'empty
+        'none)
+    (shl? regex 'and)
+      (cons 'and (map (cdr regex) \(derivative $ char)))
+    (shl? regex 'concat)
+      (if (nil? (cdr regex))
+        'none
+        (cons 'or
+          (cons `(concat ,(derivative (cadr regex) char) ,@(cddr regex))
+            (if (accepts-empty-string? (cadr regex))
+             (cons (derivative (cons 'concat (cddr regex)) char) nil)
+             nil))))
+    (shl? regex 'kleene)
+      (list 'concat (derivative (cadr regex) char) regex)
+    (shl? regex 'not)
+      (list 'not (derivative (cadr regex) char))
+    (shl? regex 'or)
+      (cons 'or (map (cdr regex) \(derivative $ char)))
+    else
+      (panic "Invalid regex: " regex))))
 
 ;;; High-level interface
 
+(defn build-regex-matcher-for-ast (regex)
+  \(accepts-empty-string? (derivative regex $)))
+
 (defn build-regex-matcher (regex)
-  (-> regex
-    parse-regex
-    build-regex-nfa
-    matcher-from-nfa))
+  (<- regex parse-regex)
+  (if (ok? regex)
+    (ok (build-regex-matcher-for-ast (cdr regex)))
+    regex))
+
+(defn must-build-regex-matcher (regex)
+  (def tmp (build-regex-matcher regex))
+  ((if (ok? tmp) id panic) (cdr tmp)))
 
 (defn regex-matches? (regex string)
-  ((build-regex-matcher regex) string))
+  ((must-build-regex-matcher regex) string))

@@ -14,5 +14,5 @@
 (defmacro do (hd ... tl)
   (cond
     (nil? tl)       hd
-    (shl? 'mdef hd) `(>>= ,(caddr hd) (fn (,(cadr hd)) (do ,@tl)))
+    (shl? hd 'mdef) `(>>= ,(caddr hd) (fn (,(cadr hd)) (do ,@tl)))
     else            `(progn ,hd (do ,@tl))))

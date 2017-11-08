@@ -72,7 +72,7 @@
         (eq pat '_)
           used-variables
         (symbol? pat)
-          (if (contains? pat used-variables)
+          (if (contains? used-variables pat)
             (concat-strings "Cannot bind to variable " (show pat) " twice")
             (cons pat used-variables))
         (and (cons? pat)

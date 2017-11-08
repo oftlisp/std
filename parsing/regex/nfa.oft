@@ -1,0 +1,69 @@
+;; A regex parsing module based on Thompson's NFA construction.
+(module std/parsing/regex/nfa
+  build-regex-nfa
+  build-string-nfa
+  build-regex-matcher
+  matcher-from-nfa
+  regex-matches?)
+
+(import std/data/set
+  set
+  set.contains?
+  set.flat-map)
+
+;; A regex AST looks like:
+;;
+;;   AST ::= (... FRAG)
+;;   FRAG ::= CHAR-STRING
+;;         |  concat
+;;         |  alt
+;;         |  opt
+;;         |  rep0
+;;         |  rep1
+
+;; Parses a regex's string version to an AST.
+(defn parse-regex (regex)
+  (println "WARNING: not actually parsing the regex")
+  (defn helper (regex)
+    (if (empty? regex)
+      nil
+      (cons (head regex) (helper (tail regex)))))
+  (cons 'concat (helper regex)))
+
+;; Builds an NFA from a regex AST.
+(defn build-regex-nfa (regex-ast)
+  (todo "TODO: build the nfa"))
+
+;; Builds an NFA that matches a literal string.
+(defn build-string-nfa (string)
+  (todo "TODO: build the nfa"))
+
+;; Builds a matcher predicate from an NFA.
+(defn matcher-from-nfa (nfa)
+  ; TODO: Use pattern-matching here.
+  (def transition (car nfa))
+  (def start-state (cadr nfa))
+  (def accept-states (caddr nfa))
+
+  (defn loop (input current-states)
+    (if (empty? input)
+      (any \(set.contains? $ accept-states) current-states)
+      (progn
+        (def next-states (set.flat-map
+          \(transition $ (head input))
+          current-states))
+        (loop (tail input) next-states))))
+
+  (fn (input)
+    (loop input (set start-state))))
+
+;;; High-level interface
+
+(defn build-regex-matcher (regex)
+  (-> regex
+    parse-regex
+    build-regex-nfa
+    matcher-from-nfa))
+
+(defn regex-matches? (regex string)
+  ((build-regex-matcher regex) string))

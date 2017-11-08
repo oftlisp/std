@@ -1,0 +1,111 @@
+;; A parser for regular expressions.
+;;
+;; Regular expressions are of the form:
+;;
+;;   REGEX ::= EMPTY
+;;          |  BRANCH
+;;          |  BRANCH "|" REGEX
+;;   BRANCH ::= PIECE+
+;;   PIECE ::= ATOM QUALIFIER
+;;   QUALIFIER ::= EMPTY | "+" | "*" | "?"
+;;   ATOM ::= LITERAL-CHAR
+;;         |  "\" SPECIAL-CHAR
+;;         |  "."
+;;         |  "(" REGEX ")"
+;;   LITERAL-CHAR ::= any character not in SPECIAL-CHAR
+;;   SPECIAL-CHAR ::= "|" | "+" | "*" | "?" | "." | "(" | ")" | "[" | "]" | "&"
+;;                 |  "^"
+;;
+;; A regex AST looks like:
+;;
+;;   AST ::= CHAR-STRING
+;;        |  any-char | empty | none
+;;        |  (and AST...)
+;;        |  (concat AST...)
+;;        |  (kleene AST)
+;;        |  (not AST)
+;;        |  (or AST...)
+(module std/lang/regex
+  format-regex
+  parse-regex
+  simplify-regex)
+
+(import std/lang/regex/parser
+  parse-cst-regex)
+
+;; Simplifies a regex to an equivalent form.
+(defn simplify-regex (regex)
+  (cond
+    (or (string? regex)
+        (eq regex 'any-char)
+        (eq regex 'empty)
+        (eq regex 'none))
+      regex
+    (shl? regex 'and)
+      ; TODO
+      (cons 'and (map (cdr regex) simplify-regex))
+    (shl? regex 'concat)
+      (let1 asts (filter (cdr regex) \(not (eq $ 'empty)))
+        (cond
+          (nil? asts)
+            'empty
+          (contains? asts 'none)
+            'none
+          else
+            (cons 'concat (map asts simplify-regex))))
+    (shl? regex 'kleene)
+      ; TODO
+      (list 'kleene (simplify-regex (cadr regex)))
+    (shl? regex 'not)
+      ; TODO
+      (list 'not (simplify-regex (cadr regex)))
+    (shl? regex 'or)
+      (let1 asts (filter (cdr regex) \(not (eq $ 'none)))
+        (cond
+          (nil? asts)
+            'none
+          (= (length asts) 1)
+            (simplify-regex (car asts))
+          else
+            (cons 'or (map asts simplify-regex))))
+    else
+      (panic "Invalid regex: " regex)))
+
+;; Converts a regex AST to a string.
+(defn format-regex (regex)
+  (<- regex simplify-regex)
+  (todo "format-regex"))
+
+;; Parses a regex's string version, or one of its components, to an AST. If the
+;; regex is valid, returns a cons whose head is the symbol `ok` and whose tail
+;; is the AST. If the regex is not valid, returns a cons whose head is the
+;; symbol `err` and whose tail is the error (which may be nil).
+(defn parse-regex (regex)
+  (defnrec
+    (ast<-atom (cst)
+      (cond
+        (eq cst 'any-char) 'any-char
+        (string? cst)      cst
+        else               (panic "Unknown atom: " cst)))
+    (ast<-branch (cst)
+      (cons 'concat (map cst ast<-piece)))
+    (ast<-piece (cst)
+      ((ast<-qualifier (cdr cst)) (ast<-atom (car cst))))
+    (ast<-qualifier (cst)
+      (case cst
+        '?  \`(or ,$ empty)
+        '*  \`(kleene ,$)
+        '+  \`(concat ,$ (kleene ,$))
+        nil id
+            (panic "Unknown qualifier: " cst)))
+    (ast<-regex (cst)
+      (if (eq cst 'empty)
+        'empty
+        (cons 'or (map cst ast<-branch)))))
+  (def cst (parse-cst-regex regex))
+  (if (and (ok? cst) (eq (caddr cst) ""))
+    (-> (cadr cst)
+      ast<-regex
+      simplify-regex
+      ok)
+    cst))

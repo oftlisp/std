@@ -53,7 +53,6 @@
   concat-strings
   cons
   cons?
-  debug
   eq
   gensym
   nil?
@@ -106,7 +105,7 @@
   ; Check that the decls are all of known types.
   (def unknown-decl-types (filter
     (map decls car)
-    (fn (x) (not (contains? x '(ctor defn named-ctor val))))))
+    (fn (x) (not (contains? '(ctor defn named-ctor val) x)))))
   (unless (nil? unknown-decl-types)
     (panic (concat-strings
       "Invalid defclass "
@@ -154,7 +153,7 @@
       (if (nil? l)
         (reverse a)
         (loop (1+ n) (cdr l)
-          (cons `(def ,(car l) (nth ,n this)) a))))
+          (cons `(def ,(car l) (nth this ,n)) a))))
     (def vals (map (lookup decls 'val) cadr))
     (cons
       `(assert (,is-class?-name this))

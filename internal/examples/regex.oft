@@ -4,19 +4,25 @@
 (import std/parsing/regex
   regex-matches?)
 
-(defn test (regex string)
-  (println "regex = " regex)
-  (println "string = " string)
-  (if (regex-matches? regex string)
-    (println "Matched!")
-    (println "Did not match!"))
-  (println "======="))
+(defn test (regex string should-match)
+  (println "regex = `" regex "', string = `" string "'")
+  (assert-eq (regex-matches? regex string) should-match))
 
 (defn main (args)
-  (def tests '(
-    ("123" "123")
-    ("12+3" "13")
-    ("12+3" "123")
-    ("12+3" "12223")))
+  (def tests (list
+    (list "123" ""       false)
+    (list "123" "123"    true)
+    (list "12+3" "13"    false)
+    (list "12+3" "123"   true)
+    (list "12*3" "123"   true)
+    (list "12?3" "13"    true)
+    (list "12?3" "123"   true)
+    (list "12?3" "1223"  false)
+    (list "12+3" "12223" true)
+    (list "12|3" "12"    true)
+    (list "12|3" "3"     true)
+    (list ".2|4" "42"    true)
+    (list ".2|4" "2"     false)
+    (list ".2|4" "4"     true)))
   (for-each t tests
-    (test (car t) (cadr t))))
+    (test (car t) (cadr t) (caddr t))))
