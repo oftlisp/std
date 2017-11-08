@@ -45,14 +45,18 @@
       ; TODO
       (cons 'and (map (cdr regex) simplify-regex))
     (shl? regex 'concat)
-      (let1 asts (filter (cdr regex) \(not (eq $ 'empty)))
+      (let1 asts (-> (cdr regex)
+                     (map simplify-regex)
+                     (filter \(not (eq $ 'empty))))
         (cond
           (nil? asts)
             'empty
+          (nil? (cdr asts))
+            (car asts)
           (contains? asts 'none)
             'none
           else
-            (cons 'concat (map asts simplify-regex))))
+            (cons 'concat asts)))
     (shl? regex 'kleene)
       ; TODO
       (list 'kleene (simplify-regex (cadr regex)))
@@ -86,6 +90,8 @@
       (cond
         (eq cst 'any-char) 'any-char
         (string? cst)      cst
+        (nil? cst)         'empty
+        (cons? cst)        (ast<-regex cst)
         else               (panic "Unknown atom: " cst)))
     (ast<-branch (cst)
       (cons 'concat (map cst ast<-piece)))
@@ -99,13 +105,17 @@
         nil id
             (panic "Unknown qualifier: " cst)))
     (ast<-regex (cst)
-      (if (eq cst 'empty)
+      (if (nil? cst)
         'empty
         (cons 'or (map cst ast<-branch)))))
   (def cst (parse-cst-regex regex))
-  (if (and (ok? cst) (eq (caddr cst) ""))
-    (-> (cadr cst)
-      ast<-regex
-      simplify-regex
-      ok)
-    cst))
+  (cond
+    (err? cst)
+      cst
+    (eq (caddr cst) "")
+      (-> (cadr cst)
+        ast<-regex
+        simplify-regex
+        ok)
+    else
+      (err (concat-strings "Unparsed input: " (caddr cst)))))
