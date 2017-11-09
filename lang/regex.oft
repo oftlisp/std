@@ -13,11 +13,22 @@
 ;;   QUALIFIER ::= EMPTY | "+" | "*" | "?"
 ;;   ATOM ::= LITERAL-CHAR
 ;;         |  "\" SPECIAL-CHAR
+;;         |  CHAR-SET
 ;;         |  "."
 ;;         |  "(" REGEX ")"
 ;;   LITERAL-CHAR ::= any character not in SPECIAL-CHAR
 ;;   SPECIAL-CHAR ::= "|" | "+" | "*" | "?" | "." | "("
 ;;                 |  ")" | "[" | "]" | "&" | "^" | "!"
+;;   CHAR-SET ::= "[" CHAR-SET-GROUPS "]"
+;;             |  "[" "^" CHAR-SET-GROUPS "]"
+;;   CHAR-SET-GROUPS ::= EMPTY
+;;                    | CHAR-SET-GROUP CHAR-SET-GROUPS
+;;   CHAR-SET-GROUP ::= CHAR-SET-CHAR
+;;                   |  CHAR-SET-CHAR "-" CHAR-SET-CHAR
+;;   CHAR-SET-CHAR ::= CHAR-SET-LITERAL
+;;                  |  "\" CHAR-SET-SPECIAL
+;;   CHAR-SET-LITERAL ::= any character not in CHAR-SET-SPECIAL
+;;   CHAR-SET-SPECIAL ::= SPECIAL-CHAR | "-"
 ;;
 ;; A regex AST looks like:
 ;;

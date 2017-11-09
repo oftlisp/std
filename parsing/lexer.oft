@@ -53,8 +53,10 @@
 (defn preprocess-terminal (t)
   (defn regex-acceptor (regex)
     (<- regex build-regex-matcher)
-    (fn (input-str)
-      (todo 'regex-acceptor)))
+    (if (err? regex)
+      (err (concat-strings "Invalid regex: " (cdr regex)))
+      (ok (fn (input-str)
+        (todo 'regex-acceptor)))))
   (defn string-acceptor (str)
     (fn (input-str)
       (todo 'string-acceptor)))
@@ -67,13 +69,22 @@
     (and (shl? t 'simple) (function? (caddr t)))
       (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
     (and (shl? t 'regex) (symbol? (caddr t)))
-      (ok (regex-acceptor (cadr t)) (fn (x a) (cons (caddr t) a)))
+      (let1 a (regex-acceptor (cadr t))
+        (if (err? a)
+          a
+          (ok (cdr a) (fn (x a) (cons (caddr t) a)))))
     (and (shl? t 'regex) (function? (caddr t)))
-      (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
+      (let1 a (regex-acceptor (cadr t))
+        (if (err? a)
+          a
+          (ok (cdr a) (fn (x a) (cons ((caddr t) x) a)))))
     (and (shl? t 'ignore) (eq (cadr t) 'simple))
       (ok (string-acceptor (caddr t)) (fn (_ a) a))
     (and (shl? t 'ignore) (eq (cadr t) 'regex))
-      (ok (regex-acceptor (caddr t)) (fn (_ a) a))
+      (let1 a (regex-acceptor (caddr t))
+        (if (err? a)
+          a
+          (ok (cdr a) (fn (x a) a))))
     else
       (err (concat-strings "Invalid terminal: " (show t)))))
 
