@@ -1,2 +1,121 @@
 ;; A lexer for the `std/parsing/cfg` and `std/parsing/peg` modules.
-(module std/parsing/lexer)
+(module std/parsing/lexer
+  build-lexer
+  lex-one
+  lex-string
+  lexer-loop
+  preprocess-terminal)
+
+(import std/parsing/regex
+  accepts-empty-string?
+  build-regex-matcher
+  build-regex-matcher-for-ast
+  derivative
+  must-build-regex-matcher
+  parse-regex
+  regex-matches?)
+
+;; Lexes a single item from an input string, returning a result containing the
+;; a new input string and a new accumulator state.
+;;
+;; This function expects terminals specified as conses of acceptor functions
+;; and transformer functions. An acceptor function is run to determine if the
+;; terminal is present; if so, it returns a cons of the terminal's match string
+;; and the remainder of the input. If not, it returns nil. A transformer
+;; function is called with the matching string and the accumulator, and should
+;; return the new value of the accumulator.
+(defn lex-one (terminals str accum)
+  (defn helper (terminals)
+    (if (nil? terminals)
+      (err (concat-strings "No terminal matches input: " str))
+      (let1 m ((caar terminals) str)
+        (if (nil? m)
+          (todo 1)
+          (todo 2)))))
+  (helper terminals))
+
+;; Runs lex-one in a loop until failure or the string has been consumed.
+;; Returns a result of a list of matches, specified as for build-lexer.
+(defn lexer-loop (terminals str accum)
+  (if (empty? str)
+    (ok (reverse accum))
+    (let1 tmp (lex-one terminals str accum)
+      (cond
+        (err? tmp)
+          tmp
+        (empty? (cadr tmp))
+          (reverse (caddr tmp))
+        else
+          (lexer-loop terminals (cadr tmp) (caddr tmp))))))
+
+;; Converts a terminal as accepted by build-lexer to one that would be accepted
+;; by lex-one.
+(defn preprocess-terminal (t)
+  (defn regex-acceptor (regex)
+    (<- regex build-regex-matcher)
+    (fn (input-str)
+      (todo 'regex-acceptor)))
+  (defn string-acceptor (str)
+    (fn (input-str)
+      (todo 'string-acceptor)))
+
+  (cond
+    (and (shl? t 'simple) (nil? (cddr t)))
+      (ok (string-acceptor (cadr t)) cons)
+    (and (shl? t 'simple) (symbol? (caddr t)))
+      (ok (string-acceptor (cadr t)) (fn (x a) (cons (caddr t) a)))
+    (and (shl? t 'simple) (function? (caddr t)))
+      (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
+    (and (shl? t 'regex) (symbol? (caddr t)))
+      (ok (regex-acceptor (cadr t)) (fn (x a) (cons (caddr t) a)))
+    (and (shl? t 'regex) (function? (caddr t)))
+      (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
+    (and (shl? t 'ignore) (eq (cadr t) 'simple))
+      (ok (string-acceptor (caddr t)) (fn (_ a) a))
+    (and (shl? t 'ignore) (eq (cadr t) 'regex))
+      (ok (regex-acceptor (caddr t)) (fn (_ a) a))
+    else
+      (err (concat-strings "Invalid terminal: " (show t)))))
+
+;; Builds a lexer from a list of terminals, returning a result. A lexer is a
+;; function that accepts a string, and returns a result for the list of
+;; matches.
+;;
+;; Terminals are specified as:
+;;
+;;   TERMINAL-LIST ::= (TERMINAL...)
+;;   TERMINAL ::= (simple STRING)
+;;             |  (simple STRING FUNCTION)
+;;             |  (simple STRING NAME)
+;;             |  (regex REGEX FUNCTION)
+;;             |  (regex REGEX NAME)
+;;             |  (ignore simple STRING)
+;;             |  (ignore regex REGEX)
+;;
+;; The match for a simple terminal described only by a string or a regex
+;; terminal described only by a regex is just the matching string. The match
+;; for a named terminal is the name consed with the matching string. When a
+;; function is present, it is called with the matching string. Ignore terminals
+;; do not create matches.
+(defn build-lexer (terminals)
+  ; TODO: Rewrite this to use mapM.
+  (defn mapM-preprocess-terminal (terminals accum)
+    (if (nil? terminals)
+      (ok accum)
+      (let1 out (preprocess-terminal (car terminals))
+        (if (err? out)
+          out
+          (mapM-preprocess-terminal (cdr terminals) (cons (cdr out) accum))))))
+  (def r (mapM-preprocess-terminal terminals nil))
+  (if (err? r)
+    r
+    (let1 terminals (cdr r)
+      (ok (fn (str) (lexer-loop terminals str nil))))))
+
+;; Accepts a list of terminals and an input string, then returns a result for
+;; the list of matches. See build-lexer for the specification of terminals.
+(defn lex-string (terminals str)
+  (def lexer (build-lexer terminals))
+  (if (err? lexer)
+    lexer
+    ((cdr lexer) str)))

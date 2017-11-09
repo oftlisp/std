@@ -17,7 +17,7 @@
   parse-cst-regex
   parse-cst-special-char)
 
-(def special-chars (list "|" "+" "*" "?" "." "(" ")" "[" "]" "&" "^" "\\"))
+(def special-chars (list "|" "+" "*" "?" "." "(" ")" "[" "]" "&" "^" "!" "\\"))
 
 (defn parse-cst-literal-char (str)
   (if (empty? str)
@@ -109,7 +109,7 @@
           (if (err? re)
             re
             (ok (list 'just (cadr re)) (caddr re))))
-      (eq (head str) "^")
+      (eq (head str) "!")
         (let1 re (parse-cst-and-branches (tail str))
           (if (err? re)
             re

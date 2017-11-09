@@ -79,6 +79,7 @@
   foldl
   foldr
   for-each
+  function?
   gensym
   geq
   get
@@ -271,6 +272,7 @@
   cons
   cons?
   eq
+  function?
   gensym
   make-vector
   nil?

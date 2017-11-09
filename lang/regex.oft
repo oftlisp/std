@@ -3,7 +3,7 @@
 ;; Regular expressions are of the form:
 ;;
 ;;   REGEX ::= AND-BRANCHES
-;;          |  "^" AND-BRANCHES
+;;          |  "!" AND-BRANCHES
 ;;   AND-BRANCHES ::= AND-BRANCH
 ;;                 |  AND-BRANCH "&" AND-BRANCHES
 ;;   AND-BRANCH ::= OR-BRANCH
@@ -17,7 +17,7 @@
 ;;         |  "(" REGEX ")"
 ;;   LITERAL-CHAR ::= any character not in SPECIAL-CHAR
 ;;   SPECIAL-CHAR ::= "|" | "+" | "*" | "?" | "." | "("
-;;                 |  ")" | "[" | "]" | "&" |  "^"
+;;                 |  ")" | "[" | "]" | "&" | "^" | "!"
 ;;
 ;; A regex AST looks like:
 ;;
@@ -45,10 +45,14 @@
         (eq regex 'none))
       regex
     (shl? regex 'and)
-      (let1 asts (cdr regex)
-        (if (= (length regex) 2)
-          (simplify-regex (cadr regex))
-          (cons 'and (map (cdr regex) simplify-regex))))
+      (let1 asts (map (cdr regex) simplify-regex)
+        (cond
+          (nil? asts)
+            '(not none)
+          (nil? (cdr asts))
+            (car asts)
+          else
+            (cons 'and asts)))
     (shl? regex 'concat)
       (let1 asts (-> (cdr regex)
                      (map simplify-regex)
@@ -63,20 +67,26 @@
           else
             (cons 'concat asts)))
     (shl? regex 'kleene)
-      ; TODO
-      (list 'kleene (simplify-regex (cadr regex)))
+      (let1 ast (simplify-regex (cadr regex))
+        (if (shl? ast 'kleene)
+          (cadr ast)
+          (list 'kleene ast)))
     (shl? regex 'not)
-      ; TODO
-      (list 'not (simplify-regex (cadr regex)))
+      (let1 ast (simplify-regex (cadr regex))
+        (if (shl? ast 'not)
+          (cadr ast)
+          (list 'not ast)))
     (shl? regex 'or)
-      (let1 asts (filter (cdr regex) \(not (eq $ 'none)))
+      (let1 asts (-> (cdr regex)
+                     (map simplify-regex)
+                     (filter \(not (eq $ 'none))))
         (cond
           (nil? asts)
             'none
           (nil? (cdr asts))
-            (simplify-regex (car asts))
+            (car asts)
           else
-            (cons 'or (map asts simplify-regex))))
+            (cons 'or asts)))
     else
       (panic "Invalid regex: " regex)))
 
