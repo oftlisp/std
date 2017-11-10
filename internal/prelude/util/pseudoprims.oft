@@ -8,6 +8,7 @@
   last
   list
   list?
+  neq
   not
   nth
   reverse)
@@ -96,6 +97,10 @@
 ;; Logical not.
 (defn not (x)
   (if x false true))
+
+;; Checks for not-equals. Equivalent to (fn (x y) (not (eq x y))).
+(defn neq (x y)
+  (not (eq x y)))
 
 ;; Checks if a value is a list.
 (defn list? (value)

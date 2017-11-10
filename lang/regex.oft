@@ -35,6 +35,7 @@
 ;;   AST ::= CHAR-STRING
 ;;        |  any-char | empty | none
 ;;        |  (and AST...)
+;;        |  (char-set CHAR-STRING CHAR-STRING)
 ;;        |  (concat AST...)
 ;;        |  (kleene AST)
 ;;        |  (not AST)
@@ -53,7 +54,8 @@
     (or (string? regex)
         (eq regex 'any-char)
         (eq regex 'empty)
-        (eq regex 'none))
+        (eq regex 'none)
+        (shl? regex 'char-set))
       regex
     (shl? regex 'and)
       (let1 asts (map (cdr regex) simplify-regex)
@@ -125,10 +127,17 @@
         (eq cst 'any-char) 'any-char
         (string? cst)      cst
         (nil? cst)         'empty
-        (cons? cst)        (ast<-regex cst)
+        (shl? cst 'regex)  (ast<-regex (cadr cst))
+        (shl? cst 'just)   (cons 'or (map (cadr cst) ast<-char-set-group))
+        (shl? cst 'not)    (list 'not (ast<-atom (cons 'just (cdr cst))))
         else               (panic "Unknown atom: " cst)))
     (ast<-or-branch (cst)
       (cons 'concat (map cst ast<-piece)))
+    (ast<-char-set-group (cst)
+      (cond
+        (shl? cst 'range) (list 'char-set (cadr cst) (caddr cst))
+        (shl? cst 'one)   (cadr cst)
+        else              (panic "Unknown char-set-group: " cst)))
     (ast<-piece (cst)
       ((ast<-qualifier (cdr cst)) (ast<-atom (car cst))))
     (ast<-qualifier (cst)

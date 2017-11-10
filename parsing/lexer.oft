@@ -52,27 +52,28 @@
 ;; by lex-one.
 (defn preprocess-terminal (t)
   (defn regex-acceptor (regex)
-    (<- regex build-regex-matcher)
-    (if (err? regex)
-      (err (concat-strings "Invalid regex: " (cdr regex)))
-      (ok (fn (input-str)
-        (todo 'regex-acceptor)))))
+    (<- regex parse-regex)
+    (result.fmap (parse-regex regex)
+      \(fn (input-str)
+        (todo `(regex-acceptor ,$ ,input-str)))))
   (defn string-acceptor (str)
     (fn (input-str)
-      (todo 'string-acceptor)))
+      (if (todo)
+        (todo 'string-acceptor)
+        (todo))))
 
   (cond
     (and (shl? t 'simple) (nil? (cddr t)))
       (ok (string-acceptor (cadr t)) cons)
     (and (shl? t 'simple) (symbol? (caddr t)))
-      (ok (string-acceptor (cadr t)) (fn (x a) (cons (caddr t) a)))
+      (ok (string-acceptor (cadr t)) (fn (x a) (cons (cons (caddr t) x) a)))
     (and (shl? t 'simple) (function? (caddr t)))
       (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
     (and (shl? t 'regex) (symbol? (caddr t)))
       (let1 a (regex-acceptor (cadr t))
         (if (err? a)
           a
-          (ok (cdr a) (fn (x a) (cons (caddr t) a)))))
+          (ok (cdr a) (fn (x a) (cons (cons (caddr t) x) a)))))
     (and (shl? t 'regex) (function? (caddr t)))
       (let1 a (regex-acceptor (cadr t))
         (if (err? a)
@@ -84,7 +85,7 @@
       (let1 a (regex-acceptor (caddr t))
         (if (err? a)
           a
-          (ok (cdr a) (fn (x a) a))))
+          (ok (cdr a) (fn (_ a) a))))
     else
       (err (concat-strings "Invalid terminal: " (show t)))))
 

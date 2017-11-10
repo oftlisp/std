@@ -7,15 +7,7 @@
 ;; TODO: Once general monads are implemented, rewrite this to use the result
 ;; monad.
 (module std/lang/regex/parser
-  parse-cst-and-branch
-  parse-cst-and-branches
-  parse-cst-atom
-  parse-cst-or-branch
-  parse-cst-literal-char
-  parse-cst-piece
-  parse-cst-qualifier
-  parse-cst-regex
-  parse-cst-special-char)
+  parse-cst-regex)
 
 (def special-chars (list "|" "+" "*" "?" "." "(" ")" "[" "]" "&" "^" "!" "\\"))
 
@@ -35,13 +27,29 @@
         (ok ch (tail str))
         (err (concat-strings "Unexpected character: `" ch "'"))))))
 
+(defn parse-cst-char-set-literal (str)
+  (if (empty? str)
+    (err "Unexpected EOF")
+    (let1 ch (head str)
+      (if (contains? (cons "-" special-chars) ch)
+        (err (concat-strings "Unexpected character: `" ch "'"))
+        (ok ch (tail str))))))
+
+(defn parse-cst-char-set-special (str)
+  (if (empty? str)
+    (err "Unexpected EOF")
+    (let1 ch (head str)
+      (if (contains? (cons "-" special-chars) ch)
+        (ok ch (tail str))
+        (err (concat-strings "Unexpected character: `" ch "'"))))))
+
 (defn kleene (parser str)
   (defn helper (str accum)
     (if (empty? str)
-      (ok (reverse accum) "")
+      (cons (reverse accum) "")
       (let1 tmp (parser str)
         (if (err? tmp)
-          (ok (reverse accum) str)
+          (cons (reverse accum) str)
           (helper (caddr tmp) (cons (cadr tmp) accum))))))
   (helper str nil))
 
@@ -51,30 +59,68 @@
       (if (err? fst)
         fst
         (let1 rst (kleene parse-cst-rest-or-branches (caddr fst))
-          (ok (cons (cadr fst) (cadr rst)) (caddr rst))))))
+          (ok (cons (cadr fst) (car rst)) (cdr rst))))))
   (parse-cst-and-branches (str)
     (let1 fst (parse-cst-and-branch str)
       (if (err? fst)
         fst
         (let1 rst (kleene parse-cst-rest-and-branches (caddr fst))
-          (ok (cons (cadr fst) (cadr rst)) (caddr rst))))))
+          (ok (cons (cadr fst) (car rst)) (cdr rst))))))
   (parse-cst-atom (str)
     (if (empty? str)
       (err "Unexpected EOF")
       (case (head str)
         "."  (ok 'any-char (tail str))
         "\\" (parse-cst-special-char (tail str))
-        "("  (parse-cst-paren-regex (tail str))
+        "("  (result.fmap (parse-cst-paren-regex (tail str))
+               \(list (list 'regex (car $)) (cadr $)))
         "["  (parse-cst-char-set (tail str))
              (parse-cst-literal-char str))))
   (parse-cst-char-set (str)
-    (todo 'parse-cst-char-set))
+    (cond
+      (empty? str)
+        (err "Unexpected EOF")
+      (eq (head str) "^")
+        (result.fmap (parse-cst-char-set-groups (tail str))
+          \(list (list 'not (car $)) (cadr $)))
+      else
+        (result.fmap (parse-cst-char-set-groups str)
+          \(list (list 'just (car $)) (cadr $)))))
+  (parse-cst-char-set-char (str)
+    (cond
+      (empty? str)
+        (err "Unexpected EOF")
+      (eq (head str) "\\")
+        (parse-cst-char-set-special (tail str))
+      else
+        (parse-cst-char-set-literal str)))
+  (parse-cst-char-set-group (str)
+    (result.bind (parse-cst-char-set-char str)
+      \(let (fst (car $))
+            (str (cadr $))
+        (if (or (empty? str) (neq (head str) "-"))
+          (ok (list (list 'one fst) str))
+          (result.fmap (parse-cst-char-set-char (tail str))
+            \(let (snd (car $))
+                  (str (cadr $))
+              (list (list 'range fst snd) str)))))))
+  (parse-cst-char-set-groups (str)
+    (def tmp (kleene parse-cst-char-set-group str))
+    (def grps (car tmp))
+    (def str (cdr tmp))
+    (cond
+      (empty? str)
+        (err "Unexpected EOF")
+      (eq (head str) "]")
+        (ok grps (tail str))
+      else
+        (err (concat-strings "Unexpected character: `" (head str) "'"))))
   (parse-cst-or-branch (str)
     (def fst (parse-cst-piece str))
     (if (err? fst)
       (ok nil str)
       (let1 rst (kleene parse-cst-piece (caddr fst))
-        (ok (cons (cadr fst) (cadr rst)) (caddr rst)))))
+        (ok (cons (cadr fst) (car rst)) (cdr rst)))))
   (parse-cst-paren-regex (str)
     (def re (parse-cst-regex str))
     (if (err? re)

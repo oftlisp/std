@@ -20,7 +20,10 @@
   (cond
     (or (eq regex 'empty) (shl? regex 'kleene))
       true
-    (or (string? regex) (eq regex 'any-char) (eq regex 'none))
+    (or (string? regex)
+        (eq regex 'any-char)
+        (eq regex 'none)
+        (shl? regex 'char-set))
       false
     (or (shl? regex 'and) (shl? regex 'concat))
       (all (cdr regex) accepts-empty-string?)
@@ -30,6 +33,10 @@
       (any (cdr regex) accepts-empty-string?)
     else
       (panic "Invalid regex: " regex)))
+
+(defn char-set-contains? (char from to)
+  (<- char ord)
+  (and (<= (ord from) char) (< char (ord to))))
 
 (defn derivative (regex char)
   (<- regex simplify-regex)
@@ -50,6 +57,10 @@
         'none)
     (shl? regex 'and)
       (cons 'and (map (cdr regex) \(derivative $ char)))
+    (shl? regex 'char-set)
+      (if (char-set-contains? char (cadr regex) (caddr regex))
+        'empty
+        'none)
     (shl? regex 'concat)
       (if (nil? (cdr regex))
         'none

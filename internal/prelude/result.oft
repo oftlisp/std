@@ -2,18 +2,25 @@
   err
   err?
   ok
-  ok?)
+  ok?
+  result.ap
+  result.bind
+  result.fmap
+  result.pure)
 
 (import std/internal/prelude/util
   shl?)
 (import std/internal/prelude/util/macros
-  case)
+  case
+  todo)
 (import std/internal/prelude/util/pseudoprims
   length)
 (import std/internal/primitives
   car
+  cdr
   cons
-  eq)
+  eq
+  panic)
 
 (defn err (msg)
   (cons 'err msg))
@@ -27,3 +34,19 @@
       (cons 'ok vals)))
 
 (defn ok? (x) (shl? x 'ok))
+
+(defn result.ap (this f)
+  (todo))
+
+(defn result.fmap (this f)
+  (if (err? this)
+    this
+    (ok (f (cdr this)))))
+
+(defn result.bind (this f)
+  (if (err? this)
+    this
+    (f (cdr this))))
+
+(defn result.pure (x)
+  (ok x))
