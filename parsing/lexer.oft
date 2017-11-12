@@ -52,7 +52,6 @@
 ;; by lex-one.
 (defn preprocess-terminal (t)
   (defn regex-acceptor (regex)
-    (<- regex parse-regex)
     (result.fmap (parse-regex regex)
       \(fn (input-str)
         (todo `(regex-acceptor ,$ ,input-str)))))
