@@ -14,6 +14,6 @@
     (simple ")" close)
     (regex "[0-9]+" num)
     (regex "[a-zA-Z]+" var)
-    (ignore regex " *")))
+    (ignore regex " +")))
   (def input "(1 + 2 * 3 + 4) * 5")
   (println (lex-string terminals input)))

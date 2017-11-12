@@ -8,31 +8,41 @@
 
 (import std/parsing/regex
   accepts-empty-string?
-  build-regex-matcher
-  build-regex-matcher-for-ast
   derivative
-  must-build-regex-matcher
   parse-regex
-  regex-matches?)
+  regex-ast-from-string)
 
 ;; Lexes a single item from an input string, returning a result containing the
 ;; a new input string and a new accumulator state.
 ;;
-;; This function expects terminals specified as conses of acceptor functions
-;; and transformer functions. An acceptor function is run to determine if the
-;; terminal is present; if so, it returns a cons of the terminal's match string
-;; and the remainder of the input. If not, it returns nil. A transformer
-;; function is called with the matching string and the accumulator, and should
-;; return the new value of the accumulator.
+;; This function expects terminals specified as conses of regex NFAs and
+;; transformer functions. A transformer function is called with the matching
+;; string and the accumulator, and should return the new value of the
+;; accumulator.
 (defn lex-one (terminals str accum)
-  (defn helper (terminals)
-    (if (nil? terminals)
-      (err (concat-strings "No terminal matches input: " str))
-      (let1 m ((caar terminals) str)
-        (if (nil? m)
-          (todo 1)
-          (todo 2)))))
-  (helper terminals))
+  (defn check-acceptance (terminals n)
+    (cond
+      (nil? terminals)
+        nil
+      (accepts-empty-string? (caar terminals))
+        ((cadar terminals) (string.slice str 0 n) accum)
+      else
+        (check-acceptance (cdr terminals) n)))
+  (defn next (terminals n)
+    (def ch (string.slice str n (1+ n)))
+    (-> terminals
+      (map \(cons (derivative (car $) ch) (cdr $)))
+      (filter \(neq (car $) 'none))))
+
+  (def len (length str))
+  (defn helper (terminals n)
+    (aif (check-acceptance terminals n)
+      (ok (string.slice str n len) $)
+      (if (>= n len)
+        (err (concat-strings "No terminal matches input: " str))
+        (helper (next terminals n) (1+ n)))))
+
+  (helper terminals 0))
 
 ;; Runs lex-one in a loop until failure or the string has been consumed.
 ;; Returns a result of a list of matches, specified as for build-lexer.
@@ -51,37 +61,27 @@
 ;; Converts a terminal as accepted by build-lexer to one that would be accepted
 ;; by lex-one.
 (defn preprocess-terminal (t)
-  (defn regex-acceptor (regex)
-    (result.fmap (parse-regex regex)
-      \(fn (input-str)
-        (todo `(regex-acceptor ,$ ,input-str)))))
-  (defn string-acceptor (str)
-    (fn (input-str)
-      (if (todo)
-        (todo 'string-acceptor)
-        (todo))))
-
   (cond
     (and (shl? t 'simple) (nil? (cddr t)))
-      (ok (string-acceptor (cadr t)) cons)
+      (ok (regex-ast-from-string (cadr t)) cons)
     (and (shl? t 'simple) (symbol? (caddr t)))
-      (ok (string-acceptor (cadr t)) (fn (x a) (cons (cons (caddr t) x) a)))
+      (ok (regex-ast-from-string (cadr t)) (fn (x a) (cons (caddr t) a)))
     (and (shl? t 'simple) (function? (caddr t)))
-      (ok (string-acceptor (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
+      (ok (regex-ast-from-string (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
     (and (shl? t 'regex) (symbol? (caddr t)))
-      (let1 a (regex-acceptor (cadr t))
+      (let1 a (parse-regex (cadr t))
         (if (err? a)
           a
           (ok (cdr a) (fn (x a) (cons (cons (caddr t) x) a)))))
     (and (shl? t 'regex) (function? (caddr t)))
-      (let1 a (regex-acceptor (cadr t))
+      (let1 a (parse-regex (cadr t))
         (if (err? a)
           a
           (ok (cdr a) (fn (x a) (cons ((caddr t) x) a)))))
     (and (shl? t 'ignore) (eq (cadr t) 'simple))
-      (ok (string-acceptor (caddr t)) (fn (_ a) a))
+      (ok (regex-ast-from-string (caddr t)) (fn (_ a) a))
     (and (shl? t 'ignore) (eq (cadr t) 'regex))
-      (let1 a (regex-acceptor (caddr t))
+      (let1 a (parse-regex (caddr t))
         (if (err? a)
           a
           (ok (cdr a) (fn (_ a) a))))
@@ -91,6 +91,9 @@
 ;; Builds a lexer from a list of terminals, returning a result. A lexer is a
 ;; function that accepts a string, and returns a result for the list of
 ;; matches.
+;;
+;; Note that this does not use longest-match/maximal munch, but instead uses
+;; first-matching-terminal.
 ;;
 ;; Terminals are specified as:
 ;;
@@ -105,9 +108,9 @@
 ;;
 ;; The match for a simple terminal described only by a string or a regex
 ;; terminal described only by a regex is just the matching string. The match
-;; for a named terminal is the name consed with the matching string. When a
-;; function is present, it is called with the matching string. Ignore terminals
-;; do not create matches.
+;; for a named simple terminal is the name. The match for a named regex is the
+;; name consed with the matching string. When a function is present, it is
+;; called with the matching string. Ignore terminals do not create matches.
 (defn build-lexer (terminals)
   ; TODO: Rewrite this to use mapM.
   (defn mapM-preprocess-terminal (terminals accum)

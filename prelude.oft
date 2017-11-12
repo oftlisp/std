@@ -17,6 +17,7 @@
   0?
   1+
   1-
+  aif
   all
   and
   any-shl?
@@ -112,7 +113,6 @@
   ok?
   or
   or-default
-  ord
   panic
   print
   println
@@ -129,6 +129,9 @@
   sort
   sort-by
   string?
+  string.explode
+  string.ord
+  string.slice
   symbol?
   tail
   take
@@ -207,6 +210,8 @@
 (import std/internal/prelude/store
   get
   put)
+(import std/internal/prelude/strings
+  string.explode)
 (import std/internal/prelude/util
   any-shl?
   caar
@@ -250,6 +255,7 @@
   ->
   ->>
   <-
+  aif
   case
   compile-time-eval
   cond
@@ -287,7 +293,8 @@
   gensym
   make-vector
   nil?
-  ord
   panic
   string?
+  string.ord
+  string.slice
   symbol?)

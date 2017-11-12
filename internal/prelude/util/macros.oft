@@ -2,6 +2,7 @@
   ->
   ->>
   <-
+  aif
   case
   compile-time-eval
   cond
@@ -90,6 +91,11 @@
 (defmacro <- (var func)
   (list 'def var (list func var)))
 
+;; Anaphoric if, binding to the $ variable.
+(defmacro aif (c t e)
+  (list 'let1 '$ c
+    (list 'if '$ t e)))
+
 (defmacro case (value ... forms)
   (def name (gensym))
   (defn helper (forms)
@@ -125,13 +131,6 @@
         (car forms))
       ''()))
   (helper forms))
-
-; (defmacro debug-trace (expr)
-;   (def value (gensym))
-;   (list 'progn
-;     (list 'def value expr)
-;     (list 'println (list 'quote expr) ": " value)
-;     value))
 
 (defmacro debug-trace (expr)
   (def value (gensym))

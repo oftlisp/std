@@ -6,6 +6,7 @@
   derivative
   must-build-regex-matcher
   parse-regex
+  regex-ast-from-string
   regex-matches?)
 
 (import std/data/set
@@ -35,8 +36,8 @@
       (panic "Invalid regex: " regex)))
 
 (defn char-set-contains? (char from to)
-  (<- char ord)
-  (and (<= (ord from) char) (< char (ord to))))
+  (<- char string.ord)
+  (and (<= (string.ord from) char) (< char (string.ord to))))
 
 (defn derivative (regex char)
   (<- regex simplify-regex)
@@ -77,6 +78,10 @@
       (cons 'or (map (cdr regex) \(derivative $ char)))
     else
       (panic "Invalid regex: " regex))))
+
+;; Creates a regex AST for matching against a literal string.
+(defn regex-ast-from-string (str)
+  (cons 'concat (string.explode str)))
 
 ;;; High-level interface
 

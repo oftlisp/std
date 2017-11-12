@@ -1,0 +1,17 @@
+(module std/internal/prelude/strings
+  string.explode)
+
+(import std/internal/prelude/constants
+  nil)
+(import std/internal/prelude/objects/common-methods
+  empty?
+  head
+  tail)
+(import std/internal/primitives
+  cons)
+
+;; Explodes a string into a list of character strings.
+(defn string.explode (str)
+  (if (empty? str)
+    nil
+    (cons (head str) (string.explode (tail str)))))
