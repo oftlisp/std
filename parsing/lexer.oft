@@ -1,6 +1,7 @@
 ;; A lexer for the `std/parsing/cfg` and `std/parsing/peg` modules.
 (module std/parsing/lexer
   build-lexer
+  deflexer
   lex-one
   lex-string
   lexer-loop
@@ -54,7 +55,7 @@
         (err? tmp)
           tmp
         (empty? (cadr tmp))
-          (reverse (caddr tmp))
+          (ok (reverse (caddr tmp)))
         else
           (lexer-loop terminals (cadr tmp) (caddr tmp))))))
 
@@ -125,6 +126,10 @@
     r
     (let1 terminals (cdr r)
       (ok (fn (str) (lexer-loop terminals str nil))))))
+
+;; Creates a lexer, similar to build-lexer, but defined as a function.
+(defmacro deflexer (name ... terminals)
+  `(def ,name (must (build-lexer ',terminals))))
 
 ;; Accepts a list of terminals and an input string, then returns a result for
 ;; the list of matches. See build-lexer for the specification of terminals.

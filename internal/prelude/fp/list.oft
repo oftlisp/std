@@ -3,6 +3,7 @@
   list.any
   list.enumerate
   list.filter
+  list.flat-map
   list.foldl
   list.foldr
   list.each
@@ -13,7 +14,8 @@
   list.skip
   list.sort
   list.sort-by
-  list.take)
+  list.take
+  list.uniq)
 
 (import std/internal/prelude/constants
   else
@@ -32,6 +34,7 @@
   cond)
 (import std/internal/prelude/util/pseudoprims
   append
+  concat
   length
   list)
 (import std/internal/primitives
@@ -112,6 +115,10 @@
       (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))
 
+(defn list.flat-map (l f)
+  ; TODO: This could probably be made more efficient.
+  (concat (list.map l f)))
+
 ;; Merges two list pairs of (data, sortingCriterion).
 ;;
 ;; Tail recursive.
@@ -184,3 +191,8 @@
   (if (nil? sorted)
     nil
     (loop (caar sorted) nil sorted nil)))
+
+(defn list.uniq (l)
+  (defn helper (l a)
+    (panic 'todo))
+  (helper l nil))

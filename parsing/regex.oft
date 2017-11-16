@@ -95,8 +95,7 @@
     regex))
 
 (defn must-build-regex-matcher (regex)
-  (def tmp (build-regex-matcher regex))
-  ((if (ok? tmp) id panic) (cdr tmp)))
+  (must (build-regex-matcher regex)))
 
 (defn regex-matches? (regex string)
   ((must-build-regex-matcher regex) string))

@@ -6,4 +6,4 @@
   defsyntax-cfg)
 
 (defmacro defsyntax-cfg (name ... clauses)
-  (todo "TODO: defsyntax"))
+  (todo "defsyntax-cfg"))

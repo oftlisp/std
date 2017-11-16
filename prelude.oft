@@ -15,6 +15,7 @@
   >
   >=
   0?
+  0-
   1+
   1-
   aif
@@ -26,6 +27,7 @@
   apply
   assert
   assert-eq
+  build-vector
   caaaar
   caaadr
   caaar
@@ -67,6 +69,8 @@
   debug-trace
   defclass
   defmethod
+  display
+  displayln
   each
   else
   empty?
@@ -77,6 +81,7 @@
   exit
   false
   filter
+  flat-map
   foldl
   foldr
   for-each
@@ -98,12 +103,14 @@
   letrec
   list
   list?
+  list<-vector
   lookup
   lookup-by
   make-vector
   map
   match
   mod
+  must
   neq
   nil
   nil?
@@ -137,7 +144,10 @@
   take
   todo
   true
+  uniq
+  unique
   unless
+  vector?
   when)
 
 (import std/internal/prelude/assert
@@ -154,11 +164,12 @@
   .
   all
   any
-  each
   enumerate
   filter
+  flat-map
   foldl
   foldr
+  each
   group-by
   lookup
   lookup-by
@@ -166,7 +177,9 @@
   skip
   sort
   sort-by
-  take)
+  take
+  uniq
+  unique)
 (import std/internal/prelude/logic
   and
   or)
@@ -183,6 +196,7 @@
   >
   >=
   0?
+  0-
   1+
   1-
   mod)
@@ -194,6 +208,8 @@
   head
   tail)
 (import std/internal/prelude/print
+  display
+  displayln
   print
   println)
 (import std/internal/prelude/quasiquote
@@ -201,6 +217,7 @@
 (import std/internal/prelude/result
   err
   err?
+  must
   ok
   ok?
   result.ap
@@ -247,6 +264,7 @@
   greater
   leq
   less
+  make-vector
   or-default
   reverse
   shl?
@@ -283,6 +301,7 @@
 (import std/internal/primitives
   =
   apply
+  build-vector
   car
   cdr
   concat-strings
@@ -291,10 +310,11 @@
   eq
   function?
   gensym
-  make-vector
+  list<-vector
   nil?
   panic
   string?
   string.ord
   string.slice
-  symbol?)
+  symbol?
+  vector?)

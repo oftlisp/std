@@ -1,6 +1,7 @@
 (module std/internal/prelude/result
   err
   err?
+  must
   ok
   ok?
   result.ap
@@ -14,8 +15,10 @@
   case
   todo)
 (import std/internal/prelude/util/pseudoprims
+  id
   length)
 (import std/internal/primitives
+  =
   car
   cdr
   cons
@@ -28,12 +31,14 @@
 (defn err? (x) (shl? x 'err))
 
 (defn ok (... vals)
-  (case (length vals)
-    0 'ok
-    1 (cons 'ok (car vals))
-      (cons 'ok vals)))
+  (if (= (length vals) 1)
+    (cons 'ok (car vals))
+    (cons 'ok vals)))
 
 (defn ok? (x) (shl? x 'ok))
+
+(defn must (x)
+  ((if (ok? x) id panic) (cdr x)))
 
 (defn result.ap (this f)
   (todo))

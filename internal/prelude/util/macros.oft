@@ -136,7 +136,7 @@
   (def value (gensym))
   (list 'progn
     (list 'def value expr)
-    (list 'println value)
+    (list 'displayln value)
     value))
 
 ;; Panics with the string "TODO".

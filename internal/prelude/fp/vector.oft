@@ -3,6 +3,7 @@
   vector.any
   vector.enumerate
   vector.filter
+  vector.flat-map
   vector.foldl
   vector.foldr
   vector.each
@@ -13,23 +14,49 @@
   vector.skip
   vector.sort
   vector.sort-by
-  vector.take)
+  vector.take
+  vector.uniq)
 
+(import std/internal/prelude/constants
+  nil
+  true)
 (import std/internal/prelude/util/macros
   todo)
 (import std/internal/primitives
+  <>
+  +/2
+  eq
   panic
   vector.length
+  vector.nth
   vector.slice)
 
 (defn vector.all (v f)
-  (todo))
+  (defn helper (i)
+    (if (eq (<> i (vector.length v)) '<)
+      (if (f (vector.nth v i))
+        (helper (+/2 i 1))
+        nil)
+      true))
+  (helper 0))
 
 (defn vector.any (v f)
-  (todo))
+  (defn helper (i)
+    (if (eq (<> i (vector.length v)) '<)
+      (if (f (vector.nth v i))
+        true
+        (helper (+/2 i 1)))
+      nil))
+  (helper 0))
 
 (defn vector.each (v f)
-  (todo))
+  (defn helper (i)
+    (if (eq (<> i (vector.length v)) '<)
+      (progn
+        (f (vector.nth v i))
+        (helper (+/2 i 1)))
+      nil))
+  (helper 0))
 
 (defn vector.group-by (v f)
   (todo))
@@ -38,6 +65,9 @@
   (todo))
 
 (defn vector.filter (v f)
+  (todo))
+
+(defn vector.flat-map (v f)
   (todo))
 
 (defn vector.foldl (xs f x)
@@ -65,4 +95,7 @@
   (vector.sort-by (fn (x) x) v))
 
 (defn vector.take (v n)
+  (todo))
+
+(defn vector.uniq (v)
   (todo))

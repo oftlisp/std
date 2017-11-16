@@ -5,6 +5,7 @@
   any
   enumerate
   filter
+  flat-map
   foldl
   foldr
   each
@@ -15,13 +16,16 @@
   skip
   sort
   sort-by
-  take)
+  take
+  uniq
+  unique)
 
 (import std/internal/prelude/fp/list
   list.all
   list.any
   list.enumerate
   list.filter
+  list.flat-map
   list.foldl
   list.foldr
   list.each
@@ -32,12 +36,14 @@
   list.skip
   list.sort
   list.sort-by
-  list.take)
+  list.take
+  list.uniq)
 (import std/internal/prelude/fp/vector
   vector.all
   vector.any
   vector.enumerate
   vector.filter
+  vector.flat-map
   vector.foldl
   vector.foldr
   vector.each
@@ -48,7 +54,8 @@
   vector.skip
   vector.sort
   vector.sort-by
-  vector.take)
+  vector.take
+  vector.uniq)
 (import std/internal/prelude/util
   reverse)
 (import std/internal/prelude/util/pseudoprims
@@ -74,13 +81,12 @@
   (fn (x) (loop x funcs)))
 
 (defmacro deffpgeneric (name args)
-  (def last-name (last args))
   (def list-op (symbol<-string
     (concat-strings "list." (string<-symbol name))))
   (def vector-op (symbol<-string
     (concat-strings "vector." (string<-symbol name))))
   (list 'defn name args
-    (list 'if (list 'vector? last-name)
+    (list 'if (list 'vector? (car args))
       (cons vector-op args)
       (cons list-op args))))
 
@@ -89,6 +95,7 @@
 (deffpgeneric each (l f))
 (deffpgeneric enumerate (l))
 (deffpgeneric filter (l f))
+(deffpgeneric flat-map (l f))
 (deffpgeneric foldl (xs f x))
 (deffpgeneric foldr (xs f x))
 (deffpgeneric group-by (l f))
@@ -99,3 +106,7 @@
 (deffpgeneric sort (l))
 (deffpgeneric sort-by (l f))
 (deffpgeneric take (l n))
+(deffpgeneric uniq (l))
+
+(defn unique (l)
+  (uniq (sort l)))

@@ -33,6 +33,7 @@
   greater
   leq
   less
+  make-vector
   or-default
   reverse
   shl?
@@ -52,6 +53,7 @@
   -/2
   =
   apply
+  build-vector
   byte<-fixnum
   byte?
   car
@@ -128,6 +130,9 @@
 
 ;; Checks if a value is less than or equal to another.
 (defn leq (a b) (not (greater a b)))
+
+(defn make-vector (n)
+  (build-vector n (fn (x) x)))
 
 ;; A helper, mainly for the `<-` macro.
 (defn or-default (d)

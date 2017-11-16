@@ -1,21 +1,9 @@
 (module std/internal/prelude/format
   show)
 
-(import std/internal/prelude/constants
-  else)
-(import std/internal/prelude/util/macros
-  cond
-  todo)
 (import std/internal/primitives
-  cdr
-  cons
-  list<-vector
-  panic
-  show-primitive
-  string?)
+  show-primitive)
 
 ;; TODO: This should support objects in some capacity.
 (defn show (value)
-  (if (string? value)
-    value
-    (show-primitive value)))
+  (show-primitive value))

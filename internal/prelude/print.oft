@@ -1,7 +1,7 @@
 ;; The print/display family of functions.
 (module std/internal/prelude/print
-  ; display
-  ; displayln
+  display
+  displayln
   print
   println
   write-string)
@@ -14,14 +14,25 @@
   each)
 (import std/internal/primitives
   bytes<-string
+  string?
   write-bytes)
 
 ;; Writes a string to stdout.
 (defn write-string (str)
   (write-bytes (bytes<-string str)))
 
-(defn print-one (val)
-  (write-string (show val)))
+(defn display-one (x)
+  (write-string (show x)))
+
+(defn print-one (x)
+  (write-string (if (string? x) x (show x))))
+
+(defn display (... vals)
+  (each vals display-one))
+
+(defn displayln (... vals)
+  (each vals display-one)
+  (write-string "\n"))
 
 ;; Prints values without an ending newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.

@@ -1,19 +1,64 @@
 (module std/internal/examples/parse
-  main)
+  main
+  math-lexer
+  peg-math-parser)
 
 (import std/parsing/lexer
+  build-lexer
+  deflexer
   lex-string)
+(import std/parsing/peg
+  defsyntax-peg)
+
+(defsyntax-peg peg-math-parser
+  (root spacing add-expr end-of-file)
+  (add-expr mul-expr PLUS add-expr)
+  (add-expr mul-expr)
+  (mul-expr pri-expr TIMES mul-expr)
+  (mul-expr pri-expr)
+  (pri-expr OPEN add-expr CLOSE)
+  (pri-expr decimal)
+
+  (decimal (regex "[0-9]+") spacing)
+
+  (PLUS "+" spacing)
+  (TIMES "*" spacing)
+  (OPEN "(" spacing)
+  (CLOSE ")" spacing)
+
+  (spacing     (* (choose space comment)))
+  (comment     "#" (* [(not end-of-line) .]) end-of-line)
+  (space       (choose " " "\t" end-of-line))
+  (end-of-line (choose "\r\n" "\n" "\r"))
+  (end-of-file (not .)))
+
+(def input "(1 + 2 * 3 + 4) * 5")
+
+(def tokens (list
+  'open
+  (cons 'num "1")
+  '+
+  (cons 'num "2")
+  '*
+  (cons 'num "3")
+  '+
+  (cons 'num "4")
+  'close
+  '*
+  (cons 'num "5")))
+
+(def peg-parse-tree 'todo)
+
+(deflexer math-lexer
+  (simple "+" +)
+  (simple "*" *)
+  (simple "(" open)
+  (simple ")" close)
+  (regex "[0-9]+" num)
+  (regex "[a-zA-Z]+" var)
+  (ignore regex " +"))
 
 (defn main (args)
-  (def terminals '(
-    (simple "+" +)
-    (simple "-" -)
-    (simple "*" *)
-    (simple "/" /)
-    (simple "(" open)
-    (simple ")" close)
-    (regex "[0-9]+" num)
-    (regex "[a-zA-Z]+" var)
-    (ignore regex " +")))
-  (def input "(1 + 2 * 3 + 4) * 5")
-  (println (lex-string terminals input)))
+  (assert-eq (math-lexer input) (ok tokens))
+  (assert-eq (peg-math-parser input) (ok peg-parse-tree))
+  (println "All tests passed"))

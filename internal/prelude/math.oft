@@ -10,6 +10,7 @@
   >
   >=
   0?
+  0-
   1+
   1-
   mod)
@@ -50,6 +51,9 @@
 
 ;; Checks if a value is numerically equal to zero.
 (defn 0? (n) (= n 0))
+
+;; Negates a number.
+(defn 0- (n) (- 0 n))
 
 ;; Adds one to the given number.
 (defn 1+ (n) (+ n 1))
