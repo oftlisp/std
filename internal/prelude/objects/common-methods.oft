@@ -1,6 +1,7 @@
 (module std/internal/prelude/objects/common-methods
   empty?
   head
+  slice
   tail)
 
 (import std/internal/prelude/constants
@@ -8,7 +9,8 @@
   false
   true)
 (import std/internal/prelude/util/macros
-  cond)
+  cond
+  todo)
 (import std/internal/prelude/util/pseudoprims
   length)
 (import std/internal/primitives
@@ -22,6 +24,7 @@
   string?
   string.scalar-head
   string.scalar-tail
+  string.slice
   vector?
   vector.length
   vector.nth
@@ -42,6 +45,14 @@
     (string? x) (string.scalar-head x)
     (vector? x) (vector.nth x 0)
     else        (panic "Invalid type in call to head")))
+
+(defn slice (x s e)
+  (cond
+    (cons? x)   (todo)
+    (nil? x)    (todo)
+    (string? x) (string.slice x s e)
+    (vector? x) (vector.slice x s e)
+    else        (panic "Invalid type in call to slice")))
 
 (defn tail (x)
   (cond

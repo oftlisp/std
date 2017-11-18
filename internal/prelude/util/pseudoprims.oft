@@ -11,7 +11,8 @@
   neq
   not
   nth
-  reverse)
+  reverse
+  vector)
 
 (import std/internal/prelude/constants
   false
@@ -33,6 +34,7 @@
   string?
   string.scalar-tail
   vector?
+  vector<-list
   vector.length
   vector.nth)
 
@@ -93,6 +95,9 @@
 
 ;; Constructs a list.
 (defn list (... xs) xs)
+
+;; Constructs a vector.
+(defn vector (... xs) (vector<-list xs))
 
 ;; Logical not.
 (defn not (x)

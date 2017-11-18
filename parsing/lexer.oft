@@ -26,11 +26,11 @@
       (nil? terminals)
         nil
       (accepts-empty-string? (caar terminals))
-        ((cadar terminals) (string.slice str 0 n) accum)
+        ((cadar terminals) (slice str 0 n) accum)
       else
         (check-acceptance (cdr terminals) n)))
   (defn next (terminals n)
-    (def ch (string.slice str n (1+ n)))
+    (def ch (slice str n (1+ n)))
     (-> terminals
       (map \(cons (derivative (car $) ch) (cdr $)))
       (filter \(neq (car $) 'none))))
@@ -38,7 +38,7 @@
   (def len (length str))
   (defn helper (terminals n)
     (aif (check-acceptance terminals n)
-      (ok (string.slice str n len) $)
+      (ok (slice str n len) $)
       (if (>= n len)
         (err (concat-strings "No terminal matches input: " str))
         (helper (next terminals n) (1+ n)))))

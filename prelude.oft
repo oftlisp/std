@@ -76,11 +76,13 @@
   each
   else
   empty?
+  ends-with
   enumerate
   eq
   err
   err?
   exit
+  explode
   false
   filter
   flat-map
@@ -96,6 +98,7 @@
   head
   id
   init
+  join
   last
   length
   leq
@@ -107,6 +110,8 @@
   list?
   list<-vector
   lookup
+  lookup-all
+  lookup-all-by
   lookup-by
   make-vector
   map
@@ -135,13 +140,13 @@
   shl?
   show
   skip
+  slice
   sort
   sort-by
+  starts-with
   string?
   string<-symbol
-  string.explode
   string.ord
-  string.slice
   symbol?
   symbol<-string
   tail
@@ -151,6 +156,7 @@
   uniq
   unique
   unless
+  vector
   vector?
   vector<-list
   when
@@ -179,6 +185,8 @@
   each
   group-by
   lookup
+  lookup-all
+  lookup-all-by
   lookup-by
   map
   skip
@@ -214,6 +222,7 @@
 (import std/internal/prelude/objects/common-methods
   empty?
   head
+  slice
   tail)
 (import std/internal/prelude/print
   display
@@ -236,7 +245,10 @@
   get
   put)
 (import std/internal/prelude/strings
-  string.explode)
+  ends-with
+  explode
+  join
+  starts-with)
 (import std/internal/prelude/util
   any-shl?
   build-list
@@ -306,7 +318,8 @@
   list?
   neq
   not
-  nth)
+  nth
+  vector)
 (import std/internal/primitives
   =
   apply
@@ -325,7 +338,6 @@
   string?
   string<-symbol
   string.ord
-  string.slice
   symbol?
   symbol<-string
   vector?

@@ -9,6 +9,8 @@
   vector.each
   vector.group-by
   vector.lookup
+  vector.lookup-all
+  vector.lookup-all-by
   vector.lookup-by
   vector.map
   vector.skip
@@ -76,6 +78,12 @@
   (todo))
 
 (defn vector.foldr (xs f x)
+  (todo))
+
+(defn vector.lookup-all-by (v f key)
+  (todo))
+
+(defn vector.lookup-all (v key)
   (todo))
 
 (defn vector.lookup-by (v f key)

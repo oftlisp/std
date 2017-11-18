@@ -149,11 +149,15 @@
         (def name (gensym))
         (list (list 'progn
           (list 'def name (car msg))
-          (list 'if (list 'string? name)
-            (list 'concat-strings "TODO: " name)
-            name))))
+          (list 'concat-strings "TODO: "
+            (list 'if (list 'string? name)
+              name (list 'show name))))))
     else
-      (cons "TODO: " msg))))
+      (list
+        (list 'apply 'concat-strings
+          (list 'list "TODO: "
+            (list 'join " "
+              (list 'map (cons 'list msg) 'show))))))))
 
 (defmacro for-each (x-var xs-var ... body)
   (list 'each xs-var (cons 'fn (cons (list x-var) body))))

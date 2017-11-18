@@ -9,6 +9,8 @@
   list.each
   list.group-by
   list.lookup
+  list.lookup-all
+  list.lookup-all-by
   list.lookup-by
   list.map
   list.skip
@@ -120,6 +122,12 @@
       (reverse out)
       (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))
+
+(defn list.lookup-all-by (assoc f key)
+  (list.map (list.filter assoc \(f key (car $))) cdr))
+
+(defn list.lookup-all (assoc key)
+  (list.lookup-all-by assoc eq key))
 
 (defn list.flat-map (l f)
   ; TODO: This could probably be made more efficient.

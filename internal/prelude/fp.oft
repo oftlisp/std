@@ -12,6 +12,8 @@
   each
   group-by
   lookup
+  lookup-all
+  lookup-all-by
   lookup-by
   map
   skip
@@ -33,6 +35,8 @@
   list.each
   list.group-by
   list.lookup
+  list.lookup-all
+  list.lookup-all-by
   list.lookup-by
   list.map
   list.skip
@@ -52,6 +56,8 @@
   vector.each
   vector.group-by
   vector.lookup
+  vector.lookup-all
+  vector.lookup-all-by
   vector.lookup-by
   vector.map
   vector.skip
@@ -119,6 +125,8 @@
 (deffpgeneric foldr (xs f x))
 (deffpgeneric group-by (l f))
 (deffpgeneric lookup (xs x))
+(deffpgeneric lookup-all (xs x))
+(deffpgeneric lookup-all-by (xs f x))
 (deffpgeneric lookup-by (xs f x))
 (deffpgeneric map (l f))
 (deffpgeneric skip (l n))

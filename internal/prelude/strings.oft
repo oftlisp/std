@@ -1,17 +1,54 @@
 (module std/internal/prelude/strings
-  string.explode)
+  ends-with
+  explode
+  join
+  starts-with)
 
 (import std/internal/prelude/constants
   nil)
+(import std/internal/prelude/math
+  -
+  >)
 (import std/internal/prelude/objects/common-methods
   empty?
   head
+  slice
   tail)
+(import std/internal/prelude/util/macros
+  unless)
+(import std/internal/prelude/util/pseudoprims
+  length)
 (import std/internal/primitives
-  cons)
+  concat-strings
+  cons
+  eq)
+
+;; Checks if one string end with another.
+(defn ends-with (needle haystack)
+  (def ln (length needle))
+  (def lh (length haystack))
+  (unless (> ln (length haystack))
+    (def ld (- lh ln))
+    (eq needle (slice haystack ld lh))))
 
 ;; Explodes a string into a list of character strings.
-(defn string.explode (str)
+(defn explode (str)
   (if (empty? str)
     nil
-    (cons (head str) (string.explode (tail str)))))
+    (cons (head str) (explode (tail str)))))
+
+;; Joins strings with a separator.
+(defn join (sep strs)
+  (defn loop (accum strs)
+    (if (empty? strs)
+      accum
+      (loop (concat-strings accum sep (head strs)) (tail strs))))
+  (if (empty? strs)
+    ""
+    (loop (head strs) (tail strs))))
+
+;; Checks if one string starts with another.
+(defn starts-with (needle haystack)
+  (def ln (length needle))
+  (unless (> ln (length haystack))
+    (eq needle (slice haystack 0 ln))))

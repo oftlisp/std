@@ -5,9 +5,11 @@
 
 (import std/parsing/lexer
   build-lexer
-  deflexer
-  lex-string)
+  deflexer)
 (import std/parsing/peg
+  ; TODO: The combinators should be removed soon.
+  combinator-*
+  combinator-+
   defsyntax-peg)
 
 (defsyntax-peg peg-math-parser
@@ -19,7 +21,7 @@
   (pri-expr OPEN add-expr CLOSE)
   (pri-expr decimal)
 
-  (decimal (regex "[0-9]+") spacing)
+  (decimal (+ (charset ("0" "9"))) spacing)
 
   (PLUS "+" spacing)
   (TIMES "*" spacing)
@@ -47,7 +49,37 @@
   '*
   (cons 'num "5")))
 
-(def peg-parse-tree 'todo)
+(def peg-parse-tree
+  ['root
+    ['spacing nil]
+    ['add-expr
+      ['mul-expr
+        ['pri-expr
+          ['OPEN "(" ['spacing nil]]
+          ['add-expr
+            ['mul-expr
+              ['pri-expr
+                ['decimal (list "1") ['spacing (list ['space " "])]]]]
+            ['PLUS "+" ['spacing (list ['space " "])]]
+            ['add-expr
+              ['mul-expr
+                ['pri-expr
+                  ['decimal (list "2") ['spacing (list ['space " "])]]]
+                ['TIMES "*" ['spacing (list ['space " "])]]
+                ['mul-expr
+                  ['pri-expr
+                    ['decimal (list "3") ['spacing (list ['space " "])]]]]]
+              ['PLUS "+" ['spacing (list ['space " "])]]
+              ['add-expr
+                ['mul-expr
+                  ['pri-expr
+                    ['decimal (list "4") ['spacing nil]]]]]]]
+          ['CLOSE ")" ['spacing (list ['space " "])]]]
+      ['TIMES "*" ['spacing (list ['space " "])]]
+      ['mul-expr
+        ['pri-expr
+          ['decimal (list "5") ['spacing nil]]]]]]
+    ['end-of-file nil]])
 
 (deflexer math-lexer
   (simple "+" +)
@@ -60,5 +92,5 @@
 
 (defn main (args)
   (assert-eq (math-lexer input) (ok tokens))
-  (assert-eq (peg-math-parser input) (ok peg-parse-tree))
+  (assert-eq (peg-math-parser input) (ok peg-parse-tree ""))
   (println "All tests passed"))

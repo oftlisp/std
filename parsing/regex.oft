@@ -81,7 +81,7 @@
 
 ;; Creates a regex AST for matching against a literal string.
 (defn regex-ast-from-string (str)
-  (cons 'concat (string.explode str)))
+  (cons 'concat (explode str)))
 
 ;;; High-level interface
 

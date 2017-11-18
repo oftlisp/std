@@ -1,13 +1,16 @@
 ;; A parser macro for parsing with parsing expression grammars. If you're
 ;; trying to parse a programming language, this is the module for you.
+;;
+;; TODO: Use packrat or tables, not this approach...
 (module std/parsing/peg
+  combinator-*
+  combinator-+
+  combinator-?
   defsyntax-peg)
 
 (import std/parsing/peg/internals
   assert-expr-well-formed
-  assert-production-well-formed
-  extract-terminals
-  replace-terminals)
+  assert-production-well-formed)
 
 ;; Defines a parsing function. Takes the name of the function and a list of
 ;; productions. A parsing function returns a result. If the result is ok, it
@@ -17,13 +20,14 @@
 ;; Productions are specified as:
 ;;
 ;;   PRODUCTION ::= (PRODUCTION-NAME EXPR...)
-;;   EXPR ::= . | PRODUCTION-NAME | LITERAL-STRING | (regex REGEX-STRING)
+;;   EXPR ::= . | PRODUCTION-NAME | LITERAL-STRING | (charset CHARSET...)
 ;;         |  (choose EXPR...) | [EXPR...]
 ;;         |  (* EXPR) | (+ EXPR) | (? EXPR)
 ;;         |  (and EXPR) | (not EXPR)
+;;   CHARSET ::= CHAR | (CHAR CHAR)
 ;;   PRODUCTION-NAME ::= any symbol other than .
 ;;   LITERAL-STRING ::= any string
-;;   REGEX-STRING ::= the string representation of a regex
+;;   CHAR ::= a single-character string
 ;;
 ;; If two or more productions share the same name, an implicit choose between
 ;; the different productions is inserted, with the (lexically) first one coming
@@ -92,17 +96,17 @@
 ;;
 ;;     ; Lexical syntax
 ;;     (identifier  ident-start (* ident-cont) spacing)
-;;     (ident-start (regex "[a-zA-Z_"))
-;;     (ident-cont  (choose ident-start (regex "[0-9]")))
+;;     (ident-start (chars-from "[a-zA-Z_"))
+;;     (ident-cont  (choose ident-start (charset ("0" "9"))))
 ;;
 ;;     (literal "'" (* [(not "'") char]) "'" spacing])
 ;;     (literal "\"" (* [(not "\"") char]) "\"" spacing)
 ;;     (class   "[" (* (not "]") range) "]" spacing)
 ;;     (range   char "-" char)
 ;;     (range   char)
-;;     (char    "\\" (regex "[nrt'\"\\[\\]\\\\]"))
-;;     (char    "\\" (regex "[0-2][0-7][0-7]"))
-;;     (char    "\\" (regex "[0-7][0-7]?"))
+;;     (char    "\\" (charset "n" "r" "t" "'" "\"" "[" "]" "\\"))
+;;     (char    "\\" (charset ("0" "2")) (charset ("0" "9")) (charset ("0" "9")))
+;;     (char    "\\" (charset ("0" "7")) (? (charset ("0" "7"))))
 ;;     (char    (not "\\") .)
 ;;
 ;;     (LEFT-ARROW "<-" spacing)
@@ -122,12 +126,10 @@
 ;;     (end-of-line (choose "\r\n" "\n" "\r"))
 ;;     (end-of-file (not .)))
 (defmacro defsyntax-peg (name ... productions)
+  (defn comb-name (n)
+    (symbol<-string (concat-strings "combinator-" (string<-symbol n))))
   (defn prod-fn-name (n)
     (symbol<-string (concat-strings "parse-production-" (string<-symbol n))))
-  (defn term-fn-name (n)
-    (symbol<-string (concat-strings "parse-terminal-" (string<-symbol n))))
-  (defn term-index-name (n)
-    (symbol<-string (concat-strings "terminal-" (show n))))
 
   (for-each prod productions
     (unless (and (cons? prod) (symbol? (car prod)))
@@ -135,61 +137,131 @@
   (unless (any productions \(eq (car $) 'root))
     (panic "No root production"))
 
-  (def nonterminal-names (map productions car))
+  (def nonterminal-names (unique (map productions car)))
   (for-each prod productions
     (assert-production-well-formed prod nonterminal-names))
 
-  (def terminals (unique (flat-map productions extract-terminals)))
-  (def terminal-names (build-list (length terminals) \(gensym)))
-
-  (defn convert-terminal (tmp)
-    (def name (term-index-name (car tmp)))
-    (def terminal (cdr tmp))
-    (case (car terminal)
-      'regex
-        (list 'regex (cdr terminal) name)
-      'string
-        (list 'simple (cdr terminal) name)
-        (panic "Invalid terminal")))
-  (def lexer-terminals (map (enumerate terminals) convert-terminal))
-  (def productions (map productions (replace-terminals (zip terminals terminal-names))))
-  (def terminals (zip terminal-names terminals))
-
   (def src (gensym))
-  (def lexer (gensym))
+  (defn make-charset-frag (charsets error)
+    (defn charset-matches (charset)
+      (cond
+        (string? charset)
+          `(eq (head ,src) ,charset)
+        (cons? charset)
+          (let (l (string.ord (car charset)))
+               (h (string.ord (cadr charset)))
+               (c (gensym))
+            `(let1 ,c (string.ord (head ,src))
+              (and (>= ,c ,l) (< ,c ,h))))
+        else
+          (panic (concat-strings "Invalid charset item: " (show charset)))))
 
-  (defn make-parser-frag (expr)
+    (if (nil? charsets)
+      error
+      `(if (empty? ,src)
+        ,error
+        (if ,(charset-matches (car charsets))
+          (ok (head ,src) (tail ,src))
+          ,(make-charset-frag (cdr charsets) error)))))
+  (defn make-parser-frag (name expr)
+    (def error `(err (concat-strings
+      ,(concat-strings "No match for expr " (show expr) " in production "
+        (string<-symbol name) ": ")
+      (show ,src))))
     (cond
       (eq expr '.)
-        (todo expr)
+        `(if (empty? ,src)
+          ,error
+          (ok (head ,src) (tail ,src)))
       (symbol? expr)
-        (todo expr)
-      (shl? expr 'choose)
-        (todo expr)
-      (shl? expr 'terminal)
-        (todo expr)
+        `(,(prod-fn-name expr) ,src)
       (vector? expr)
-        (todo expr)
+        (if (empty? expr)
+          `(ok nil ,src)
+          (let (r (gensym))
+               (r2 (gensym))
+            `(let1 ,r ,(make-parser-frag name (head expr))
+              (if (err? ,r)
+                ,r
+                (let (,src (caddr ,r))
+                     (,r2 ,(make-parser-frag name (tail expr)))
+                  (if (err? ,r2)
+                    ,r2
+                    (ok (cons (cadr ,r) (cadr ,r2)) (caddr ,r2))))))))
+      (string? expr)
+        `(if (starts-with ,expr ,src)
+          (ok ,expr (slice ,src ,(length expr) (length ,src)))
+          ,error)
+      (shl? expr 'charset)
+        (make-charset-frag (cdr expr) error)
+      (shl? expr 'choose)
+        (let1 exprs (cdr expr)
+          (if (nil? exprs)
+            error
+            (let1 r (gensym)
+              `(let1 ,r ,(make-parser-frag name (car exprs))
+                (if (err? ,r)
+                  ,(make-parser-frag name (cons 'choose (cdr exprs)))
+                  ,r)))))
       (or (shl? expr '*)
           (shl? expr '+)
-          (shl? expr '?)
-          (shl? expr 'and)
-          (shl? expr 'not))
-        (todo expr)
+          (shl? expr '?))
+        (let (comb (comb-name (car expr)))
+             (func `(fn (,src) ,(make-parser-frag name (cadr expr))))
+          `(,comb ,func ,src))
+      (shl? expr 'and)
+        (let1 r (gensym)
+          `(let1 ,r ,(make-parser-frag name (cadr expr))
+            (if (err? ,r)
+              ,r
+              (ok (cadr ,r) ,src))))
+      (shl? expr 'not)
+        (let1 r (gensym)
+          `(let1 ,r ,(make-parser-frag name (cadr expr))
+            (if (err? ,r)
+              (ok nil ,src)
+              ,error)))
       else
         (panic "Invalid expr: " expr)))
-  (defn make-prod-parser-func (prod)
-    (def name (prod-fn-name (car prod)))
-    (def expr (vector<-list (cdr prod)))
-    `(,name (,src) ,(make-parser-frag expr)))
-  (defn make-term-parser-func (term)
-    (def name (term-fn-name (car term)))
-    `(,name (,src) (todo 'term ',term)))
+  (defn make-prod-parser-func (nonterminal-name)
+    (def name (prod-fn-name nonterminal-name))
+    (def expr (cons 'choose
+      (map (lookup-all productions nonterminal-name) vector<-list)))
+    (def r (gensym))
+    `(,name (,src)
+      (def ,r ,(make-parser-frag nonterminal-name expr))
+      (if (err? ,r)
+        ,r
+        (ok (vector<-list (cons ',nonterminal-name (cadr ,r))) (caddr ,r)))))
 
   `(def ,name (progn
-    (def ,lexer (must (build-lexer ',lexer-terminals)))
-    ,@(map terminals \(cons 'defn (make-term-parser-func $)))
-    (defnrec ,@(map productions make-prod-parser-func))
+    (defnrec ,@(map nonterminal-names make-prod-parser-func))
     (defn ,name (,src)
       (,(prod-fn-name 'root) ,src))
     ,name)))
+
+(defn combinator-* (func src)
+  (defn loop (src a)
+    (def r (func src))
+    (if (err? r)
+      (ok (reverse a) src)
+      (loop (caddr r) (cons (cadr r) a))))
+  (loop src nil))
+
+(defn combinator-+ (func src)
+  (defn loop (src a)
+    (def r (func src))
+    (if (err? r)
+      (ok (reverse a) src)
+      (loop (caddr r) (cons (cadr r) a))))
+  (def r (func src))
+  (if (err? r)
+    r
+    (loop (caddr r) (list (cadr r)))))
+
+
+(defn combinator-? (func src)
+  (def r (func src))
+  (if (err? r)
+    (ok 'none src)
+    (ok (cons 'just (cadr r)) (caddr r))))

@@ -1,11 +1,21 @@
 (module std/parsing/peg/internals
   assert-expr-well-formed
-  assert-production-well-formed
-  extract-terminals
-  replace-terminals)
+  assert-production-well-formed)
 
-(import std/lang/regex
-  parse-regex)
+(defn assert-charset-well-formed (charset)
+  (cond
+    (and (string? charset)
+         (= (length charset) 1))
+      true
+    (and (cons? charset)
+         (= (length charset) 2)
+         (string? (car charset))
+         (string? (cadr charset))
+         (= (length (car charset)) 1)
+         (= (length (cadr charset)) 1))
+      true
+    else
+      (panic (concat-strings "Invalid charset item: " (show charset)))))
 
 ;; Checks if an expression in a PEG is well-formed, panicing if it is not.
 (defn assert-expr-well-formed (expr nonterminal-names)
@@ -18,16 +28,14 @@
         (panic (concat-strings "Unknown nonterminal: " (show expr))))
     (string? expr)
       true
+    (shl? expr 'charset)
+      (each (cdr expr) assert-charset-well-formed)
     (shl? expr 'choose)
       (for-each e (cdr expr)
         (assert-expr-well-formed e nonterminal-names))
     (vector? expr)
       (for-each e expr
         (assert-expr-well-formed e nonterminal-names))
-    (shl? expr 'regex)
-      (let1 r (parse-regex (cadr expr))
-        (when (err? r)
-          (panic (cdr r))))
     (or (shl? expr '*)
         (shl? expr '+)
         (shl? expr '?)
@@ -46,54 +54,3 @@
     (panic "Production's car is not a symbol!"))
   (for-each expr (cdr prod)
     (assert-expr-well-formed expr nonterminal-names)))
-
-;; Returns a list of all the terminals in the given expression.
-(defn extract-terminals-from-expr (expr)
-  (cond
-    (symbol? expr)
-      nil
-    (string? expr)
-      (list (cons 'string expr))
-    (shl? expr 'choose)
-      (flat-map (cdr expr) extract-terminals-from-expr)
-    (shl? expr 'regex)
-      (list (cons 'regex (cadr expr)))
-    (vector? expr)
-      (flat-map (list<-vector expr) extract-terminals-from-expr)
-    (or (shl? expr '*)
-        (shl? expr '+)
-        (shl? expr '?)
-        (shl? expr 'and)
-        (shl? expr 'not))
-      (extract-terminals-from-expr (cadr expr))
-    else
-      (panic "Invalid expr: " expr)))
-
-;; Returns a list of all the terminals in the given production.
-(defn extract-terminals (prod)
-  (flat-map (cdr prod) extract-terminals-from-expr))
-
-;; Replaces references to terminals in a production with the corresponding
-;; name.
-(defcurried replace-terminals (terminals production)
-  (defn replace-in-expr (expr)
-    (cond
-      (symbol? expr)
-        expr
-      (string? expr)
-        (cons 'terminal (lookup terminals (cons 'string expr)))
-      (shl? expr 'choose)
-        (cons 'choose (map (cdr expr) replace-in-expr))
-      (shl? expr 'regex)
-        (cons 'terminal (lookup terminals (cons 'regex (cadr expr))))
-      (vector? expr)
-        (map expr replace-in-expr)
-      (or (shl? expr '*)
-          (shl? expr '+)
-          (shl? expr '?)
-          (shl? expr 'and)
-          (shl? expr 'not))
-        (cons (car expr) (replace-in-expr (cadr expr)))
-      else
-        (panic "Invalid expr: " expr)))
-  (cons (car production) (map (cdr production) replace-in-expr)))
