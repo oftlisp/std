@@ -1,0 +1,8 @@
+(module std/internal/examples/json
+  main)
+
+(import std/lang/json
+  json-parse)
+
+(defn main (args)
+  (json-parse "0"))

@@ -1,52 +1,60 @@
 (module std/lang/json
   json-parse)
 
-(import std/parsing/cfg
-  defsyntax)
+(import std/fp/monad
+  >>=)
+(import std/parsing/peg
+  combinator-*
+  combinator-+
+  combinator-?
+  defsyntax-peg)
 
-(defsyntax json-parse
-  (terminal lbrace "{")
-  (terminal rbrace "}")
-  (terminal lbrack "[")
-  (terminal rbrack "]")
-  (terminal lparen "(")
-  (terminal rparen ")")
-  (terminal colon ":")
-  (terminal comma ",")
-  (terminal literal-true "true")
-  (terminal literal-false "false")
-  (terminal literal-null "null")
+(defsyntax-peg json-cst-parse
+  (root spacing value end-of-file)
 
-  (terminal string
-    (regex "\"([^\\\\\"]|\\[\"\\\\/bfnrt]|\\u[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])\""))
-  (terminal number
-    (regex "-?(0|[1-9][0-9]*)(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"))
+  ; TODO: Support unicode whitespace?
+  (spacing (* (charset " " "\n" "\r" "\t")))
+  (end-of-file (not .))
 
-  (ignore terminal whitespace
-    ; TODO: Support unicode whitespace?
-    (regex " \n\r\t"))
+  (value (choose string number object array literal))
 
-  (root nonterminal value
-    (string)
-    (number)
-    (object)
-    (array)
-    (literal-true)
-    (literal-false)
-    (literal-null))
+  (object LBRACE RBRACE)
+  (object LBRACE object-pair (* [COMMA object-pair]) RBRACE)
+  (object-pair string COLON value)
 
-  (nonterminal object
-    (lbrace rbrace)
-    (lbrace object-pairs rbrace))
-  (nonterminal object-pairs
-    (object-pair)
-    (object-pair comma object-pairs))
-  (nonterminal object-pair
-    (string colon value))
+  (array LBRACK RBRACK)
+  (array LBRACK value (* [COMMA value]) RBRACK)
 
-  (nonterminal array
-    (lbrack rbrack)
-    (lbrack array-elems rbrack))
-  (nonterminal array-elems
-    (value)
-    (value comma array-elems)))
+  (string "\"" (* char) "\"")
+  (char "\\" (charset "\"" "\\" "/" "b" "f" "n" "r" "t"))
+  (char "\\u" hex-digit hex-digit hex-digit hex-digit)
+  (char (not "\\") .)
+  (hex-digit (charset ("0" "9") ("a" "f") ("A" "F")))
+
+  (number (? "-") int-part (? ["." (+ digit)]) exp-part)
+  (int-part "0")
+  (int-part (charset ("1" "9")) (* digit))
+  (digit (charset ("0" "9")))
+  (exp-part
+    (charset "e" "E")
+    (? (charset "+" "-"))
+    (+ digit))
+
+  (literal (choose TRUE FALSE NULL))
+
+  (LBRACE "{" spacing)
+  (RBRACE "}" spacing)
+  (LBRACK "[" spacing)
+  (RBRACK "]" spacing)
+  (COLON ":" spacing)
+  (COMMA "," spacing)
+
+  (TRUE "true" spacing)
+  (FALSE "false" spacing)
+  (NULL "null" spacing))
+
+(defn ast<-root (cst)
+  (todo))
+
+(defn json-parse (str)
+  (>>= (json-cst-parse str) ast<-root))
