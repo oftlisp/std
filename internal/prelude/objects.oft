@@ -56,6 +56,9 @@
   eq
   gensym
   nil?
+  object-cons
+  object-type
+  object-value
   panic
   string<-symbol
   symbol<-string

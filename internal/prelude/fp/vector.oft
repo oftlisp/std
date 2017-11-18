@@ -15,7 +15,8 @@
   vector.sort
   vector.sort-by
   vector.take
-  vector.uniq)
+  vector.uniq
+  vector.zip)
 
 (import std/internal/prelude/constants
   nil
@@ -25,6 +26,7 @@
 (import std/internal/primitives
   <>
   +/2
+  build-vector
   eq
   panic
   vector.length
@@ -83,7 +85,7 @@
   (todo))
 
 (defn vector.map (v f)
-  (todo))
+  (build-vector (vector.length v) \(f (vector.nth v $))))
 
 (defn vector.skip (v n)
   (todo))
@@ -98,4 +100,7 @@
   (todo))
 
 (defn vector.uniq (v)
+  (todo))
+
+(defn vector.zip (l r)
   (todo))

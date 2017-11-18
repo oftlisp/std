@@ -3,6 +3,7 @@
   .
   all
   any
+  defcurried
   enumerate
   filter
   flat-map
@@ -18,7 +19,8 @@
   sort-by
   take
   uniq
-  unique)
+  unique
+  zip)
 
 (import std/internal/prelude/fp/list
   list.all
@@ -37,7 +39,8 @@
   list.sort
   list.sort-by
   list.take
-  list.uniq)
+  list.uniq
+  list.zip)
 (import std/internal/prelude/fp/vector
   vector.all
   vector.any
@@ -55,9 +58,12 @@
   vector.sort
   vector.sort-by
   vector.take
-  vector.uniq)
+  vector.uniq
+  vector.zip)
 (import std/internal/prelude/util
   reverse)
+(import std/internal/prelude/util/macros
+  when)
 (import std/internal/prelude/util/pseudoprims
   last
   list)
@@ -67,6 +73,7 @@
   concat-strings
   cons
   nil?
+  panic
   string<-symbol
   symbol<-string
   vector?)
@@ -79,6 +86,18 @@
       x
       (loop ((car l) x) (cdr l))))
   (fn (x) (loop x funcs)))
+
+(defmacro defcurried (name args body-car ... body-cdr)
+  (when (nil? args)
+    (panic "Cannot defcurried a function that takes no arguments"))
+
+  (defn helper (args body)
+    (cons 'fn
+      (cons (list (car args))
+        (if (nil? (cdr args))
+          body
+          (list (helper (cdr args) body))))))
+  (list 'def name (helper args (cons body-car body-cdr))))
 
 (defmacro deffpgeneric (name args)
   (def list-op (symbol<-string
@@ -107,6 +126,5 @@
 (deffpgeneric sort-by (l f))
 (deffpgeneric take (l n))
 (deffpgeneric uniq (l))
-
-(defn unique (l)
-  (uniq (sort l)))
+(defn unique (l) (uniq (sort l)))
+(deffpgeneric zip (l r))

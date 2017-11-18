@@ -6,7 +6,8 @@
 (import std/parsing/peg/internals
   assert-expr-well-formed
   assert-production-well-formed
-  extract-terminals)
+  extract-terminals
+  replace-terminals)
 
 ;; Defines a parsing function. Takes the name of the function and a list of
 ;; productions. A parsing function returns a result. If the result is ok, it
@@ -121,16 +122,56 @@
 ;;     (end-of-line (choose "\r\n" "\n" "\r"))
 ;;     (end-of-file (not .)))
 (defmacro defsyntax-peg (name ... productions)
+  (defn prod-fn-name (n)
+    (symbol<-string (concat-strings "parse-production-" (string<-symbol n))))
+  (defn term-fn-name (n)
+    (symbol<-string (concat-strings "parse-terminal-" (string<-symbol n))))
+  (defn term-index-name (n)
+    (symbol<-string (concat-strings "terminal-" (show n))))
+
   (for-each prod productions
     (unless (and (cons? prod) (symbol? (car prod)))
       (panic "Invalid production: " prod)))
+  (unless (any productions \(eq (car $) 'root))
+    (panic "No root production"))
 
   (def nonterminal-names (map productions car))
   (for-each prod productions
     (assert-production-well-formed prod nonterminal-names))
 
-  (def terminals (flat-map productions extract-terminals))
+  (def terminals (unique (flat-map productions extract-terminals)))
+  (def terminal-names (build-list (length terminals) \(gensym)))
+
+  (defn convert-terminal (tmp)
+    (def name (term-index-name (car tmp)))
+    (def terminal (cdr tmp))
+    (case (car terminal)
+      'regex
+        (list 'regex (cdr terminal) name)
+      'string
+        (list 'simple (cdr terminal) name)
+        (panic "Invalid terminal")))
+  (def lexer-terminals (map (enumerate terminals) convert-terminal))
+  (def productions (map productions (replace-terminals (zip terminals terminal-names))))
+  (def terminals (zip terminal-names terminals))
 
   (def src (gensym))
-  `(defn ,name (,src)
-    (todo "defsyntax-peg")))
+  (def lexer (gensym))
+
+  (defn make-parser-frag (expr)
+    (todo))
+  (defn make-prod-parser-func (prod)
+    (def name (prod-fn-name (car prod)))
+    (def expr (vector<-list (cdr prod)))
+    `(,name (,src) ,(make-parser-frag expr)))
+  (defn make-term-parser-func (term)
+    (def name (term-fn-name (car term)))
+    `(,name (,src) (todo 'term ',term)))
+
+  `(def ,name (progn
+    (def ,lexer (must (build-lexer ',lexer-terminals)))
+    ,@(map terminals \(cons 'defn (make-term-parser-func $)))
+    (defnrec ,@(map productions make-prod-parser-func))
+    (defn ,name (,src)
+      (,(prod-fn-name 'root) ,src))
+    ,name)))

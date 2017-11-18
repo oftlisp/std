@@ -1,5 +1,6 @@
 (module std/internal/prelude/util
   any-shl?
+  build-list
   caar
   cadr
   cdar
@@ -110,6 +111,14 @@
   (if (cons? value)
     (symbol? (car value))
     false))
+
+(defn build-list (n f)
+  (defn helper (n a)
+    (def a (cons (f n) a))
+    (if (= n 0)
+      a
+      (helper (-/2 n 1) a)))
+  (helper (-/2 n 1) nil))
 
 ;; Exits with the given exit code. If no exit code is given, exits with zero.
 (defn exit ((n 0))

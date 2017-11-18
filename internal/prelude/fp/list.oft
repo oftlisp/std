@@ -15,7 +15,8 @@
   list.sort
   list.sort-by
   list.take
-  list.uniq)
+  list.uniq
+  list.zip)
 
 (import std/internal/prelude/constants
   else
@@ -23,15 +24,19 @@
   nil
   true)
 (import std/internal/prelude/logic
-  and)
+  and
+  or)
 (import std/internal/prelude/util
   caar
+  cadr
   cdar
+  cddr
   leq
   reverse
   split-at)
 (import std/internal/prelude/util/macros
-  cond)
+  cond
+  todo)
 (import std/internal/prelude/util/pseudoprims
   append
   concat
@@ -46,6 +51,7 @@
   car
   cdr
   cons
+  cons?
   eq
   gensym
   nil?
@@ -194,5 +200,21 @@
 
 (defn list.uniq (l)
   (defn helper (l a)
-    (panic 'todo))
-  (helper l nil))
+    (cond
+      (nil? l)
+        a
+      (and (cons? l)
+           (cons? (cdr l))
+           (eq (car l) (cadr l)))
+        (helper (cdr l) a)
+      else
+        (helper (cdr l) (cons (car l) a))))
+  (reverse (helper l nil)))
+
+(defn list.zip (l r)
+  (defn loop (l r a)
+    (if (and (cons? l) (cons? r))
+      (loop (cdr l) (cdr r)
+        (cons (cons (car l) (car r)) a))
+      a))
+  (reverse (loop l r nil)))

@@ -27,6 +27,7 @@
   apply
   assert
   assert-eq
+  build-list
   build-vector
   caaaar
   caaadr
@@ -68,6 +69,7 @@
   cons?
   debug-trace
   defclass
+  defcurried
   defmethod
   display
   displayln
@@ -136,10 +138,12 @@
   sort
   sort-by
   string?
+  string<-symbol
   string.explode
   string.ord
   string.slice
   symbol?
+  symbol<-string
   tail
   take
   todo
@@ -148,7 +152,9 @@
   unique
   unless
   vector?
-  when)
+  vector<-list
+  when
+  zip)
 
 (import std/internal/prelude/assert
   assert
@@ -164,6 +170,7 @@
   .
   all
   any
+  defcurried
   enumerate
   filter
   flat-map
@@ -179,7 +186,8 @@
   sort-by
   take
   uniq
-  unique)
+  unique
+  zip)
 (import std/internal/prelude/logic
   and
   or)
@@ -231,6 +239,7 @@
   string.explode)
 (import std/internal/prelude/util
   any-shl?
+  build-list
   caar
   cadr
   cdar
@@ -314,7 +323,10 @@
   nil?
   panic
   string?
+  string<-symbol
   string.ord
   string.slice
   symbol?
-  vector?)
+  symbol<-string
+  vector?
+  vector<-list)
