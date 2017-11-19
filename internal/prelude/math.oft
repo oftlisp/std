@@ -13,6 +13,9 @@
   0-
   1+
   1-
+  bitand
+  bitor
+  bitxor
   mod)
 
 (import std/internal/prelude/constants
@@ -28,6 +31,9 @@
   //2
   <>
   =
+  bitand/2
+  bitor/2
+  bitxor/2
   eq
   mod/2)
 
@@ -42,6 +48,10 @@
 
 ;; Divides numbers.
 (defn / (n ... ns) (foldl ns //2 n))
+
+(defn bitand (n ... ns) (foldl ns bitand/2 n))
+(defn bitor (n ... ns) (foldl ns bitor/2 n))
+(defn bitxor (n ... ns) (foldl ns bitxor/2 n))
 
 ;; Takes the modulus between numbers.
 (defn mod (n ... ns) (foldl ns mod/2 n))

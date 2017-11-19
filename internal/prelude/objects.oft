@@ -135,7 +135,7 @@
     (def args (cadr form))
     (def body (cddr form))
     `(,name ,args
-      (cons ',class-name
+      (object-cons ',class-name
         (progn ,@body))))
   (def ctors (cons
     (build-ctor (cons nil (cdar (lookup decls 'ctor))))
@@ -147,10 +147,16 @@
   (def is-class? (progn
     `(,is-class?-name (obj)
       (and
-        (cons? obj)
-        (eq (car obj) ',class-name)))))
+        (object? obj)
+        (eq (object-type obj) ',class-name)))))
 
   ; Process the member functions.
+  (defn defn-name (name)
+    (symbol<-string
+      (concat-strings
+        (string<-symbol class-name)
+        "."
+        (string<-symbol name))))
   (def member-prelude (progn
     (defn loop (n l a)
       (if (nil? l)
@@ -158,15 +164,11 @@
         (loop (1+ n) (cdr l)
           (cons `(def ,(car l) (nth this ,n)) a))))
     (def vals (map (lookup decls 'val) cadr))
-    (cons
-      `(assert (,is-class?-name this))
-      (loop 1 vals nil))))
+    (cons `(assert (,is-class?-name this))
+      (cons '(<- this object-value)
+        (loop 0 vals nil)))))
   (defn build-member-defn (form)
-    (def name (symbol<-string
-      (concat-strings
-        (string<-symbol class-name)
-        "."
-        (string<-symbol (car form)))))
+    (def name (defn-name (car form)))
     (def args (cadr form))
     (def body (cddr form))
     `(,name ,(cons 'this args)
@@ -177,15 +179,26 @@
     (map cdr)
     (map build-member-defn)))
 
+  ; Add the member functions to the global method registry.
+  (defn build-method-add (name)
+    `(object-put-method ',class-name ',name ,(defn-name name)))
+  (def method-adds (-> decls
+    (lookup 'defn)
+    (map cadr)
+    (map build-method-add)))
+
   ; Build the final expression.
-  `(defnrec
-    ,@ctors
-    ,@defns
-    ,is-class?))
+  `(macro-progn
+    (defnrec
+      ,@ctors
+      ,@defns
+      ,is-class?)
+    (definit
+      ,@method-adds)))
 
 ;; Defines a method.
 (defmacro defmethod (name)
   (def obj (gensym))
   (def args (gensym))
   `(defn ,name (,obj ... ,args)
-    (apply (get (car ,obj) ',name) ,args)))
+    (apply %(object-get-method (car ,obj) ',name) ,args)))

@@ -10,10 +10,10 @@
   (named-ctor empty ()
     (list 0 0))
 
+  (defn show ()
+    (concat-strings "(" (show start) " - " (show end) ")"))
   (defn size ()
-    (- end start))
-  (defn to-string ()
-    (concat-strings "(" (show start) " - " (show end) ")")))
+    (- end start)))
 
 (defclass rectangle
   (val height)
@@ -36,6 +36,6 @@
   (def y (range-empty))
   (println y)
   (println (range.size y))
-  
+
   (println (rectangle 1 2))
   (println (square 3)))

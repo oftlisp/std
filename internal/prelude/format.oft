@@ -1,9 +1,19 @@
 (module std/internal/prelude/format
   show)
 
+(import std/internal/prelude/logic
+  and)
+(import std/internal/prelude/objects/methods
+  object-get-method
+  object-has-method?)
 (import std/internal/primitives
+  object?
+  object-type
+  object-value
+  panic
   show-primitive)
 
-;; TODO: This should support objects in some capacity.
 (defn show (value)
-  (show-primitive value))
+  (if (and (object? value) (object-has-method? (object-type value) 'show))
+    ((object-get-method (object-type value) 'show) value)
+    (show-primitive value)))

@@ -11,6 +11,7 @@
   set.flat-map
   set.insert
   set.intersection
+  set.map
   set.remove
   set.union
   set<-list)
@@ -51,6 +52,9 @@
 
   (defn intersection (... s)
     (todo "TODO: set.intersection"))
+
+  (defn map (f)
+    (todo "TODO: set.map"))
 
   (defn remove (... xs)
     (set (tree-delete-many xs tree eq? lt?) eq? lt?))

@@ -1,0 +1,89 @@
+(module std/internal/prelude/objects/methods
+  object-get-method
+  object-has-method?
+  object-put-method)
+
+(import std/internal/prelude/fp/list
+  list.any
+  list.lookup)
+(import std/internal/prelude/constants
+  nil)
+(import std/internal/prelude/math
+  0?
+  1+
+  bitand
+  bitor)
+(import std/internal/primitives
+  =
+  atomic-pointer
+  atomic-pointer?
+  atomic-pointer.cas
+  atomic-pointer.load
+  atomic-pointer.store
+  atomic-word
+  atomic-word?
+  atomic-word.add
+  atomic-word.cas
+  atomic-word.load
+  atomic-word.store
+  bitnot
+  car
+  cons
+  eq
+  function?
+  panic
+  unwind-protect)
+
+(def lock (atomic-word 0))
+(def value (atomic-pointer nil))
+
+(def writer-bit 1073741824)
+
+(defn drop-read-lock ()
+  (atomic-word.add lock -1))
+(defn drop-write-lock ()
+  (atomic-word.store lock 0))
+
+(defn get-read-lock ()
+  (defn wait-for-writer ()
+    (def old (atomic-word.load lock))
+    (if (0? (bitand old writer-bit))
+      (bitand (bitnot writer-bit) old)
+      (wait-for-writer)))
+  (def old (wait-for-writer))
+  (def new (1+ old))
+  (if (= (atomic-word.cas lock old new) old)
+    (atomic-pointer.load value)
+    (get-read-lock)))
+(defn get-write-lock ()
+  (defn wait-for-no-readers ()
+    (if (= (atomic-word.load lock) writer-bit)
+      nil
+      (wait-for-no-readers)))
+  (def old (bitand (bitnot writer-bit) (atomic-word.load lock)))
+  (def new (bitor old writer-bit))
+  (if (= (atomic-word.cas lock old new) old)
+    (wait-for-no-readers)
+    (get-write-lock)))
+
+(defn object-has-method? (obj name)
+  (def value (get-read-lock))
+  (unwind-protect
+    (fn () (list.lookup value (cons obj name)))
+    drop-read-lock))
+
+(defn object-get-method (obj name)
+  (def value (get-read-lock))
+  (unwind-protect
+    (fn () (list.lookup value (cons obj name)))
+    drop-read-lock))
+
+(defn object-put-method (obj name meth)
+  (if (function? meth)
+    (progn
+      (get-write-lock)
+      (def old (atomic-pointer.load value))
+      (def new (cons (cons obj name) meth))
+      (atomic-pointer.store value (cons new old))
+      (drop-write-lock))
+    (panic "Not a function: " meth)))

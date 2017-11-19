@@ -7,6 +7,7 @@
   compile-time-eval
   cond
   debug-trace
+  definit
   for-each
   let
   let1
@@ -138,6 +139,10 @@
     (list 'def value expr)
     (list 'displayln value)
     value))
+
+(defmacro definit (... xs)
+  (list 'def (gensym)
+    (cons 'progn xs)))
 
 ;; Panics with the string "TODO".
 (defmacro todo (... msg)

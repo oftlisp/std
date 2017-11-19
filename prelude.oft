@@ -27,6 +27,10 @@
   apply
   assert
   assert-eq
+  bitand
+  bitnot
+  bitor
+  bitxor
   build-list
   build-vector
   caaaar
@@ -70,6 +74,7 @@
   debug-trace
   defclass
   defcurried
+  definit
   defmethod
   display
   displayln
@@ -92,7 +97,6 @@
   function?
   gensym
   geq
-  get
   greater
   group-by
   head
@@ -123,6 +127,13 @@
   nil?
   not
   nth
+  object?
+  object-cons
+  object-get-method
+  object-has-method?
+  object-put-method
+  object-type
+  object-value
   ok
   ok?
   or
@@ -130,7 +141,6 @@
   panic
   print
   println
-  put
   quasiquote
   result.ap ; TODO This should probably be removed once get/put work.
   result.bind ; TODO This should probably be removed once get/put work.
@@ -156,6 +166,7 @@
   uniq
   unique
   unless
+  unwind-protect
   vector
   vector?
   vector<-list
@@ -215,6 +226,9 @@
   0-
   1+
   1-
+  bitand
+  bitor
+  bitxor
   mod)
 (import std/internal/prelude/objects
   defclass
@@ -224,6 +238,10 @@
   head
   slice
   tail)
+(import std/internal/prelude/objects/methods
+  object-get-method
+  object-has-method?
+  object-put-method)
 (import std/internal/prelude/print
   display
   displayln
@@ -241,9 +259,6 @@
   result.bind
   result.fmap
   result.pure)
-(import std/internal/prelude/store
-  get
-  put)
 (import std/internal/prelude/strings
   ends-with
   explode
@@ -299,6 +314,7 @@
   compile-time-eval
   cond
   debug-trace
+  definit
   for-each
   let
   let1
@@ -323,6 +339,7 @@
 (import std/internal/primitives
   =
   apply
+  bitnot
   build-vector
   car
   cdr
@@ -334,11 +351,16 @@
   gensym
   list<-vector
   nil?
+  object?
+  object-cons
+  object-type
+  object-value
   panic
   string?
   string<-symbol
   string.ord
   symbol?
   symbol<-string
+  unwind-protect
   vector?
   vector<-list)
