@@ -201,4 +201,4 @@
   (def obj (gensym))
   (def args (gensym))
   `(defn ,name (,obj ... ,args)
-    (apply %(object-get-method (car ,obj) ',name) ,args)))
+    (apply (object-get-method (object-type ,obj) ',name) (cons ,obj ,args))))

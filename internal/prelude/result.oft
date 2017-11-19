@@ -4,16 +4,23 @@
   must
   ok
   ok?
-  result.ap
-  result.bind
-  result.fmap
-  result.pure)
+  result?
+  result.unwrap
+  result.unwrap-err)
 
+(import std/internal/prelude/assert
+  assert)
+(import std/internal/prelude/logic
+  and)
+(import std/internal/prelude/objects/methods
+  object-put-method)
 (import std/internal/prelude/util
   shl?)
 (import std/internal/prelude/util/macros
   case
-  todo)
+  definit
+  todo
+  unless)
 (import std/internal/prelude/util/pseudoprims
   id
   length)
@@ -23,35 +30,57 @@
   cdr
   cons
   eq
+  object?
+  object-cons
+  object-type
+  object-value
   panic)
 
-(defn err (msg)
-  (cons 'err msg))
-
-(defn err? (x) (shl? x 'err))
+(defn result? (r)
+  (and (object? r)
+       (eq '#result (object-type r))))
 
 (defn ok (... vals)
-  (if (= (length vals) 1)
+  (def v (if (= (length vals) 1)
     (cons 'ok (car vals))
     (cons 'ok vals)))
+  (object-cons '#result v))
 
-(defn ok? (x) (shl? x 'ok))
+(defn err (msg)
+  (object-cons '#result (cons 'err msg)))
+
+(defn ok? (r) (and (result? r) (shl? (object-value r) 'ok)))
+(defn err? (r) (and (result? r) (shl? (object-value r) 'err)))
+
+(defn result.unwrap (r)
+  (assert (ok? r))
+  (object-value r))
+
+(defn result.unwrap-err (r)
+  (assert (err? r))
+  (object-value r))
 
 (defn must (x)
-  ((if (ok? x) id panic) (cdr x)))
+  ((if (ok? x) id panic) (object-value x)))
 
-(defn result.ap (this f)
-  (todo))
-
-(defn result.fmap (this f)
+(defn result.<$> (this f)
   (if (err? this)
     this
     (ok (f (cdr this)))))
 
-(defn result.bind (this f)
+(defn result.<*> (this f)
+  (todo))
+
+(defn result.>>= (this f)
   (if (err? this)
     this
     (f (cdr this))))
 
 (defn result.pure (x)
   (ok x))
+
+(definit
+  (object-put-method '#result '<$> result.<$>)
+  (object-put-method '#result '<*> result.<*>)
+  (object-put-method '#result '>>= result.>>=)
+  (object-put-method '#result 'pure result.pure))

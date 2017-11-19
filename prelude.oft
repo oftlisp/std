@@ -142,10 +142,9 @@
   print
   println
   quasiquote
-  result.ap ; TODO This should probably be removed once get/put work.
-  result.bind ; TODO This should probably be removed once get/put work.
-  result.fmap ; TODO This should probably be removed once get/put work.
-  result.pure ; TODO This should probably be removed once get/put work.
+  result?
+  result.unwrap
+  result.unwrap-err
   reverse
   shl?
   show
@@ -255,10 +254,9 @@
   must
   ok
   ok?
-  result.ap
-  result.bind
-  result.fmap
-  result.pure)
+  result?
+  result.unwrap
+  result.unwrap-err)
 (import std/internal/prelude/strings
   ends-with
   explode

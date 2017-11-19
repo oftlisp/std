@@ -9,6 +9,10 @@
 (module std/lang/regex/parser
   parse-cst-regex)
 
+(import std/fp/monad
+  <$>
+  >>=)
+
 (def special-chars (list "|" "+" "*" "?" "." "(" ")" "[" "]" "&" "^" "!" "\\"))
 
 (defn parse-cst-literal-char (str)
@@ -72,7 +76,7 @@
       (case (head str)
         "."  (ok 'any-char (tail str))
         "\\" (parse-cst-special-char (tail str))
-        "("  (result.fmap (parse-cst-paren-regex (tail str))
+        "("  (<$> (parse-cst-paren-regex (tail str))
                \(list (list 'regex (car $)) (cadr $)))
         "["  (parse-cst-char-set (tail str))
              (parse-cst-literal-char str))))
@@ -81,10 +85,10 @@
       (empty? str)
         (err "Unexpected EOF")
       (eq (head str) "^")
-        (result.fmap (parse-cst-char-set-groups (tail str))
+        (<$> (parse-cst-char-set-groups (tail str))
           \(list (list 'not (car $)) (cadr $)))
       else
-        (result.fmap (parse-cst-char-set-groups str)
+        (<$> (parse-cst-char-set-groups str)
           \(list (list 'just (car $)) (cadr $)))))
   (parse-cst-char-set-char (str)
     (cond
@@ -95,12 +99,12 @@
       else
         (parse-cst-char-set-literal str)))
   (parse-cst-char-set-group (str)
-    (result.bind (parse-cst-char-set-char str)
+    (>>= (parse-cst-char-set-char str)
       \(let (fst (car $))
             (str (cadr $))
         (if (or (empty? str) (neq (head str) "-"))
           (ok (list (list 'one fst) str))
-          (result.fmap (parse-cst-char-set-char (tail str))
+          (<$> (parse-cst-char-set-char (tail str))
             \(let (snd (car $))
                   (str (cadr $))
               (list (list 'range fst snd) str)))))))

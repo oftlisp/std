@@ -2,8 +2,10 @@
   <$>
   <*>
   >>=
-  do)
+  do
+  pure)
 
+(defmethod pure)
 (defmethod <$>)
 (defmethod <*>)
 (defmethod >>=)
