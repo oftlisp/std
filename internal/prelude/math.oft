@@ -20,8 +20,8 @@
 
 (import std/internal/prelude/constants
   true)
-(import std/internal/prelude/fp
-  foldl)
+(import std/internal/prelude/fp/list
+  list.foldl)
 (import std/internal/prelude/util/pseudoprims
   not)
 (import std/internal/primitives
@@ -38,23 +38,23 @@
   mod/2)
 
 ;; Multiplies numbers.
-(defn * (n ... ns) (foldl ns */2 n))
+(defn * (n ... ns) (list.foldl ns */2 n))
 
 ;; Adds numbers.
-(defn + (n ... ns) (foldl ns +/2 n))
+(defn + (n ... ns) (list.foldl ns +/2 n))
 
 ;; Subtracts numbers.
-(defn - (n ... ns) (foldl ns -/2 n))
+(defn - (n ... ns) (list.foldl ns -/2 n))
 
 ;; Divides numbers.
-(defn / (n ... ns) (foldl ns //2 n))
+(defn / (n ... ns) (list.foldl ns //2 n))
 
-(defn bitand (n ... ns) (foldl ns bitand/2 n))
-(defn bitor (n ... ns) (foldl ns bitor/2 n))
-(defn bitxor (n ... ns) (foldl ns bitxor/2 n))
+(defn bitand (n ... ns) (list.foldl ns bitand/2 n))
+(defn bitor (n ... ns) (list.foldl ns bitor/2 n))
+(defn bitxor (n ... ns) (list.foldl ns bitxor/2 n))
 
 ;; Takes the modulus between numbers.
-(defn mod (n ... ns) (foldl ns mod/2 n))
+(defn mod (n ... ns) (list.foldl ns mod/2 n))
 
 ;; Numeric not-equal.
 (defn /= (a b) (not (= a b)))

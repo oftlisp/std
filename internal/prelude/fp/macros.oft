@@ -1,0 +1,29 @@
+(module std/internal/prelude/fp/macros
+  do)
+
+(import std/internal/prelude/constants
+  else)
+(import std/internal/prelude/fp/monad
+  >>=)
+(import std/internal/prelude/quasiquote
+  quasiquote)
+(import std/internal/prelude/util
+  cadr
+  caddr
+  shl?)
+(import std/internal/prelude/util/macros
+  cond)
+(import std/internal/prelude/util/pseudoprims
+  append
+  list)
+(import std/internal/primitives
+  nil?)
+
+;; Monadic do notation.
+;;
+;; TODO: Implement ApplicativeDo
+(defmacro do (hd ... tl)
+  (cond
+    (nil? tl)       hd
+    (shl? hd 'mdef) `(>>= ,(caddr hd) (fn (,(cadr hd)) (do ,@tl)))
+    else            `(progn ,hd (do ,@tl))))

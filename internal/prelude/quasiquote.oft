@@ -3,8 +3,8 @@
 
 (import std/internal/prelude/constants
   else)
-(import std/internal/prelude/fp
-  map)
+(import std/internal/prelude/fp/list
+  list.map)
 (import std/internal/prelude/util/pseudoprims
   list
   list?)
@@ -33,5 +33,5 @@
       (list 'list (list 'quote value))))
   (cond
     (vector? value) (panic "TODO quasiquote a vector")
-    (list? value)   (cons 'append (map value helper))
+    (list? value)   (cons 'append (list.map value helper))
                     (panic "TODO quasiquote value")))

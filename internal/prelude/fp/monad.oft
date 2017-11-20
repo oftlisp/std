@@ -1,0 +1,91 @@
+;; This contains not just monads, but all "Haskelly" things. I'm just using the
+;; name "monad" for the visceral reaction it gets in those yet to embrace
+;; Haskell.
+(module std/internal/prelude/fp/monad
+  <$>
+  <*>
+  >>=
+  sequence
+  traverse)
+
+(import std/internal/prelude/constants
+  else)
+(import std/internal/prelude/fp/list
+  list.flat-map
+  list.map)
+(import std/internal/prelude/fp/vector
+  vector.flat-map
+  vector.map)
+(import std/internal/prelude/objects
+  defmethod)
+(import std/internal/prelude/objects/methods
+  object-get-method
+  object-has-method?)
+(import std/internal/prelude/util/macros
+  cond
+  let1)
+(import std/internal/prelude/util/pseudoprims
+  id)
+(import std/internal/primitives
+  apply
+  cons
+  object?
+  object-type
+  panic
+  vector?)
+
+(defn <$> (obj f)
+  (cond
+    (vector? obj)
+      (vector.map obj f)
+    (object? obj)
+      ((object-get-method (object-type obj) '<$>) obj f)
+    else
+      (list.map obj f)))
+(defn <*> (obj f)
+  (cond
+    (vector? obj)
+      (vector.flat-map obj (fn (x) (vector.map f \($ x))))
+    (object? obj)
+      ((object-get-method (object-type obj) '<*>) obj f)
+    else
+      (list.flat-map obj (fn (x) (list.map f \($ x))))))
+(defn >>= (obj f)
+  (cond
+    (vector? obj)
+      (vector.flat-map obj f)
+    (object? obj)
+      ((object-get-method (object-type obj) '>>=) obj f)
+    else
+      (list.flat-map obj f)))
+
+(defn sequence (obj)
+  (cond
+    (vector? obj)
+      (panic "TODO: sequence " obj)
+    (object? obj)
+      (let1 type (object-type obj)
+        (cond
+          (object-has-method? type 'sequence)
+            ((object-get-method type 'sequence) obj)
+          (object-has-method? type 'traverse)
+            ((object-get-method type 'traverse) obj id)
+          else
+            (panic "Not traversable: " obj)))
+    else
+      (panic "TODO: sequence " obj)))
+(defn traverse (obj f)
+  (cond
+    (vector? obj)
+      (panic "TODO: traverse " obj f)
+    (object? obj)
+      (let1 type (object-type obj)
+        (cond
+        (object-has-method? type 'traverse)
+          ((object-get-method type 'traverse) obj f)
+        (object-has-method? type 'sequence)
+          ((object-get-method type 'sequence) (<$> obj f))
+        else
+          (panic "Not traversable: " obj)))
+    else
+      (panic "TODO: traverse " obj f)))

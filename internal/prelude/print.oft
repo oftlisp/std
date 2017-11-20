@@ -10,8 +10,8 @@
   nil)
 (import std/internal/prelude/format
   show)
-(import std/internal/prelude/fp
-  each)
+(import std/internal/prelude/fp/list
+  list.each)
 (import std/internal/primitives
   bytes<-string
   string?
@@ -28,19 +28,19 @@
   (write-string (if (string? x) x (show x))))
 
 (defn display (... vals)
-  (each vals display-one))
+  (list.each vals display-one))
 
 (defn displayln (... vals)
-  (each vals display-one)
+  (list.each vals display-one)
   (write-string "\n"))
 
 ;; Prints values without an ending newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn print (... vals)
-  (each vals print-one))
+  (list.each vals print-one))
 
 ;; Prints a value, followed by a newline. Strings will **not** have quotes.
 ;; Arguments do not have spaces printed between them.
 (defn println (... vals)
-  (each vals print-one)
+  (list.each vals print-one)
   (write-string "\n"))

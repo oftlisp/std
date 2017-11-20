@@ -113,15 +113,7 @@
 ;; name consed with the matching string. When a function is present, it is
 ;; called with the matching string. Ignore terminals do not create matches.
 (defn build-lexer (terminals)
-  ; TODO: Rewrite this to use mapM.
-  (defn mapM-preprocess-terminal (terminals accum)
-    (if (nil? terminals)
-      (ok accum)
-      (let1 out (preprocess-terminal (car terminals))
-        (if (err? out)
-          out
-          (mapM-preprocess-terminal (cdr terminals) (cons (cdr out) accum))))))
-  (def r (mapM-preprocess-terminal terminals nil))
+  (def r (traverse terminals preprocess-terminal))
   (if (err? r)
     r
     (let1 terminals (cdr r)

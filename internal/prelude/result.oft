@@ -1,4 +1,5 @@
 (module std/internal/prelude/result
+  either
   err
   err?
   must
@@ -52,6 +53,10 @@
 (defn ok? (r) (and (result? r) (shl? (object-value r) 'ok)))
 (defn err? (r) (and (result? r) (shl? (object-value r) 'err)))
 
+(defn either (r if-ok if-err)
+  (assert (result? r))
+  ((if (err? r) if-err if-ok) (object-value r)))
+
 (defn result.unwrap (r)
   (assert (ok? r))
   (object-value r))
@@ -60,21 +65,23 @@
   (assert (err? r))
   (object-value r))
 
-(defn must (x)
-  ((if (ok? x) id panic) (object-value x)))
+(defn must (this)
+  (either this id panic))
 
 (defn result.<$> (this f)
-  (if (err? this)
-    this
-    (ok (f (cdr this)))))
+  (either this
+    \(ok (f $))
+    \this))
 
 (defn result.<*> (this f)
-  (todo))
+  (either f
+    \(result.<$> this $)
+    \f))
 
 (defn result.>>= (this f)
-  (if (err? this)
-    this
-    (f (cdr this))))
+  (either this
+    \(f $)
+    \this))
 
 (defn result.pure (x)
   (ok x))

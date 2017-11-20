@@ -66,6 +66,8 @@
   vector.take
   vector.uniq
   vector.zip)
+(import std/internal/prelude/objects/methods
+  object-get-method)
 (import std/internal/prelude/util
   reverse)
 (import std/internal/prelude/util/macros
@@ -74,11 +76,14 @@
   last
   list)
 (import std/internal/primitives
+  apply
   car
   cdr
   concat-strings
   cons
   nil?
+  object?
+  object-type
   panic
   string<-symbol
   symbol<-string
@@ -113,7 +118,11 @@
   (list 'defn name args
     (list 'if (list 'vector? (car args))
       (cons vector-op args)
-      (cons list-op args))))
+      (list 'if (list 'object? (car args))
+        (list 'apply
+          (list 'object-get-method (list 'object-type (car args)) name)
+          (cons 'list args))
+        (cons list-op args)))))
 
 (deffpgeneric all (l f))
 (deffpgeneric any (l f))
