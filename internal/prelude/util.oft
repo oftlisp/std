@@ -63,11 +63,11 @@
   concat-strings
   cons
   cons?
-  eq
   exit-with
   fixnum?
   nil?
   panic
+  prim-eq
   symbol<-string
   symbol?)
 
@@ -129,10 +129,10 @@
   (exit-with code))
 
 ;; Checks if a value is greater than another.
-(defn greater (a b) (eq (compare a b) '>))
+(defn greater (a b) (prim-eq (compare a b) '>))
 
 ;; Checks if a value is less than another.
-(defn less (a b) (eq (compare a b) '<))
+(defn less (a b) (prim-eq (compare a b) '<))
 
 ;; Checks if a value is greater than or equal to another.
 (defn geq (a b) (not (less a b)))
@@ -157,10 +157,11 @@
       (helper (cdr in) (cons (car in) out))))
   (helper l nil))
 
-;; Checks if a value is a list headed by the given symbol.
+;; Checks if a value is a list headed by the given symbol. Honestly, this is a
+;; kludge until pattern matching is implemented.
 (defn shl? (value sym)
   (if (cons? value)
-    (eq (car value) sym)
+    (prim-eq (car value) sym)
     false))
 
 ;; Splits a linked-list at the given index. If the index is greater than the

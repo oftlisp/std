@@ -153,14 +153,10 @@
         'just inner
         'not  (list 'not inner)
               (panic "Unknown regex: " cst))))
-  (def cst (parse-cst-regex regex))
-  (cond
-    (err? cst)
-      cst
-    (eq (caddr cst) "")
-      (-> (cadr cst)
+  (>>= (parse-cst-regex regex)
+    \(if (eq (cadr $) "")
+      (-> (car $)
         ast<-regex
         simplify-regex
         ok)
-    else
-      (err (concat-strings "Unparsed input: " (show (caddr cst))))))
+      (err (concat-strings "Unparsed input: " (show (cadr $)))))))

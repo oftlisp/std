@@ -1,8 +1,6 @@
 (module std/lang/json
   json-parse)
 
-(import std/fp/monad
-  >>=)
 (import std/parsing/peg
   combinator-*
   combinator-+

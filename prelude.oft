@@ -83,6 +83,7 @@
   displayln
   do
   each
+  either
   else
   empty?
   ends-with
@@ -143,10 +144,12 @@
   or
   or-default
   panic
+  prim-eq
   print
   println
   quasiquote
   result?
+  result.pure
   result.unwrap
   result.unwrap-err
   reverse
@@ -263,12 +266,14 @@
 (import std/internal/prelude/quasiquote
   quasiquote)
 (import std/internal/prelude/result
+  either
   err
   err?
   must
   ok
   ok?
   result?
+  result.pure
   result.unwrap
   result.unwrap-err)
 (import std/internal/prelude/strings
@@ -338,6 +343,7 @@
   append
   concat
   contains?
+  eq
   id
   init
   last
@@ -358,7 +364,6 @@
   concat-strings
   cons
   cons?
-  eq
   function?
   gensym
   list<-vector
@@ -368,6 +373,7 @@
   object-type
   object-value
   panic
+  prim-eq
   string?
   string<-symbol
   string.ord

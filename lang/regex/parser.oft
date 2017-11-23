@@ -9,10 +9,6 @@
 (module std/lang/regex/parser
   parse-cst-regex)
 
-(import std/fp/monad
-  <$>
-  >>=)
-
 (def special-chars (list "|" "+" "*" "?" "." "(" ")" "[" "]" "&" "^" "!" "\\"))
 
 (defn parse-cst-literal-char (str)
@@ -51,25 +47,20 @@
   (defn helper (str accum)
     (if (empty? str)
       (cons (reverse accum) "")
-      (let1 tmp (parser str)
-        (if (err? tmp)
-          (cons (reverse accum) str)
-          (helper (caddr tmp) (cons (cadr tmp) accum))))))
+      (either (parser str)
+        \(helper (cadr $) (cons (car $) accum))
+        \(cons (reverse accum) str))))
   (helper str nil))
 
 (defnrec
   (parse-cst-and-branch (str)
-    (let1 fst (parse-cst-or-branch str)
-      (if (err? fst)
-        fst
-        (let1 rst (kleene parse-cst-rest-or-branches (caddr fst))
-          (ok (cons (cadr fst) (car rst)) (cdr rst))))))
+    (<$> (parse-cst-or-branch str)
+      \(let1 rst (kleene parse-cst-rest-or-branches (cadr $))
+        (list (cons (car $) (car rst)) (cdr rst)))))
   (parse-cst-and-branches (str)
-    (let1 fst (parse-cst-and-branch str)
-      (if (err? fst)
-        fst
-        (let1 rst (kleene parse-cst-rest-and-branches (caddr fst))
-          (ok (cons (cadr fst) (car rst)) (cdr rst))))))
+    (<$> (parse-cst-and-branch str)
+      \(let1 rst (kleene parse-cst-rest-and-branches (cadr $))
+        (list (cons (car $) (car rst)) (cdr rst)))))
   (parse-cst-atom (str)
     (if (empty? str)
       (err "Unexpected EOF")
@@ -120,11 +111,10 @@
       else
         (err (concat-strings "Unexpected character: `" (head str) "'"))))
   (parse-cst-or-branch (str)
-    (def fst (parse-cst-piece str))
-    (if (err? fst)
-      (ok nil str)
-      (let1 rst (kleene parse-cst-piece (caddr fst))
-        (ok (cons (cadr fst) (car rst)) (cdr rst)))))
+    (either (parse-cst-piece str)
+      \(let1 rst (kleene parse-cst-piece (cadr $))
+        (ok (cons (car $) (car rst)) (cdr rst)))
+      \'(ok nil str)))
   (parse-cst-paren-regex (str)
     (def re (parse-cst-regex str))
     (if (err? re)
@@ -138,13 +128,11 @@
               (ok re (tail str))
               (err (concat-strings "Unexpected character: `" ch "'"))))))))
   (parse-cst-piece (str)
-    (def atom (parse-cst-atom str))
-    (if (err? atom)
-      atom
-      (let1 qualifier (parse-cst-qualifier (caddr atom))
-        (if (err? qualifier)
-          (ok (list (cadr atom)) (caddr atom))
-          (ok (cons (cadr atom) (cadr qualifier)) (caddr qualifier))))))
+    (<$> (parse-cst-atom str)
+      (fn (atom)
+        (either (parse-cst-qualifier (cadr atom))
+          \(list (cons (car atom) (car $)) (cadr $))
+          \(list (list (car atom)) (cadr atom))))))
   (parse-cst-qualifier (str)
     (if (empty? str)
       (err "Unexpected EOF")
@@ -158,20 +146,14 @@
   (parse-cst-regex (str)
     (cond
       (empty? str)
-        (let1 re (parse-cst-and-branches str)
-          (if (err? re)
-            re
-            (ok (list 'just (cadr re)) (caddr re))))
+        (<$> (parse-cst-and-branches str)
+          \(list (list 'just (car $)) (cadr $)))
       (eq (head str) "!")
-        (let1 re (parse-cst-and-branches (tail str))
-          (if (err? re)
-            re
-            (ok (list 'not (cadr re)) (caddr re))))
+        (<$> (parse-cst-and-branches (tail str))
+          \(list (list 'not (car $)) (cadr $)))
       else
-        (let1 re (parse-cst-and-branches str)
-          (if (err? re)
-            re
-            (ok (list 'just (cadr re)) (caddr re))))))
+        (<$> (parse-cst-and-branches str)
+          \(list (list 'just (car $)) (cadr $)))))
   (parse-cst-rest-and-branches (str)
     (cond
       (empty? str)

@@ -9,7 +9,8 @@
   traverse)
 
 (import std/internal/prelude/constants
-  else)
+  else
+  nil)
 (import std/internal/prelude/fp/list
   list.flat-map
   list.map)
@@ -28,7 +29,10 @@
   id)
 (import std/internal/primitives
   apply
+  car
+  cdr
   cons
+  nil?
   object?
   object-type
   panic
@@ -59,10 +63,14 @@
     else
       (list.flat-map obj f)))
 
-(defn sequence (obj)
+;; Sequences actions.
+;;
+;;   Applicative f, Traversable t =>
+;;   t (f a) -> (forall a. a -> f a) -> f (t a)
+(defn sequence (obj pure)
   (cond
     (vector? obj)
-      (panic "TODO: sequence " obj)
+      (panic 'TODO 'vector.sequence)
     (object? obj)
       (let1 type (object-type obj)
         (cond
@@ -72,12 +80,21 @@
             ((object-get-method type 'traverse) obj id)
           else
             (panic "Not traversable: " obj)))
+    (nil? obj)
+      (pure nil)
     else
-      (panic "TODO: sequence " obj)))
-(defn traverse (obj f)
+      (<*> (sequence (cdr obj) pure)
+        (<$> (car obj)
+          (fn (a) (fn (b) (cons a b)))))))
+
+;; Traverses an action over a list.
+;;
+;;   Applicative f, Traversable t =>
+;;   t a -> (forall a. a -> f a) -> (a -> f b) -> t (f b)
+(defn traverse (obj pure f)
   (cond
     (vector? obj)
-      (panic "TODO: traverse " obj f)
+      (panic 'TODO 'vector.traverse)
     (object? obj)
       (let1 type (object-type obj)
         (cond
@@ -88,4 +105,4 @@
         else
           (panic "Not traversable: " obj)))
     else
-      (panic "TODO: traverse " obj f)))
+      (sequence (list.map obj f) pure)))

@@ -6,6 +6,7 @@
   ok
   ok?
   result?
+  result.pure
   result.unwrap
   result.unwrap-err)
 
@@ -30,32 +31,32 @@
   car
   cdr
   cons
-  eq
   object?
   object-cons
   object-type
   object-value
-  panic)
+  panic
+  prim-eq)
 
 (defn result? (r)
   (and (object? r)
-       (eq '#result (object-type r))))
+       (prim-eq #result (object-type r))))
 
 (defn ok (... vals)
   (def v (if (= (length vals) 1)
-    (cons 'ok (car vals))
-    (cons 'ok vals)))
-  (object-cons '#result v))
+    (car vals)
+    vals))
+  (object-cons #result (cons 'ok v)))
 
 (defn err (msg)
-  (object-cons '#result (cons 'err msg)))
+  (object-cons #result (cons 'err msg)))
 
 (defn ok? (r) (and (result? r) (shl? (object-value r) 'ok)))
 (defn err? (r) (and (result? r) (shl? (object-value r) 'err)))
 
 (defn either (r if-ok if-err)
   (assert (result? r))
-  ((if (err? r) if-err if-ok) (object-value r)))
+  ((if (err? r) if-err if-ok) (cdr (object-value r))))
 
 (defn result.unwrap (r)
   (assert (ok? r))
@@ -87,7 +88,7 @@
   (ok x))
 
 (definit
-  (object-put-method '#result '<$> result.<$>)
-  (object-put-method '#result '<*> result.<*>)
-  (object-put-method '#result '>>= result.>>=)
-  (object-put-method '#result 'pure result.pure))
+  (object-put-method #result '<$> result.<$>)
+  (object-put-method #result '<*> result.<*>)
+  (object-put-method #result '>>= result.>>=)
+  (object-put-method #result 'pure result.pure))

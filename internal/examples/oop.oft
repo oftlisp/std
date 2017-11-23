@@ -1,6 +1,9 @@
 (module std/internal/examples/oop
   main)
 
+(import std/internal/prelude/objects/methods
+  debug-get-all-methods)
+
 (defclass range
   (val start)
   (val end)
@@ -9,6 +12,9 @@
     (list s e))
   (named-ctor empty ()
     (list 0 0))
+
+  (defstatic hello ()
+    (println "Hello, world!"))
 
   (defn show ()
     (concat-strings "(" (show start) " - " (show end) ")"))
@@ -29,6 +35,9 @@
   (rectangle s s))
 
 (defn main (args)
+  (debug-get-all-methods \(each $ println))
+  (range.hello)
+
   (def x (range 1 3))
   (println x)
   (println (range.size x))

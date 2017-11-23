@@ -2,6 +2,7 @@
   append
   concat
   contains?
+  eq
   id
   init
   length
@@ -28,15 +29,25 @@
   cdr
   cons
   cons?
-  eq
   nil?
+  object?
+  object-type
+  object-value
   panic
+  prim-eq
   string?
   string.scalar-tail
   vector?
   vector<-list
   vector.length
   vector.nth)
+
+(defn eq (x y)
+  (if (if (object? x) (object? y) false)
+    (if (prim-eq (object-type x) (object-type y))
+      \#todo
+      false)
+    (prim-eq x y)))
 
 ;; Reverses a list.
 (defn reverse (l)
@@ -80,7 +91,7 @@
 
 (defn string.length (s)
   (defn helper (s n)
-    (if (eq s "")
+    (if (prim-eq s "")
       n
       (helper (string.scalar-tail s) (+/2 n 1))))
   (helper s 0))
@@ -135,7 +146,7 @@
     (if (= n 0)
       (car l)
       (loop (cdr l) (-/2 n 1))))
-  (if (eq (<> n 0) '<)
+  (if (prim-eq (<> n 0) '<)
     (panic "Can't get the list value at a negative index")
     (loop l n)))
 

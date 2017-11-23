@@ -34,8 +34,8 @@
   bitand/2
   bitor/2
   bitxor/2
-  eq
-  mod/2)
+  mod/2
+  prim-eq)
 
 ;; Multiplies numbers.
 (defn * (n ... ns) (list.foldl ns */2 n))
@@ -71,12 +71,12 @@
 ;; Subtracts one from the given number.
 (defn 1- (n) (- n 1))
 
-(defn < (l r) (eq (<> l r) '<))
-(defn > (l r) (eq (<> l r) '>))
+(defn < (l r) (prim-eq (<> l r) '<))
+(defn > (l r) (prim-eq (<> l r) '>))
 
 (defn <= (l r)
   (def c (<> l r))
-  (if (eq c '<) true (eq c '=)))
+  (if (prim-eq c '<) true (prim-eq c '=)))
 (defn >= (l r)
   (def c (<> l r))
-  (if (eq c '>) true (eq c '=)))
+  (if (prim-eq c '>) true (prim-eq c '=)))

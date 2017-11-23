@@ -29,15 +29,15 @@
   <>
   +/2
   build-vector
-  eq
   panic
+  prim-eq
   vector.length
   vector.nth
   vector.slice)
 
 (defn vector.all (v f)
   (defn helper (i)
-    (if (eq (<> i (vector.length v)) '<)
+    (if (prim-eq (<> i (vector.length v)) '<)
       (if (f (vector.nth v i))
         (helper (+/2 i 1))
         nil)
@@ -46,7 +46,7 @@
 
 (defn vector.any (v f)
   (defn helper (i)
-    (if (eq (<> i (vector.length v)) '<)
+    (if (prim-eq (<> i (vector.length v)) '<)
       (if (f (vector.nth v i))
         true
         (helper (+/2 i 1)))
@@ -55,7 +55,7 @@
 
 (defn vector.each (v f)
   (defn helper (i)
-    (if (eq (<> i (vector.length v)) '<)
+    (if (prim-eq (<> i (vector.length v)) '<)
       (progn
         (f (vector.nth v i))
         (helper (+/2 i 1)))

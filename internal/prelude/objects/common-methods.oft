@@ -12,15 +12,16 @@
   cond
   todo)
 (import std/internal/prelude/util/pseudoprims
+  eq
   length)
 (import std/internal/primitives
   =
   car
   cdr
   cons?
-  eq
   nil?
   panic
+  prim-eq
   string?
   string.scalar-head
   string.scalar-tail

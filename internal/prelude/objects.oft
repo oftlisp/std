@@ -13,15 +13,13 @@
   filter
   group-by
   lookup
+  lookup-by
   map)
 (import std/internal/prelude/logic
   and)
 (import std/internal/prelude/math
   /=
   1+)
-(import std/internal/prelude/print
-  print
-  println)
 (import std/internal/prelude/quasiquote
   quasiquote)
 (import std/internal/prelude/util
@@ -53,13 +51,13 @@
   concat-strings
   cons
   cons?
-  eq
   gensym
   nil?
   object-cons
   object-type
   object-value
   panic
+  prim-eq
   string<-symbol
   symbol<-string
   symbol?
@@ -75,6 +73,7 @@
 ;;   (ctor ARGS BODY-EXPR...)
 ;;   (named-ctor NAME ARGS BODY-EXPR...)
 ;;   (defn NAME ARGS BODY-EXPR...)
+;;   (defstatic NAME ARGS BODY-EXPR...)
 ;;   (val NAME)
 ;;
 ;; A ctor form expands to a function with the name of the class, which
@@ -108,7 +107,7 @@
   ; Check that the decls are all of known types.
   (def unknown-decl-types (filter
     (map decls car)
-    (fn (x) (not (contains? '(ctor defn named-ctor val) x)))))
+    (fn (x) (not (contains? '(ctor defn defstatic named-ctor val) x)))))
   (unless (nil? unknown-decl-types)
     (panic (concat-strings
       "Invalid defclass "
@@ -148,7 +147,7 @@
     `(,is-class?-name (obj)
       (and
         (object? obj)
-        (eq (object-type obj) ',class-name)))))
+        (prim-eq (object-type obj) ',class-name)))))
 
   ; Process the member functions.
   (defn defn-name (name)
@@ -174,16 +173,28 @@
     `(,name ,(cons 'this args)
       ,@member-prelude
       ,@body))
-  (def defns (-> decls
+  (def members (-> decls
     (lookup 'defn)
     (map cdr)
     (map build-member-defn)))
 
+  (defn build-static-defn (form)
+    (def name (defn-name (car form)))
+    (def args (cadr form))
+    (def body (cddr form))
+    `(,name ,args ,@body))
+  (def statics (-> decls
+    (lookup 'defstatic)
+    (map cdr)
+    (map build-static-defn)))
+
+  (def defns (append members statics))
+
   ; Add the member functions to the global method registry.
   (defn build-method-add (name)
-    `(object-put-method ',class-name ',name ,(defn-name name)))
-  (def method-adds (-> decls
-    (lookup 'defn)
+    `(object-put-method #,class-name ',name ,(defn-name name)))
+  (def global-func-adds (-> decls
+    (lookup-by contains? '(defn defstatic))
     (map cadr)
     (map build-method-add)))
 
@@ -193,8 +204,7 @@
       ,@ctors
       ,@defns
       ,is-class?)
-    (definit
-      ,@method-adds)))
+    (definit ,@global-func-adds)))
 
 ;; Defines a method.
 (defmacro defmethod (name)

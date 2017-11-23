@@ -38,6 +38,7 @@
   todo)
 (import std/internal/prelude/util/pseudoprims
   contains?
+  eq
   list?)
 (import std/internal/primitives
   byte?
@@ -46,7 +47,6 @@
   concat-strings
   cons
   cons?
-  eq
   fixnum?
   panic
   string?

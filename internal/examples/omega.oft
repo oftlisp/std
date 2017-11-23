@@ -1,0 +1,5 @@
+(module std/internal/examples/omega
+  main)
+
+(defn main (args)
+  (\($ $) \($ $)))

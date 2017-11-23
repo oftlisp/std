@@ -40,7 +40,7 @@
     (aif (check-acceptance terminals n)
       (ok (slice str n len) $)
       (if (>= n len)
-        (err (concat-strings "No terminal matches input: " str))
+        (err (concat-strings "No terminal matches input: " (show str)))
         (helper (next terminals n) (1+ n)))))
 
   (helper terminals 0))
@@ -50,14 +50,10 @@
 (defn lexer-loop (terminals str accum)
   (if (empty? str)
     (ok (reverse accum))
-    (let1 tmp (lex-one terminals str accum)
-      (cond
-        (err? tmp)
-          tmp
-        (empty? (cadr tmp))
-          (ok (reverse (caddr tmp)))
-        else
-          (lexer-loop terminals (cadr tmp) (caddr tmp))))))
+    (>>= (lex-one terminals str accum)
+      \(if (empty? (car $))
+        (ok (reverse (cadr $)))
+        (lexer-loop terminals (car $) (cadr $))))))
 
 ;; Converts a terminal as accepted by build-lexer to one that would be accepted
 ;; by lex-one.
@@ -70,22 +66,16 @@
     (and (shl? t 'simple) (function? (caddr t)))
       (ok (regex-ast-from-string (cadr t)) (fn (x a) (cons ((caddr t) x) a)))
     (and (shl? t 'regex) (symbol? (caddr t)))
-      (let1 a (parse-regex (cadr t))
-        (if (err? a)
-          a
-          (ok (cdr a) (fn (x a) (cons (cons (caddr t) x) a)))))
+      (<$> (parse-regex (cadr t))
+        \(list $ (fn (x a) (cons (cons (caddr t) x) a))))
     (and (shl? t 'regex) (function? (caddr t)))
-      (let1 a (parse-regex (cadr t))
-        (if (err? a)
-          a
-          (ok (cdr a) (fn (x a) (cons ((caddr t) x) a)))))
+      (<$> (parse-regex (cadr t))
+        \(list $ (fn (x a) (cons ((caddr t) x) a))))
     (and (shl? t 'ignore) (eq (cadr t) 'simple))
       (ok (regex-ast-from-string (caddr t)) (fn (_ a) a))
     (and (shl? t 'ignore) (eq (cadr t) 'regex))
-      (let1 a (parse-regex (caddr t))
-        (if (err? a)
-          a
-          (ok (cdr a) (fn (_ a) a))))
+      (<$> (parse-regex (caddr t))
+        \(list $ (fn (_ a) a)))
     else
       (err (concat-strings "Invalid terminal: " (show t)))))
 
@@ -113,11 +103,8 @@
 ;; name consed with the matching string. When a function is present, it is
 ;; called with the matching string. Ignore terminals do not create matches.
 (defn build-lexer (terminals)
-  (def r (traverse terminals preprocess-terminal))
-  (if (err? r)
-    r
-    (let1 terminals (cdr r)
-      (ok (fn (str) (lexer-loop terminals str nil))))))
+  (<$> (traverse terminals result.pure preprocess-terminal)
+    \(fn (str) (lexer-loop $ str nil))))
 
 ;; Creates a lexer, similar to build-lexer, but defined as a function.
 (defmacro deflexer (name ... terminals)
@@ -127,6 +114,5 @@
 ;; the list of matches. See build-lexer for the specification of terminals.
 (defn lex-string (terminals str)
   (def lexer (build-lexer terminals))
-  (if (err? lexer)
-    lexer
-    ((cdr lexer) str)))
+  (<$> (build-lexer terminals)
+    \((cdr lexer) str)))

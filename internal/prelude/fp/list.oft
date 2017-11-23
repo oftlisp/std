@@ -42,6 +42,7 @@
 (import std/internal/prelude/util/pseudoprims
   append
   concat
+  eq
   length
   list)
 (import std/internal/primitives
@@ -54,7 +55,6 @@
   cdr
   cons
   cons?
-  eq
   gensym
   nil?
   panic

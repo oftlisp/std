@@ -15,8 +15,8 @@
   cdr
   cons
   cons?
-  eq
   panic
+  prim-eq
   symbol?
   vector?)
 
@@ -24,9 +24,9 @@
   (defn helper (value)
     (if (cons? value)
       (cond
-        (eq (car value) 'unquote)
+        (prim-eq (car value) 'unquote)
           (list 'list (car (cdr value)))
-        (eq (car value) 'unquote-splicing)
+        (prim-eq (car value) 'unquote-splicing)
           (car (cdr value))
         else
           (list 'list (list 'quasiquote value)))

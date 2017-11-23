@@ -21,7 +21,7 @@
 (import std/internal/primitives
   concat-strings
   cons
-  eq)
+  prim-eq)
 
 ;; Checks if one string end with another.
 (defn ends-with (needle haystack)
@@ -29,7 +29,7 @@
   (def lh (length haystack))
   (unless (> ln (length haystack))
     (def ld (- lh ln))
-    (eq needle (slice haystack ld lh))))
+    (prim-eq needle (slice haystack ld lh))))
 
 ;; Explodes a string into a list of character strings.
 (defn explode (str)
@@ -51,4 +51,4 @@
 (defn starts-with (needle haystack)
   (def ln (length needle))
   (unless (> ln (length haystack))
-    (eq needle (slice haystack 0 ln))))
+    (prim-eq needle (slice haystack 0 ln))))
