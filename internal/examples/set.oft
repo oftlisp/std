@@ -18,7 +18,7 @@
   generator)
 
 (def make-name
-  (generator \(concat-strings "node" (show $))))
+  (generator \(append-strings "node" (show $))))
 
 (defn name-for-color (color)
   (case color

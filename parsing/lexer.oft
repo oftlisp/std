@@ -40,7 +40,7 @@
     (aif (check-acceptance terminals n)
       (ok (slice str n len) $)
       (if (>= n len)
-        (err (concat-strings "No terminal matches input: " (show str)))
+        (err (append-strings "No terminal matches input: " (show str)))
         (helper (next terminals n) (1+ n)))))
 
   (helper terminals 0))
@@ -77,7 +77,7 @@
       (<$> (parse-regex (caddr t))
         \(list $ (fn (_ a) a)))
     else
-      (err (concat-strings "Invalid terminal: " (show t)))))
+      (err (append-strings "Invalid terminal: " (show t)))))
 
 ;; Builds a lexer from a list of terminals, returning a result. A lexer is a
 ;; function that accepts a string, and returns a result for the list of

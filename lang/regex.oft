@@ -159,4 +159,4 @@
         ast<-regex
         simplify-regex
         ok)
-      (err (concat-strings "Unparsed input: " (show (cadr $)))))))
+      (err (append-strings "Unparsed input: " (show (cadr $)))))))

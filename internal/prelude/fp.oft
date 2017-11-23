@@ -79,7 +79,7 @@
   apply
   car
   cdr
-  concat-strings
+  append-strings
   cons
   nil?
   object?
@@ -112,9 +112,9 @@
 
 (defmacro deffpgeneric (name args)
   (def list-op (symbol<-string
-    (concat-strings "list." (string<-symbol name))))
+    (append-strings "list." (string<-symbol name))))
   (def vector-op (symbol<-string
-    (concat-strings "vector." (string<-symbol name))))
+    (append-strings "vector." (string<-symbol name))))
   (list 'defn name args
     (list 'if (list 'vector? (car args))
       (cons vector-op args)

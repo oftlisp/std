@@ -17,7 +17,7 @@
     (println "Hello, world!"))
 
   (defn show ()
-    (concat-strings "(" (show start) " - " (show end) ")"))
+    (append-strings "(" (show start) " - " (show end) ")"))
   (defn size ()
     (- end start)))
 

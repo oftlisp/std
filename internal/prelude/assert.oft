@@ -10,12 +10,12 @@
   append
   list)
 (import std/internal/primitives
-  concat-strings
+  append-strings
   gensym
   panic)
 
 (defmacro assert (condition)
-  (def message (concat-strings
+  (def message (append-strings
     "Assertion failed: "
     (show condition)))
   `(unless ,condition
@@ -28,7 +28,7 @@
   `(let (,left-name  ,left)
         (,right-name ,right)
     (unless (eq ,left-name ,right-name)
-      (panic (concat-strings
+      (panic (append-strings
         "Assertion failed: (eq "
         ,(show left)
         " "

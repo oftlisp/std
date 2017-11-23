@@ -69,7 +69,7 @@
   cdr
   compile-time-eval
   concat
-  concat-strings
+  append-strings
   cond
   contains?
   cons
@@ -361,7 +361,7 @@
   build-vector
   car
   cdr
-  concat-strings
+  append-strings
   cons
   cons?
   function?

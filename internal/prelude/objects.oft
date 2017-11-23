@@ -48,7 +48,7 @@
   apply
   car
   cdr
-  concat-strings
+  append-strings
   cons
   cons?
   gensym
@@ -99,7 +99,7 @@
   ; Group the decls together.
   (def decls (group-by decls car))
   (unless (cons? decls)
-    (panic (concat-strings
+    (panic (append-strings
       "Invalid defclass "
       (string<-symbol class-name)
       ": No body")))
@@ -109,7 +109,7 @@
     (map decls car)
     (fn (x) (not (contains? '(ctor defn defstatic named-ctor val) x)))))
   (unless (nil? unknown-decl-types)
-    (panic (concat-strings
+    (panic (append-strings
       "Invalid defclass "
       (string<-symbol class-name)
       ": Unexpected form types: "
@@ -117,7 +117,7 @@
 
   ; Check for != 1 unnamed constructors.
   (when (/= (length (lookup decls 'ctor)) 1)
-    (panic (concat-strings
+    (panic (append-strings
       "Invalid defclass "
       (string<-symbol class-name)
       ": Must have exactly one unnamed constructor")))
@@ -127,7 +127,7 @@
     (def name (if (nil? (car form))
       class-name
       (symbol<-string
-        (concat-strings
+        (append-strings
           (string<-symbol class-name)
           "-"
           (string<-symbol (car form))))))
@@ -142,7 +142,7 @@
 
   ; Add a function to check for class membership.
   (def is-class?-name (symbol<-string
-    (concat-strings (string<-symbol class-name) "?")))
+    (append-strings (string<-symbol class-name) "?")))
   (def is-class? (progn
     `(,is-class?-name (obj)
       (and
@@ -152,7 +152,7 @@
   ; Process the member functions.
   (defn defn-name (name)
     (symbol<-string
-      (concat-strings
+      (append-strings
         (string<-symbol class-name)
         "."
         (string<-symbol name))))

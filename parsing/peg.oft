@@ -127,9 +127,9 @@
 ;;     (end-of-file (not .)))
 (defmacro defsyntax-peg (name ... productions)
   (defn comb-name (n)
-    (symbol<-string (concat-strings "combinator-" (string<-symbol n))))
+    (symbol<-string (append-strings "combinator-" (string<-symbol n))))
   (defn prod-fn-name (n)
-    (symbol<-string (concat-strings "parse-production-" (string<-symbol n))))
+    (symbol<-string (append-strings "parse-production-" (string<-symbol n))))
 
   (for-each prod productions
     (unless (and (cons? prod) (symbol? (car prod)))
@@ -154,7 +154,7 @@
             `(let1 ,c (string.ord (head ,src))
               (and (>= ,c ,l) (< ,c ,h))))
         else
-          (panic (concat-strings "Invalid charset item: " (show charset)))))
+          (panic (append-strings "Invalid charset item: " (show charset)))))
 
     (if (nil? charsets)
       error
@@ -164,8 +164,8 @@
           (ok (head ,src) (tail ,src))
           ,(make-charset-frag (cdr charsets) error)))))
   (defn make-parser-frag (name expr)
-    (def error `(err (concat-strings
-      ,(concat-strings "No match for expr " (show expr) " in production "
+    (def error `(err (append-strings
+      ,(append-strings "No match for expr " (show expr) " in production "
         (string<-symbol name) ": ")
       (show ,src))))
     (cond

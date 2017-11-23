@@ -15,7 +15,7 @@
          (= (length (cadr charset)) 1))
       true
     else
-      (panic (concat-strings "Invalid charset item: " (show charset)))))
+      (panic (append-strings "Invalid charset item: " (show charset)))))
 
 ;; Checks if an expression in a PEG is well-formed, panicing if it is not.
 (defn assert-expr-well-formed (expr nonterminal-names)
@@ -25,7 +25,7 @@
       true
     (symbol? expr)
       (unless (contains? nonterminal-names expr)
-        (panic (concat-strings "Unknown nonterminal: " (show expr))))
+        (panic (append-strings "Unknown nonterminal: " (show expr))))
     (string? expr)
       true
     (shl? expr 'charset)

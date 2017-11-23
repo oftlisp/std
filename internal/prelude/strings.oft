@@ -19,7 +19,7 @@
 (import std/internal/prelude/util/pseudoprims
   length)
 (import std/internal/primitives
-  concat-strings
+  append-strings
   cons
   prim-eq)
 
@@ -42,7 +42,7 @@
   (defn loop (accum strs)
     (if (empty? strs)
       accum
-      (loop (concat-strings accum sep (head strs)) (tail strs))))
+      (loop (append-strings accum sep (head strs)) (tail strs))))
   (if (empty? strs)
     ""
     (loop (head strs) (tail strs))))

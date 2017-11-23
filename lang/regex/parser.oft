@@ -16,7 +16,7 @@
     (err "Unexpected EOF")
     (let1 ch (head str)
       (if (contains? special-chars ch)
-        (err (concat-strings "Unexpected character: `" ch "'"))
+        (err (append-strings "Unexpected character: `" ch "'"))
         (ok ch (tail str))))))
 
 (defn parse-cst-special-char (str)
@@ -25,14 +25,14 @@
     (let1 ch (head str)
       (if (contains? special-chars ch)
         (ok ch (tail str))
-        (err (concat-strings "Unexpected character: `" ch "'"))))))
+        (err (append-strings "Unexpected character: `" ch "'"))))))
 
 (defn parse-cst-char-set-literal (str)
   (if (empty? str)
     (err "Unexpected EOF")
     (let1 ch (head str)
       (if (contains? (cons "-" special-chars) ch)
-        (err (concat-strings "Unexpected character: `" ch "'"))
+        (err (append-strings "Unexpected character: `" ch "'"))
         (ok ch (tail str))))))
 
 (defn parse-cst-char-set-special (str)
@@ -41,7 +41,7 @@
     (let1 ch (head str)
       (if (contains? (cons "-" special-chars) ch)
         (ok ch (tail str))
-        (err (concat-strings "Unexpected character: `" ch "'"))))))
+        (err (append-strings "Unexpected character: `" ch "'"))))))
 
 (defn kleene (parser str)
   (defn helper (str accum)
@@ -109,7 +109,7 @@
       (eq (head str) "]")
         (ok grps (tail str))
       else
-        (err (concat-strings "Unexpected character: `" (head str) "'"))))
+        (err (append-strings "Unexpected character: `" (head str) "'"))))
   (parse-cst-or-branch (str)
     (either (parse-cst-piece str)
       \(let1 rst (kleene parse-cst-piece (cadr $))
@@ -124,7 +124,7 @@
           (let1 ch (head str)
             (if (eq ch ")")
               (ok re (tail str))
-              (err (concat-strings "Unexpected character: `" ch "'"))))))))
+              (err (append-strings "Unexpected character: `" ch "'"))))))))
   (parse-cst-piece (str)
     (<$> (parse-cst-atom str)
       (fn (atom)
@@ -140,7 +140,7 @@
           "+" (ok '+ tl)
           "*" (ok '* tl)
           "?" (ok '? tl)
-              (err (concat-strings "Unexpected character: `" ch "'"))))))
+              (err (append-strings "Unexpected character: `" ch "'"))))))
   (parse-cst-regex (str)
     (cond
       (empty? str)
@@ -159,7 +159,7 @@
       (eq (head str) "&")
         (parse-cst-and-branch (tail str))
       else
-        (err (concat-strings "Unexpected character: `" (head str) "'"))))
+        (err (append-strings "Unexpected character: `" (head str) "'"))))
   (parse-cst-rest-or-branches (str)
     (cond
       (empty? str)
@@ -167,4 +167,4 @@
       (eq (head str) "|")
         (parse-cst-or-branch (tail str))
       else
-        (err (concat-strings "Unexpected character: `" (head str) "'")))))
+        (err (append-strings "Unexpected character: `" (head str) "'")))))

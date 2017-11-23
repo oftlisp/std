@@ -44,7 +44,7 @@
   byte?
   car
   cdr
-  concat-strings
+  append-strings
   cons
   cons?
   fixnum?
@@ -73,7 +73,7 @@
           used-variables
         (symbol? pat)
           (if (contains? used-variables pat)
-            (concat-strings "Cannot bind to variable " (show pat) " twice")
+            (append-strings "Cannot bind to variable " (show pat) " twice")
             (cons pat used-variables))
         (and (cons? pat)
             (eq (car pat) 'quote)
@@ -83,7 +83,7 @@
         (or (list? pat) (vector? pat))
           (foldl fold-helper used-variables pat)
         else
-          (concat-strings "Unknown pattern: " (show pat))))
+          (append-strings "Unknown pattern: " (show pat))))
     (fold-helper (used-variables pat)
       (if (string? used-variables)
         used-variables
@@ -91,7 +91,7 @@
 
   (def tmp (helper pat nil))
   (if (string? tmp)
-    (panic (concat-strings
+    (panic (append-strings
       "In pattern "
       (show pat)
       ": "

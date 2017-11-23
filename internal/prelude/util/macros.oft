@@ -32,7 +32,7 @@
   =
   car
   cdr
-  concat-strings
+  append-strings
   cons
   cons?
   gensym
@@ -154,12 +154,12 @@
         (def name (gensym))
         (list (list 'progn
           (list 'def name (car msg))
-          (list 'concat-strings "TODO: "
+          (list 'append-strings "TODO: "
             (list 'if (list 'string? name)
               name (list 'show name))))))
     else
       (list
-        (list 'apply 'concat-strings
+        (list 'apply 'append-strings
           (list 'list "TODO: "
             (list 'join " "
               (list 'map (cons 'list msg) 'show))))))))

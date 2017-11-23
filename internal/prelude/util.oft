@@ -60,7 +60,7 @@
   car
   cdr
   compare
-  concat-strings
+  append-strings
   cons
   cons?
   exit-with
@@ -91,7 +91,7 @@
   ; definition.
   (defn finish (x)
     (def body (car x))
-    (def name (apply concat-strings (cons "c" (cdr x))))
+    (def name (apply append-strings (cons "c" (cdr x))))
     (def name (symbol<-string name))
     (list 'defn name '(x) body))
 
