@@ -180,14 +180,11 @@
           `(ok nil ,src)
           (let (r (gensym))
                (r2 (gensym))
-            `(let1 ,r ,(make-parser-frag name (head expr))
-              (if (err? ,r)
-                ,r
-                (let (,src (caddr ,r))
-                     (,r2 ,(make-parser-frag name (tail expr)))
-                  (if (err? ,r2)
-                    ,r2
-                    (ok (cons (cadr ,r) (cadr ,r2)) (caddr ,r2))))))))
+            `(>>= ,(make-parser-frag name (head expr))
+              (fn (,r) (let1 ,src (cadr ,r)
+                (>>= ,(make-parser-frag name (tail expr))
+                  (fn (,r2)
+                    (ok (cons (car ,r) (car ,r2)) (cadr ,r2)))))))))
       (string? expr)
         `(if (starts-with ,expr ,src)
           (ok ,expr (slice ,src ,(length expr) (length ,src)))
@@ -198,11 +195,9 @@
         (let1 exprs (cdr expr)
           (if (nil? exprs)
             error
-            (let1 r (gensym)
-              `(let1 ,r ,(make-parser-frag name (car exprs))
-                (if (err? ,r)
-                  ,(make-parser-frag name (cons 'choose (cdr exprs)))
-                  ,r)))))
+            `(either ,(make-parser-frag name (car exprs))
+              ok
+              \,(make-parser-frag name (cons 'choose (cdr exprs))))))
       (or (shl? expr '*)
           (shl? expr '+)
           (shl? expr '?))
@@ -210,29 +205,21 @@
              (func `(fn (,src) ,(make-parser-frag name (cadr expr))))
           `(,comb ,func ,src))
       (shl? expr 'and)
-        (let1 r (gensym)
-          `(let1 ,r ,(make-parser-frag name (cadr expr))
-            (if (err? ,r)
-              ,r
-              (ok (cadr ,r) ,src))))
+        `(<$> ,(make-parser-frag name (cadr expr))
+          \(list (car $) ,src))
       (shl? expr 'not)
-        (let1 r (gensym)
-          `(let1 ,r ,(make-parser-frag name (cadr expr))
-            (if (err? ,r)
-              (ok nil ,src)
-              ,error)))
+        `(either ,(make-parser-frag name (cadr expr))
+          \,error
+          \(ok nil ,src))
       else
         (panic "Invalid expr: " expr)))
   (defn make-prod-parser-func (nonterminal-name)
     (def name (prod-fn-name nonterminal-name))
     (def expr (cons 'choose
       (map (lookup-all productions nonterminal-name) vector<-list)))
-    (def r (gensym))
     `(,name (,src)
-      (def ,r ,(make-parser-frag nonterminal-name expr))
-      (if (err? ,r)
-        ,r
-        (ok (vector<-list (cons ',nonterminal-name (cadr ,r))) (caddr ,r)))))
+      (<$> ,(make-parser-frag nonterminal-name expr)
+        \(list (vector<-list (cons ',nonterminal-name (car $))) (cadr $)))))
 
   `(def ,name (progn
     (defnrec ,@(map nonterminal-names make-prod-parser-func))

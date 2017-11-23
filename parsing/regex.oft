@@ -89,10 +89,7 @@
   \(accepts-empty-string? (derivative regex $)))
 
 (defn build-regex-matcher (regex)
-  (<- regex parse-regex)
-  (if (ok? regex)
-    (ok (build-regex-matcher-for-ast (cdr regex)))
-    regex))
+  (<$> (parse-regex regex) build-regex-matcher-for-ast))
 
 (defn must-build-regex-matcher (regex)
   (must (build-regex-matcher regex)))

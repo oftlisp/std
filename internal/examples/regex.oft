@@ -45,4 +45,5 @@
     (list "|()"          ""      true)
     (list "|(|)|"        ""      true)))
   (for-each t tests
-    (test (car t) (cadr t) (caddr t))))
+    (test (car t) (cadr t) (caddr t)))
+  (println "All tests passed"))
