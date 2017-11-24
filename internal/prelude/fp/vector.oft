@@ -26,6 +26,7 @@
 (import std/internal/prelude/util/macros
   todo)
 (import std/internal/primitives
+  =
   <>
   +/2
   build-vector
@@ -75,7 +76,12 @@
   (todo))
 
 (defn vector.foldl (xs f x)
-  (todo))
+  (def l (vector.length xs))
+  (defn loop (x n)
+    (if (= n l)
+      x
+      (loop (f x (vector.nth xs n)) (+/2 n 1))))
+  (loop x 0))
 
 (defn vector.foldr (xs f x)
   (todo))

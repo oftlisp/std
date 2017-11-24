@@ -1,4 +1,5 @@
 (module std/internal/prelude/strings
+  concat-strings
   ends-with
   explode
   join
@@ -17,11 +18,17 @@
 (import std/internal/prelude/util/macros
   unless)
 (import std/internal/prelude/util/pseudoprims
+  concat
   length)
 (import std/internal/primitives
   append-strings
+  apply
   cons
   prim-eq)
+
+;; Concatenates lists of strings.
+(defn concat-strings (... xs)
+  (apply append-strings (concat xs)))
 
 ;; Checks if one string end with another.
 (defn ends-with (needle haystack)

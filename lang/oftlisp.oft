@@ -1,0 +1,5 @@
+(module std/lang/oftlisp
+  parse-oftlisp)
+
+(import std/lang/oftlisp/parser
+  parse-oftlisp)

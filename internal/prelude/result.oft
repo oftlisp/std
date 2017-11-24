@@ -19,18 +19,15 @@
 (import std/internal/prelude/util
   shl?)
 (import std/internal/prelude/util/macros
-  case
   definit
-  todo
   unless)
 (import std/internal/prelude/util/pseudoprims
-  id
-  length)
+  id)
 (import std/internal/primitives
-  =
   car
   cdr
   cons
+  nil?
   object?
   object-cons
   object-type
@@ -42,10 +39,8 @@
   (and (object? r)
        (prim-eq #result (object-type r))))
 
-(defn ok (... vals)
-  (def v (if (= (length vals) 1)
-    (car vals)
-    vals))
+(defn ok (x ... xs)
+  (def v (if (nil? xs) x (cons x xs)))
   (object-cons #result (cons 'ok v)))
 
 (defn err (msg)

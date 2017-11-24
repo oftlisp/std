@@ -27,6 +27,7 @@
   any-shl?
   any
   append
+  append-strings
   apply
   assert
   assert-eq
@@ -36,6 +37,10 @@
   bitxor
   build-list
   build-vector
+  byte<-fixnum
+  bytes<-list
+  bytes<-string
+  bytes<-vector
   caaaar
   caaadr
   caaar
@@ -69,7 +74,7 @@
   cdr
   compile-time-eval
   concat
-  append-strings
+  concat-strings
   cond
   contains?
   cons
@@ -95,6 +100,7 @@
   explode
   false
   filter
+  fixnum<-string
   flat-map
   foldl
   foldr
@@ -162,8 +168,8 @@
   sort-by
   starts-with
   string?
+  string<-fixnum
   string<-symbol
-  string.ord
   symbol?
   symbol<-string
   tail
@@ -277,6 +283,7 @@
   result.unwrap
   result.unwrap-err)
 (import std/internal/prelude/strings
+  concat-strings
   ends-with
   explode
   join
@@ -356,14 +363,19 @@
   vector)
 (import std/internal/primitives
   =
+  append-strings
   apply
   bitnot
   build-vector
+  byte<-fixnum
+  bytes<-list
+  bytes<-string
+  bytes<-vector
   car
   cdr
-  append-strings
   cons
   cons?
+  fixnum<-string
   function?
   gensym
   list<-vector
@@ -375,8 +387,8 @@
   panic
   prim-eq
   string?
+  string<-fixnum
   string<-symbol
-  string.ord
   symbol?
   symbol<-string
   unwind-protect

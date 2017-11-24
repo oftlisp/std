@@ -1,0 +1,45 @@
+(module std/internal/examples/read
+  main)
+
+(import std/lang/oftlisp
+  parse-oftlisp)
+(import std/lang/oftlisp/reader
+  read)
+
+(def source "
+(module hello
+  main)
+
+;; Prints a customary greeting.
+(defn main ()
+  (each [\"Hello, \" \"world!\\n\"] print)
+  (def x %(list 137 42))
+  (def y '(1 2 3))
+  (println `(,x y ,@x))
+  (println y !(* 2 3))
+  ((\\println nil) 7)
+  (println \"question mark = \\xbf, lambda = \\u03bb, smile = \\U0001f603\")
+  (println b\"Goodbye, world!\"))
+
+;; fin!
+")
+
+(def value [
+  '(module hello main)
+  `(defn main ()
+    (each ["Hello, " "world!\n"] print)
+    (def x %(list 137 42))
+    (def y '(1 2 3))
+    (println ,'`(,x y ,@x))
+    (println y !(* 2 3))
+    ((\println nil) 7)
+    (println "question mark = \xbf, lambda = \u03bb, smile = \U0001f603")
+    (println ,(bytes<-string "Goodbye, world!")))])
+
+(def data-string "(1 [2 3] four \"five\")")
+(def data-val '(1 [2 3] four "five"))
+
+(defn main (args)
+  (assert-eq (must (parse-oftlisp source)) value)
+  (assert-eq (must (read data-string)) data-val)
+  (println "All tests passed"))

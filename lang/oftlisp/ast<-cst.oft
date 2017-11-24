@@ -1,0 +1,111 @@
+(module std/lang/oftlisp/ast<-cst
+  ast<-value)
+
+(import std/lang/oftlisp/symbolish
+  parse-symbolish)
+
+(defnrec
+  (ast<-value (cst)
+    (<- cst (. head tail))
+    (def f (case (head cst)
+      'bytes              ast<-bytes
+      'list               ast<-list
+      'reader-macro-value ast<-reader-macro-value
+      'string             ast<-string
+      'symbolish          ast<-symbolish
+      'vector             ast<-vector
+                          (panic "Invalid parse tree")))
+    (f cst))
+
+  (ast<-bytes (cst)
+    (defn convert (nums)
+      (-> nums
+        (map byte<-fixnum)
+        bytes<-list))
+    (-> cst
+      (nth 2)
+      (traverse result.pure ast<-bytes-char)
+      (<$> convert)))
+  (ast<-list (cst)
+    (traverse (head (tail (tail cst)))
+      result.pure
+      ast<-value))
+  (ast<-reader-macro-value (cst)
+    (<$> (ast<-value (-> cst tail tail head))
+      (case (-> cst tail head tail head)
+        "'"  \(list 'quote $)
+        "`"  \(list 'quasiquote $)
+        ",@" \(list 'unquote-splicing $)
+        ","  \(list 'unquote $)
+        "\\" \`(fn ($) ,$)
+        "!"  \(list 'compile-time-eval $)
+        "%"  \(list 'debug-trace $)
+            (panic "Invalid parse tree"))))
+  (ast<-string (cst)
+    (-> cst
+      (nth 2)
+      (traverse result.pure ast<-char)
+      (<$> concat-strings)))
+  (ast<-symbolish (cst)
+    (def chars (-> cst
+      (nth 2)
+      (map (. head tail))))
+    (def sym (parse-symbolish chars))
+    (<- chars \(apply append-strings $))
+    (if (eq "#" (head (tail (head (tail cst)))))
+      (if (string? sym)
+        (ok (symbol<-string (append-strings "/" sym)))
+        (err (append-strings "Invalid symbol: #" chars)))
+      (if (string? sym)
+        (ok (symbol<-string sym))
+        (ok sym))))
+  (ast<-vector (cst)
+    (<$> (ast<-list cst)
+      vector<-list))
+
+  (ast<-bytes-char (cst)
+    (case (nth cst 1)
+      "\\" (ast<-bytes-escape (nth (nth cst 2) 1))
+      nil  (ok (fixnum<-string (nth cst 3)))
+           (panic "Invalid parse tree")))
+  (ast<-bytes-escape (cst)
+    (todo))
+  (ast<-char (cst)
+    (case (nth cst 1)
+      "\\" (ast<-escape (nth (nth cst 2) 1))
+      nil  (ok (nth cst 3))
+           (panic "Invalid parse tree")))
+  (ast<-escape (cst)
+    (if (eq (head cst) 'c-escape)
+      (ast<-c-escape (nth cst 1))
+      (ast<-hex-escape (tail (tail cst)))))
+  (ast<-c-escape (ch)
+    (case ch
+      "a"  (ok "\a")
+      "b"  (ok "\b")
+      "e"  (ok "\e")
+      "n"  (ok "\n")
+      "r"  (ok "\r")
+      "t"  (ok "\t")
+      "\"" (ok "\"")
+      "\\" (ok "\\")
+           (panic "Invalid parse tree")))
+  (ast<-hex-escape (cst)
+    (defn as-hex-digit (ch)
+      (def zero (fixnum<-string "0"))
+      (def nine (fixnum<-string "9"))
+      (def a (fixnum<-string "a"))
+      (def f (fixnum<-string "f"))
+      (def A (fixnum<-string "A"))
+      (def F (fixnum<-string "F"))
+      (cond
+        (and (>= ch zero) (<= ch nine)) (- ch zero)
+        (and (>= ch a) (<= ch f))       (- ch a -10)
+        (and (>= ch A) (<= ch F))       (- ch A -10)
+        else                            (panic "Invalid parse tree")))
+    (-> cst
+      (map \(nth $ 1))
+      (map (. as-hex-digit fixnum<-string))
+      (foldl (fn (a b) (+ (* 16 a) b)) 0)
+      string<-fixnum
+      ok)))

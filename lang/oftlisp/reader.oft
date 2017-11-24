@@ -1,0 +1,59 @@
+(module std/lang/oftlisp/reader
+  read)
+
+(import std/lang/oftlisp/ast<-cst
+  ast<-value)
+(import std/parsing/peg
+  combinator-*
+  combinator-+
+  combinator-?
+  defsyntax-peg)
+
+(defsyntax-peg parse-cst
+  (root IGNORES value end-of-file)
+
+  ; TODO: Support unicode whitespace?
+  (IGNORES (* (choose " " "\n" "\r" "\t" comment)))
+  (comment ";" (* [(not end-of-line) .]) end-of-line)
+  (end-of-line (choose "\n" "\r\n" "\r" end-of-file))
+  (end-of-file (not .))
+
+  (value (choose bytes list string symbolish vector))
+
+  (bytes "b\"" (* bytes-char) "\"")
+  (bytes-char (not "\\") (not "\"") (charset ("\x20" "\x7e")))
+  (bytes-char "\\" (choose c-escape byte-escape))
+
+  (string "\"" (* string-char) "\"" IGNORES)
+  (string-char (not "\\") (not "\"") .)
+  (string-char "\\" string-escape)
+  (string-escape (choose c-escape byte-escape uni4-escape uni8-escape))
+
+  (symbolish maybe-hash (+ symbolish-char) IGNORES)
+  (maybe-hash (choose "#" ""))
+  (symbolish-char (charset ("0" "9") ("a" "z") ("A" "Z")))
+  (symbolish-char (choose "+" "-" "." "/" "$" "?" "*" "=" "<" ">" "_"))
+
+  (list OPEN-PAREN (* value) CLOSE-PAREN)
+  (vector OPEN-BRACK (* value) CLOSE-BRACK)
+
+  (c-escape (choose "a" "b" "e" "n" "r" "t" "\"" "\\"))
+  (byte-escape "x" hex-digit hex-digit)
+  (uni4-escape "u" hex-digit hex-digit hex-digit hex-digit)
+  (uni8-escape "U" hex-digit hex-digit hex-digit hex-digit
+                   hex-digit hex-digit hex-digit hex-digit)
+  (hex-digit (charset ("0" "9") ("a" "f") ("A" "F")))
+
+  (OPEN-BRACK "[" IGNORES)
+  (OPEN-PAREN "(" IGNORES)
+  (CLOSE-BRACK "]" IGNORES)
+  (CLOSE-PAREN ")" IGNORES))
+
+(defn ast<-root (cst)
+  (ast<-value (nth cst 2)))
+
+(defn read (str)
+  (>>= (parse-cst str)
+    \(if (empty? (cadr $))
+      (ast<-root (car $))
+      (err "Incomplete parse: " (cadr $)))))

@@ -1,0 +1,17 @@
+(module std/lang/oftlisp/symbolish
+  parse-symbolish)
+
+(defn parse-symbolish (str)
+  (defn as-int (s)
+    (- (fixnum<-string s)
+       (fixnum<-string "0")))
+  (defn intish? (s)
+    (def i (as-int s))
+    (and (>= i 0) (< i 10)))
+
+  (defn loop (s a)
+    (cond
+      (empty? s)        a
+      (intish? (car s)) (loop (cdr s) (+ (* 10 a) (as-int (car s))))
+      else              (foldl str append-strings "")))
+  (loop str 0))

@@ -148,11 +148,11 @@
         (string? charset)
           `(eq (head ,src) ,charset)
         (cons? charset)
-          (let (l (string.ord (car charset)))
-               (h (string.ord (cadr charset)))
+          (let (l (fixnum<-string (car charset)))
+               (h (fixnum<-string (cadr charset)))
                (c (gensym))
-            `(let1 ,c (string.ord (head ,src))
-              (and (>= ,c ,l) (< ,c ,h))))
+            `(let1 ,c (fixnum<-string (head ,src))
+              (and (>= ,c ,l) (<= ,c ,h))))
         else
           (panic (append-strings "Invalid charset item: " (show charset)))))
 
