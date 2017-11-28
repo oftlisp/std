@@ -48,13 +48,13 @@
 (import std/internal/primitives
   +/2
   -/2
-  //2
   =
   <>
   car
   cdr
   cons
   cons?
+  div/2
   gensym
   nil?
   panic
@@ -175,8 +175,8 @@
     (if (eq (<> len 2) '<)
       lst
       (progn
-        (def tmp0 (//2 len 2))
-        (def tmp1 (//2 (+/2 len 1) 2))
+        (def tmp0 (div/2 len 2))
+        (def tmp1 (div/2 (+/2 len 1) 2))
         (def tmp2 (split-at lst tmp0))
         (def left (car tmp2))
         (def right (cdr tmp2))

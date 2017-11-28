@@ -28,12 +28,12 @@
   */2
   +/2
   -/2
-  //2
   <>
   =
   bitand/2
   bitor/2
   bitxor/2
+  div/2
   mod/2
   prim-eq)
 
@@ -47,7 +47,7 @@
 (defn - (n ... ns) (list.foldl ns -/2 n))
 
 ;; Divides numbers.
-(defn / (n ... ns) (list.foldl ns //2 n))
+(defn / (n ... ns) (list.foldl ns div/2 n))
 
 (defn bitand (n ... ns) (list.foldl ns bitand/2 n))
 (defn bitor (n ... ns) (list.foldl ns bitor/2 n))
