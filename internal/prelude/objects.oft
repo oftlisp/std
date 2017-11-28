@@ -60,8 +60,7 @@
   prim-eq
   string<-symbol
   symbol<-string
-  symbol?
-  unwind-protect)
+  symbol?)
 
 ;; The class declarator. Of the form:
 ;;

@@ -1,0 +1,76 @@
+(module std/internal/prelude/atomic-word
+  atomic-word
+  atomic-word?
+  atomic-word.add
+  atomic-word.cas
+  atomic-word.dec
+  atomic-word.inc
+  atomic-word.load
+  atomic-word.store)
+
+(import std/internal/prelude/logic
+  and)
+(import std/internal/prelude/util/macros
+  unless)
+(import std/internal/primitives
+  +/2
+  atomic-pointer
+  atomic-pointer.cas
+  atomic-pointer.load
+  atomic-pointer.store
+  fixnum?
+  object?
+  object-cons
+  object-type
+  object-value
+  panic
+  prim-eq)
+
+(defn atomic-word (value)
+  (object-cons #atomic-word (atomic-pointer value)))
+
+(defn atomic-word? (this)
+  (and (object? this)
+       (prim-eq (object-type this) #atomic-word)))
+
+(defn atomic-word.cas (this before after)
+  (unless (atomic-word? this)
+    (panic "Called atomic-word.cas on something that wasn't an atomic-word"))
+  (unless (fixnum? before)
+    (panic "atomic-word.cas arg 1 should be a fixnum"))
+  (unless (fixnum? after)
+    (panic "atomic-word.cas arg 2 should be a fixnum"))
+  (atomic-pointer.cas
+    (object-value this)
+    before
+    after))
+
+(defn atomic-word.add (this n)
+  (unless (atomic-word? this)
+    (panic "Called atomic-word.add on something that wasn't an atomic-word"))
+  (unless (fixnum? n)
+    (panic "atomic-word.add arg 1 should be a fixnum"))
+  (defn loop (exp)
+    (def new (+/2 exp n))
+    (def r (atomic-pointer.cas (object-value this) exp new))
+    (unless (prim-eq r exp)
+      (loop r)))
+  (loop 0))
+
+(defn atomic-word.dec (this)
+  (atomic-word.add this -1))
+
+(defn atomic-word.inc (this)
+  (atomic-word.add this 1))
+
+(defn atomic-word.load (this)
+  (unless (atomic-word? this)
+    (panic "Called atomic-word.load on something that wasn't an atomic-word"))
+  (atomic-pointer.load (object-value this)))
+
+(defn atomic-word.store (this n)
+  (unless (atomic-word? this)
+    (panic "Called atomic-word.store on something that wasn't an atomic-word"))
+  (unless (fixnum? n)
+    (panic "atomic-word.store arg 1 should be a fixnum"))
+  (atomic-pointer.store (object-value this) n))

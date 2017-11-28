@@ -180,7 +180,7 @@
   uniq
   unique
   unless
-  unwind-protect
+  unwind-finally
   vector
   vector?
   vector<-list
@@ -391,6 +391,6 @@
   string<-symbol
   symbol?
   symbol<-string
-  unwind-protect
+  unwind-finally
   vector?
   vector<-list)

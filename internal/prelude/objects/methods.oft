@@ -4,6 +4,12 @@
   object-has-method?
   object-put-method)
 
+(import std/internal/prelude/atomic-word
+  atomic-word
+  atomic-word.add
+  atomic-word.cas
+  atomic-word.load
+  atomic-word.store)
 (import std/internal/prelude/fp/list
   list.any
   list.lookup)
@@ -19,16 +25,11 @@
   atomic-pointer
   atomic-pointer.load
   atomic-pointer.store
-  atomic-word
-  atomic-word.add
-  atomic-word.cas
-  atomic-word.load
-  atomic-word.store
   bitnot
   cons
   function?
   panic
-  unwind-protect)
+  unwind-finally)
 
 (def lock (atomic-word 0))
 (def value (atomic-pointer nil))
@@ -65,19 +66,19 @@
 
 (defn debug-get-all-methods (f)
   (def value (get-read-lock))
-  (unwind-protect
+  (unwind-finally
     (fn () (f value))
     drop-read-lock))
 
 (defn object-has-method? (obj name)
   (def value (get-read-lock))
-  (unwind-protect
+  (unwind-finally
     (fn () (list.lookup value (cons obj name)))
     drop-read-lock))
 
 (defn object-get-method (obj name)
   (def value (get-read-lock))
-  (unwind-protect
+  (unwind-finally
     (fn () (list.lookup value (cons obj name)))
     drop-read-lock))
 

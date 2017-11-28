@@ -6,36 +6,25 @@
   atomic-pointer.store
   atomic-word
   atomic-word?
+  atomic-word.add
   atomic-word.cas
   atomic-word.dec
   atomic-word.inc
   atomic-word.load
   atomic-word.store)
 
+(import std/internal/prelude/atomic-word
+  atomic-word
+  atomic-word?
+  atomic-word.add
+  atomic-word.cas
+  atomic-word.dec
+  atomic-word.inc
+  atomic-word.load
+  atomic-word.store)
 (import std/internal/primitives
   atomic-pointer
   atomic-pointer?
   atomic-pointer.cas
   atomic-pointer.load
-  atomic-pointer.store
-  atomic-word
-  atomic-word?
-  atomic-word.cas
-  atomic-word.load
-  atomic-word.store)
-
-;; A postdecrement to an atomic word.
-(defn atomic-word.dec (a)
-  (def prev (atomic-word.load a))
-  (def now (1- prev))
-  (if (= (atomic-word.cas a prev now) prev)
-    prev
-    (atomic-word.dec a)))
-
-;; A postincrement to an atomic word.
-(defn atomic-word.inc (a)
-  (def prev (atomic-word.load a))
-  (def now (1+ prev))
-  (if (= (atomic-word.cas a prev now) prev)
-    prev
-    (atomic-word.inc a)))
+  atomic-pointer.store)
