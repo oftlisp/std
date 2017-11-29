@@ -107,5 +107,5 @@
       (map \(nth $ 1))
       (map (. as-hex-digit fixnum<-string))
       (foldl (fn (a b) (+ (* 16 a) b)) 0)
-      string<-fixnum
+      show
       ok)))

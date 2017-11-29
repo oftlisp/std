@@ -168,7 +168,6 @@
   sort-by
   starts-with
   string?
-  string<-fixnum
   string<-symbol
   symbol?
   symbol<-string
@@ -388,7 +387,6 @@
   panic
   prim-eq
   string?
-  string<-fixnum
   string<-symbol
   symbol?
   symbol<-string
