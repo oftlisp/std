@@ -1,0 +1,21 @@
+(module std/internal/examples/slice
+  main)
+
+(defn main (args)
+  (assert-eq (slice "asdf" 0 4) "asdf")
+  (assert-eq (slice "asdf" 0 0) "")
+  (assert-eq (slice "asdf" 2 2) "")
+  (assert-eq (slice "asdf" 4 4) "")
+  (assert-eq (slice "asdf" 0 -2) "as")
+  (assert-eq (slice "asdf" -2 -2) "")
+  (assert-eq (slice "asdf" -2 -1) "d")
+
+  (assert-eq (slice ['a 's 'd 'f] 0 4) ['a 's 'd 'f])
+  (assert-eq (slice ['a 's 'd 'f] 0 0) [])
+  (assert-eq (slice ['a 's 'd 'f] 2 2) [])
+  (assert-eq (slice ['a 's 'd 'f] 4 4) [])
+  (assert-eq (slice ['a 's 'd 'f] 0 -2) ['a 's])
+  (assert-eq (slice ['a 's 'd 'f] -2 -2) [])
+  (assert-eq (slice ['a 's 'd 'f] -2 -1) ['d])
+
+  (println "All tests passed."))

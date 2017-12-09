@@ -1,19 +1,89 @@
 (module std/internal/prelude/format
   show)
 
+(import std/internal/prelude/constants
+  else
+  false
+  true)
+(import std/internal/prelude/fp
+  map)
 (import std/internal/prelude/logic
-  and)
+  and
+  or)
+(import std/internal/prelude/objects/common-methods
+  empty?
+  slice)
 (import std/internal/prelude/objects/methods
   object-get-method
   object-has-method?)
+(import std/internal/prelude/util/macros
+  cond
+  let)
+(import std/internal/prelude/util/pseudoprims
+  length
+  nth)
 (import std/internal/primitives
+  append-strings
+  atomic-pointer?
+  atomic-pointer.load
+  car
+  cdr
+  cons?
+  debug-trace
+  function?
+  nil?
   object?
   object-type
   object-value
   panic
-  show-primitive)
+  show-primitive
+  string<-symbol
+  symbol?
+  vector?)
 
-(defn show (value)
-  (if (and (object? value) (object-has-method? (object-type value) 'show))
-    ((object-get-method (object-type value) 'show) value)
-    (show-primitive value)))
+(defnrec
+  (show-list (value)
+    (if (cons? value)
+      (let (h (show (car value)))
+           (t (cdr value))
+        (cond
+          (nil? (cdr value))
+            h
+          (cons? (cdr value))
+            (append-strings h " " (show-list t))
+          else
+            (append-strings h " : " (show t))))
+      ""))
+  (show-vector (value)
+    (defn loop (v first accum)
+      (if (empty? v)
+        (append-strings accum "]")
+        (progn
+          (def f (if first "[" " "))
+          (def next (append-strings accum f (show (nth v 0))))
+          (def l (length v))
+          (loop (slice v 1 l) false next))))
+    (loop value true ""))
+  (show (value)
+    (cond
+      (atomic-pointer? value)
+        (show (atomic-pointer.load value))
+      (or (cons? value) (nil? value))
+        (append-strings "(" (show-list value) ")")
+      (function? value)
+        "{function}"
+      (object? value)
+        (if (object-has-method? (object-type value) 'show)
+          ((object-get-method (object-type value) 'show) value)
+          (append-strings
+            "{object "
+            (string<-symbol (object-type value))
+            " "
+            (show (object-value value))
+            "}"))
+      (symbol? value)
+        (string<-symbol value)
+      (vector? value)
+        (show-vector value)
+      else
+        (show-primitive value))))

@@ -3,8 +3,8 @@
 
 (defn parse-symbolish (str)
   (defn as-int (s)
-    (- (fixnum<-string s)
-       (fixnum<-string "0")))
+    (- (string.ord s)
+       (string.ord "0")))
   (defn intish? (s)
     (def i (as-int s))
     (and (>= i 0) (< i 10)))

@@ -1,0 +1,17 @@
+(module std/internal/examples/self-parse
+  main)
+
+(import std/lang/oftlisp
+  parse-oftlisp
+  read-module)
+
+;;; Run this from inside the same folder the source file is in.
+
+(defn main (args)
+  (-> "std/internal/examples/self-parse"
+    read-module
+    must
+    string<-bytes
+    parse-oftlisp
+    must
+    (each println)))

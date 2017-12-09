@@ -16,6 +16,7 @@
   list.skip
   list.sort
   list.sort-by
+  list.split-at
   list.take
   list.uniq
   list.zip)
@@ -25,6 +26,8 @@
   false
   nil
   true)
+(import std/internal/prelude/eq
+  eq)
 (import std/internal/prelude/logic
   and
   or)
@@ -34,15 +37,13 @@
   cdar
   cddr
   leq
-  reverse
-  split-at)
+  reverse)
 (import std/internal/prelude/util/macros
   cond
   todo)
 (import std/internal/prelude/util/pseudoprims
   append
   concat
-  eq
   length
   list)
 (import std/internal/primitives
@@ -164,6 +165,13 @@
       (loop (cdr l) (-/2 n 1) (cons (car l) acc))))
     (loop l n nil))
 
+(defn list.split-at (lst idx)
+  (defn loop (lst i accum)
+    (if (= i 0)
+      (cons (reverse accum) lst)
+      (loop (cdr lst) (-/2 i 1) (cons (car lst) accum))))
+  (loop lst idx nil))
+
 ;; Sorts lists by the given function.
 ;;
 ;; Uses O(log n) stack space.
@@ -177,7 +185,7 @@
       (progn
         (def tmp0 (div/2 len 2))
         (def tmp1 (div/2 (+/2 len 1) 2))
-        (def tmp2 (split-at lst tmp0))
+        (def tmp2 (list.split-at lst tmp0))
         (def left (car tmp2))
         (def right (cdr tmp2))
         (merge (helper left tmp0)

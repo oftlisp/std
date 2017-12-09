@@ -1,7 +1,7 @@
 (module std/lang/oftlisp/parser
   parse-oftlisp)
 
-(import std/lang/oftlisp/ast<-cst
+(import std/lang/oftlisp/parser/convert
   ast<-value)
 (import std/parsing/peg
   combinator-*

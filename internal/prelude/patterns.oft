@@ -24,9 +24,12 @@
 (import std/internal/prelude/constants
   else
   nil)
+(import std/internal/prelude/eq
+  eq)
 (import std/internal/prelude/format
   show)
 (import std/internal/prelude/fp
+  contains?
   foldl)
 (import std/internal/prelude/logic
   and
@@ -37,8 +40,6 @@
   cond
   todo)
 (import std/internal/prelude/util/pseudoprims
-  contains?
-  eq
   list?)
 (import std/internal/primitives
   byte?

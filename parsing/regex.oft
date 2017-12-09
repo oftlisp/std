@@ -36,8 +36,8 @@
       (panic "Invalid regex: " regex)))
 
 (defn char-set-contains? (char from to)
-  (<- char fixnum<-string)
-  (and (<= (fixnum<-string from) char) (< char (fixnum<-string to))))
+  (<- char string.ord)
+  (and (<= (string.ord from) char) (< char (string.ord to))))
 
 (defn derivative (regex char)
   (<- regex simplify-regex)

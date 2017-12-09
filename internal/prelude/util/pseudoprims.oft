@@ -1,15 +1,12 @@
 (module std/internal/prelude/util/pseudoprims
   append
   concat
-  contains?
-  eq
   id
   init
   length
   last
   list
   list?
-  neq
   not
   nth
   reverse
@@ -42,13 +39,6 @@
   vector.length
   vector.nth)
 
-(defn eq (x y)
-  (if (if (object? x) (object? y) false)
-    (if (prim-eq (object-type x) (object-type y))
-      \#todo
-      false)
-    (prim-eq x y)))
-
 ;; Reverses a list.
 (defn reverse (l)
   (defn loop (acc l)
@@ -72,12 +62,6 @@
 ;; Concatenates a list of lists.
 (defn concat (l)
   (apply append l))
-
-;; Checks if a value is contained in a list.
-(defn contains? (l x)
-  (if (nil? l) false
-    (if (eq (car l) x) true
-      (contains? (cdr l) x))))
 
 ;; The identity function.
 (defn id (x) x)
@@ -113,10 +97,6 @@
 ;; Logical not.
 (defn not (x)
   (if x false true))
-
-;; Checks for not-equals. Equivalent to (fn (x y) (not (eq x y))).
-(defn neq (x y)
-  (not (eq x y)))
 
 ;; Checks if a value is a list.
 (defn list? (value)

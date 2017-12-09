@@ -102,6 +102,7 @@
   filter
   fixnum<-string
   flat-map
+  flatten
   foldl
   foldr
   for-each
@@ -159,6 +160,7 @@
   result.unwrap
   result.unwrap-err
   reverse
+  search-string
   sequence
   shl?
   show
@@ -166,9 +168,14 @@
   slice
   sort
   sort-by
+  split-at
+  split-string
   starts-with
   string?
+  string<-bytes
   string<-symbol
+  string.chr
+  string.ord
   symbol?
   symbol<-string
   tail
@@ -176,6 +183,7 @@
   todo
   traverse
   true
+  type-of
   uniq
   unique
   unless
@@ -197,14 +205,20 @@
   true)
 (import std/internal/prelude/format
   show)
+(import std/internal/prelude/eq
+  eq
+  neq
+  type-of)
 (import std/internal/prelude/fp
   .
   all
   any
+  contains?
   defcurried
   enumerate
   filter
   flat-map
+  flatten
   foldl
   foldr
   each
@@ -217,6 +231,7 @@
   skip
   sort
   sort-by
+  split-at
   take
   uniq
   unique
@@ -287,6 +302,8 @@
   ends-with
   explode
   join
+  search-string
+  split-string
   starts-with)
 (import std/internal/prelude/util
   any-shl?
@@ -327,8 +344,7 @@
   make-vector
   or-default
   reverse
-  shl?
-  split-at)
+  shl?)
 (import std/internal/prelude/util/macros
   ->
   ->>
@@ -349,15 +365,12 @@
 (import std/internal/prelude/util/pseudoprims
   append
   concat
-  contains?
-  eq
   id
   init
   last
   length
   list
   list?
-  neq
   not
   nth
   vector)
@@ -387,7 +400,10 @@
   panic
   prim-eq
   string?
+  string<-bytes
   string<-symbol
+  string.chr
+  string.ord
   symbol?
   symbol<-string
   unwind-catch

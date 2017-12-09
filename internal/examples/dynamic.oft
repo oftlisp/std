@@ -1,0 +1,5 @@
+(module std/internal/examples/dynamic
+  main)
+
+(defn main (args)
+  (println ((fn (a) (((fn (a) (fn (b) a)) 42) 0)) 137)))

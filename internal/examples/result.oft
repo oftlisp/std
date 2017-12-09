@@ -1,0 +1,8 @@
+(module std/internal/examples/result
+  main)
+
+(defn main (args)
+  (println (unwind-finally
+    (fn () 1)
+    (fn () 2)))
+  (println (>>= (ok 2) \(ok (1+ $)))))

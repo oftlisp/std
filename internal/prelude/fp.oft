@@ -3,10 +3,12 @@
   .
   all
   any
+  contains?
   defcurried
   enumerate
   filter
   flat-map
+  flatten
   foldl
   foldr
   each
@@ -17,6 +19,7 @@
   lookup-by
   map
   skip
+  split-at
   sort
   sort-by
   take
@@ -24,6 +27,11 @@
   unique
   zip)
 
+(import std/internal/prelude/constants
+  else
+  nil)
+(import std/internal/prelude/eq
+  eq)
 (import std/internal/prelude/fp/list
   list.all
   list.any
@@ -42,6 +50,7 @@
   list.skip
   list.sort
   list.sort-by
+  list.split-at
   list.take
   list.uniq
   list.zip)
@@ -63,29 +72,44 @@
   vector.skip
   vector.sort
   vector.sort-by
+  vector.split-at
   vector.take
   vector.uniq
   vector.zip)
+(import std/internal/prelude/objects/common-methods
+  head
+  tail)
 (import std/internal/prelude/objects/methods
   object-get-method)
+(import std/internal/prelude/strings
+  string.split-at)
 (import std/internal/prelude/util
   reverse)
 (import std/internal/prelude/util/macros
+  case
+  cond
+  let1
   when)
 (import std/internal/prelude/util/pseudoprims
+  append
   last
+  length
   list)
 (import std/internal/primitives
+  append-strings
   apply
   car
   cdr
-  append-strings
   cons
+  cons?
+  debug-trace
+  list<-vector
   nil?
-  object?
   object-type
+  object?
   panic
   string<-symbol
+  string?
   symbol<-string
   vector?)
 
@@ -126,6 +150,8 @@
 
 (deffpgeneric all (l f))
 (deffpgeneric any (l f))
+(defn contains? (l x)
+  (any l \(eq x $)))
 (deffpgeneric each (l f))
 (deffpgeneric enumerate (l))
 (deffpgeneric filter (l f))
@@ -145,3 +171,19 @@
 (deffpgeneric uniq (l))
 (defn unique (l) (uniq (sort l)))
 (deffpgeneric zip (l r))
+
+(defn flatten (... xs)
+  (defn loop (x acc)
+    (cond
+      (nil? x)    acc
+      (vector? x) (loop (list<-vector x) acc)
+      (cons? x)   (loop (car x) (loop (cdr x) acc))
+      else        (cons x acc)))
+  (loop xs nil))
+
+(defn split-at (l i)
+  (def f (if (object? l) (object-get-method (object-type l) 'split-at)
+         (if (string? l) string.split-at
+         (if (vector? l) vector.split-at
+                         list.split-at))))
+  (f l i))

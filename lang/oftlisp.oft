@@ -1,5 +1,12 @@
 (module std/lang/oftlisp
-  parse-oftlisp)
+  oftlisp-home-path
+  oftlisp-root-path
+  parse-oftlisp
+  read-module)
 
+(import std/lang/oftlisp/modules
+  oftlisp-home-path
+  oftlisp-root-path
+  read-module)
 (import std/lang/oftlisp/parser
   parse-oftlisp)

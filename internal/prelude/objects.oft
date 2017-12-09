@@ -9,6 +9,7 @@
   show)
 (import std/internal/prelude/fp
   .
+  contains?
   enumerate
   filter
   group-by
@@ -38,7 +39,6 @@
   when)
 (import std/internal/prelude/util/pseudoprims
   append
-  contains?
   length
   list
   not

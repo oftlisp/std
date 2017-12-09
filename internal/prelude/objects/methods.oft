@@ -14,7 +14,9 @@
   list.any
   list.lookup)
 (import std/internal/prelude/constants
-  nil)
+  false
+  nil
+  true)
 (import std/internal/prelude/math
   0?
   1+
@@ -27,6 +29,7 @@
   atomic-pointer.store
   bitnot
   cons
+  debug-trace
   function?
   panic
   unwind-finally)
@@ -70,17 +73,16 @@
     (fn () (f value))
     drop-read-lock))
 
-(defn object-has-method? (obj name)
-  (def value (get-read-lock))
-  (unwind-finally
-    (fn () (list.lookup value (cons obj name)))
-    drop-read-lock))
-
 (defn object-get-method (obj name)
   (def value (get-read-lock))
   (unwind-finally
     (fn () (list.lookup value (cons obj name)))
     drop-read-lock))
+
+(defn object-has-method? (obj name)
+  (if (object-get-method obj name)
+    true
+    false))
 
 (defn object-put-method (obj name meth)
   (if (function? meth)

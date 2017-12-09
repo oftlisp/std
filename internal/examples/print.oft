@@ -1,0 +1,5 @@
+(module std/internal/examples/print
+  main)
+
+(defn main (args)
+  (println 1 2 3))

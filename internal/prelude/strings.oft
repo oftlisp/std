@@ -3,7 +3,10 @@
   ends-with
   explode
   join
-  starts-with)
+  search-string
+  starts-with
+  split-string
+  string.split-at)
 
 (import std/internal/prelude/constants
   nil)
@@ -45,7 +48,7 @@
     (cons (head str) (explode (tail str)))))
 
 ;; Joins strings with a separator.
-(defn join (sep strs)
+(defn join (strs (sep " "))
   (defn loop (accum strs)
     (if (empty? strs)
       accum
@@ -59,3 +62,15 @@
   (def ln (length needle))
   (unless (> ln (length haystack))
     (prim-eq needle (slice haystack 0 ln))))
+
+;; Returns a list of indices where the needle is found in the haystack.
+(defn search-string (haystack needle)
+  #search-string)
+
+;; Splits a string at every position the given character appears.
+(defn split-string (haystack needle)
+  #split-string)
+
+;; Splits a string at the given index, returning a cons with the two halves.
+(defn string.split-at (string index)
+  #string.split-at)

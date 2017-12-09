@@ -1,0 +1,29 @@
+(module std/lang/oftlisp/modules
+  oftlisp-home-path
+  oftlisp-root-path
+  read-module)
+
+(import std/io
+  get-env-var
+  must-get-env-var)
+(import std/io/paths
+  join-paths
+  with-extension)
+
+(def oftlisp-root-path
+  !(must-get-env-var "OFTLISP_ROOT"))
+(def oftlisp-home-path
+  (or (get-env-var "OFTLISP_HOME")
+      !(must-get-env-var "OFTLISP_HOME")))
+
+(defn read-module-from-path (path)
+  (todo 1))
+
+(defn read-module-from (base-path import-path)
+  (def path (with-extension (join-paths base-path import-path) "oft"))
+  (todo path))
+
+(defn read-module (import-path)
+  (either (read-module-from oftlisp-root-path import-path)
+    ok
+    (read-module-from oftlisp-home-path import-path)))

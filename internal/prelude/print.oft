@@ -3,8 +3,7 @@
   display
   displayln
   print
-  println
-  write-string)
+  println)
 
 (import std/internal/prelude/constants
   nil)

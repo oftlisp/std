@@ -1,0 +1,31 @@
+(module std/io/paths
+  join-paths
+  with-extension)
+
+(defn remove-trailing-slash (str)
+  (if (ends-with "/" str)
+    (slice str 0 -1)
+    str))
+
+(defn join-paths (... paths)
+  (-> paths
+    flatten
+    (map remove-trailing-slash)
+    (join "/")))
+
+(defn path-name (path)
+  (-> path
+    (split-string "/")
+    last))
+
+(defn extension-index (path)
+  (def name (path-name path))
+  (unless (empty? name)
+    (def dots (search-string (tail name) "."))
+    (unless (nil? dots)
+      (1+ (car dots)))))
+
+(defn with-extension (path extension)
+  (aif (extension-index path)
+    (append-strings (slice path 0 $) "." extension)
+    (append-strings path "." extension)))

@@ -1,0 +1,25 @@
+(module std/io
+  get-env-var
+  must-get-env-var
+  read-file
+  write-file)
+
+(import std/internal/primitives/io
+  get-env-var
+  read-file-prim
+  write-file-prim)
+
+(defn must-get-env-var (name)
+  (aif (get-env-var name)
+    $
+    (panic (append-strings "No such env var: " name))))
+
+(defn read-file (path)
+  (unwind-catch
+    (fn () (ok (read-file-prim path)))
+    err))
+
+(defn write-file (contents path)
+  (unwind-catch
+    (fn () (ok (write-file-prim contents path)))
+    err))

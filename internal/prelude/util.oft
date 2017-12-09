@@ -37,8 +37,7 @@
   make-vector
   or-default
   reverse
-  shl?
-  split-at)
+  shl?)
 
 (import std/internal/prelude/constants
   else
@@ -163,14 +162,3 @@
   (if (cons? value)
     (prim-eq (car value) sym)
     false))
-
-;; Splits a linked-list at the given index. If the index is greater than the
-;; length of the string.
-;;
-;; Tail-recursive.
-(defn split-at (lst idx)
-  (defn loop (lst i accum)
-    (if (= i 0)
-      (cons (reverse accum) lst)
-      (loop (cdr lst) (-/2 i 1) (cons (car lst) accum))))
-  (loop lst idx nil))

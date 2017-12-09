@@ -16,6 +16,7 @@
   vector.skip
   vector.sort
   vector.sort-by
+  vector.split-at
   vector.take
   vector.uniq
   vector.zip)
@@ -30,6 +31,7 @@
   <>
   +/2
   build-vector
+  debug-trace
   panic
   prim-eq
   vector.length
@@ -109,6 +111,9 @@
 
 (defn vector.sort (v)
   (vector.sort-by (fn (x) x) v))
+
+(defn vector.split-at (v i)
+  (todo))
 
 (defn vector.take (v n)
   (todo))

@@ -1,0 +1,14 @@
+(module std/internal/examples/panic
+  main)
+
+(defn main (args)
+  (unwind-finally
+    (fn ()
+      (unwind-catch
+        (fn ()
+          (println 1)
+          (panic 2))
+        println))
+    (fn ()
+      (println 3)))
+  (println 4))

@@ -8,11 +8,12 @@
   else
   false
   true)
+(import std/internal/prelude/eq
+  eq)
 (import std/internal/prelude/util/macros
   cond
   todo)
 (import std/internal/prelude/util/pseudoprims
-  eq
   length)
 (import std/internal/primitives
   =

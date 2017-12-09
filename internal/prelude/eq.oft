@@ -1,0 +1,106 @@
+(module std/internal/prelude/eq
+  eq
+  neq
+  type-of)
+
+(import std/internal/prelude/constants
+  else
+  false
+  nil
+  true)
+(import std/internal/prelude/logic
+  and)
+(import std/internal/prelude/util/macros
+  case
+  cond
+  todo)
+(import std/internal/prelude/util/pseudoprims
+  not)
+(import std/internal/primitives
+  +/2
+  =
+  atomic-pointer?
+  byte?
+  bytes?
+  car
+  cdr
+  cons?
+  fixnum?
+  function?
+  nil?
+  object?
+  object-type
+  object-value
+  panic
+  prim-eq
+  string?
+  symbol?
+  vector?
+  vector.length
+  vector.nth)
+
+;; Returns the "primitive" type of an value.
+(defn type-of (x)
+  (cond
+    (atomic-pointer? x) 'atomic-pointer
+    (byte? x)           'byte
+    (bytes? x)          'bytes
+    (cons? x)           'cons
+    (fixnum? x)         'fixnum
+    (function? x)       'function
+    (nil? x)            'nil
+    (object? x)         'object
+    (string? x)         'string
+    (symbol? x)         'symbol
+    (vector? x)         'vector
+    else                (panic "unreachable")))
+
+(def prims '(atomic-pointer byte bytes fixnum function string symbol))
+
+(defn is-prim (x)
+  (def ty (type-of x))
+  (defn loop (l)
+    (cond
+      (nil? l)             false
+      (prim-eq (car l) ty) true
+      else                 (loop (cdr l))))
+  (loop prims))
+
+;; Checks for deep equality.
+(defnrec
+  (eq (x y)
+    (def x-type (type-of x))
+    (def y-type (type-of y))
+    (if (not (prim-eq x-type y-type))
+      false
+      (if (is-prim x)
+        (prim-eq x y)
+        (if (prim-eq x-type 'cons)
+          (and (eq (car x) (car y))
+              (eq (cdr x) (cdr y)))
+          (if (prim-eq x-type 'nil)
+            true
+            (if (prim-eq x-type 'object)
+              (and (prim-eq (object-type x) (object-type y))
+                   (eq (object-value x) (object-value y)))
+              (if (prim-eq x-type 'vector)
+                (vectors-eq x y)
+                (panic "unreachable"))))))))
+  (vectors-eq (x y)
+    (def lx (vector.length x))
+    (def ly (vector.length y))
+
+    (defn loop (n)
+      (cond
+        (= n lx)              true
+        (eq (vector.nth x n)
+            (vector.nth y n)) (loop (+/2 1 n))
+        else                  false))
+
+    (if (= lx ly)
+      (loop 0)
+      false)))
+
+;; Checks for not-equals. Equivalent to (fn (x y) (not (eq x y))).
+(defn neq (x y)
+  (not (eq x y)))

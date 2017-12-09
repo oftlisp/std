@@ -161,7 +161,7 @@
       (list
         (list 'apply 'append-strings
           (list 'list "TODO: "
-            (list 'join " "
+            (list 'join
               (list 'map (cons 'list msg) 'show))))))))
 
 (defmacro for-each (x-var xs-var ... body)
