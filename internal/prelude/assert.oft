@@ -1,6 +1,8 @@
 (module std/internal/prelude/assert
   assert
-  assert-eq)
+  assert-eq
+  assert-neq
+  assert-not)
 
 (import std/internal/prelude/format
   show)
@@ -41,3 +43,27 @@
         ,(show right)
         " = "
         (show ,right-name))))))
+
+(defmacro assert-neq (left right)
+  (def left-name (gensym))
+  (def right-name (gensym))
+
+  `(let (,left-name  ,left)
+        (,right-name ,right)
+    (when (eq ,left-name ,right-name)
+      (panic (append-strings
+        "Assertion failed: (eq "
+        ,(show left)
+        " "
+        ,(show right)
+        ")\n\t"
+        ,(show left)
+        " = "
+        (show ,left-name)
+        "\n\t"
+        ,(show right)
+        " = "
+        (show ,right-name))))))
+
+(defmacro assert-not (condition)
+  `(assert (not ,condition)))

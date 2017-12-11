@@ -36,7 +36,6 @@
   less
   make-vector
   or-default
-  reverse
   shl?)
 
 (import std/internal/prelude/constants
@@ -145,16 +144,6 @@
 ;; A helper, mainly for the `<-` macro.
 (defn or-default (d)
   (fn (x) (if x x d)))
-
-;; Reverses a list.
-;;
-;; Tail-recursive.
-(defn reverse (l)
-  (defn helper (in out)
-    (if (nil? in)
-      out
-      (helper (cdr in) (cons (car in) out))))
-  (helper l nil))
 
 ;; Checks if a value is a list headed by the given symbol. Honestly, this is a
 ;; kludge until pattern matching is implemented.

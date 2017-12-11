@@ -18,6 +18,10 @@
   head
   slice
   tail)
+(import std/internal/prelude/strings/kmp
+  search-string
+  split-string
+  string.split-at)
 (import std/internal/prelude/util/macros
   unless)
 (import std/internal/prelude/util/pseudoprims
@@ -62,15 +66,3 @@
   (def ln (length needle))
   (unless (> ln (length haystack))
     (prim-eq needle (slice haystack 0 ln))))
-
-;; Returns a list of indices where the needle is found in the haystack.
-(defn search-string (haystack needle)
-  #search-string)
-
-;; Splits a string at every position the given character appears.
-(defn split-string (haystack needle)
-  #split-string)
-
-;; Splits a string at the given index, returning a cons with the two halves.
-(defn string.split-at (string index)
-  #string.split-at)

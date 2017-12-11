@@ -1,0 +1,27 @@
+;; An implementation of Knuth-Morris-Pratt based on the one in CLRS.
+(module std/internal/prelude/strings/kmp
+  search-string
+  split-string
+  string.split-at)
+
+(import std/internal/primitives
+  build-vector
+  string.length)
+
+(defn compute-prefix-function (needle)
+  (defn helper (m)
+    #todo)
+  (build-vector (string.length needle) helper))
+
+;; Returns a list of indices where the needle is found in the haystack.
+(defn search-string (haystack needle)
+  #search-string)
+
+;; Splits a string at every position the given character appears.
+(defn split-string (haystack needle)
+  (def indices (search-string haystack needle))
+  #split-string)
+
+;; Splits a string at the given index, returning a cons with the two halves.
+(defn string.split-at (string index)
+  #string.split-at)

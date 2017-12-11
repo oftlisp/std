@@ -16,7 +16,9 @@
   bitand
   bitor
   bitxor
-  mod)
+  even?
+  mod
+  odd?)
 
 (import std/internal/prelude/constants
   true)
@@ -80,3 +82,8 @@
 (defn >= (l r)
   (def c (<> l r))
   (if (prim-eq c '>) true (prim-eq c '=)))
+
+(defn even? (x)
+  (0? (mod x 2)))
+(defn odd? (x)
+  (not (even? x)))

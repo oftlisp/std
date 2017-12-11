@@ -24,6 +24,7 @@
   panic
   prim-eq
   string?
+  string.length
   string.scalar-head
   string.scalar-tail
   string.slice

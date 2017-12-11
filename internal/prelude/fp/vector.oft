@@ -13,6 +13,7 @@
   vector.lookup-all-by
   vector.lookup-by
   vector.map
+  vector.reverse
   vector.skip
   vector.sort
   vector.sort-by
@@ -24,6 +25,8 @@
 (import std/internal/prelude/constants
   nil
   true)
+(import std/internal/prelude/math
+  -)
 (import std/internal/prelude/util/macros
   todo)
 (import std/internal/primitives
@@ -102,6 +105,10 @@
 
 (defn vector.map (v f)
   (build-vector (vector.length v) \(f (vector.nth v $))))
+
+(defn vector.reverse (v)
+  (def l (vector.length v))
+  (build-vector l \(vector.nth v (- l $ 1))))
 
 (defn vector.skip (v n)
   (todo))

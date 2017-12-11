@@ -36,8 +36,7 @@
   cadr
   cdar
   cddr
-  leq
-  reverse)
+  leq)
 (import std/internal/prelude/util/macros
   cond
   todo)
@@ -45,7 +44,8 @@
   append
   concat
   length
-  list)
+  list
+  list.reverse)
 (import std/internal/primitives
   +/2
   -/2
@@ -86,14 +86,14 @@
 (defn list.enumerate (l)
   (defn loop (l n acc)
     (if (nil? l)
-      (reverse acc)
+      (list.reverse acc)
       (loop (cdr l) (+/2 n 1) (cons (cons n (car l)) acc))))
   (loop l 0 nil))
 
 (defn list.filter (l f)
   (defn loop (l r)
     (cond
-      (nil? l)    (reverse r)
+      (nil? l)    (list.reverse r)
       (f (car l)) (loop (cdr l) (cons (car l) r))
       else        (loop (cdr l) r)))
   (loop l nil))
@@ -120,7 +120,7 @@
 (defn list.map (l f)
   (defn helper (in out)
     (if (nil? in)
-      (reverse out)
+      (list.reverse out)
       (helper (cdr in) (cons (f (car in)) out))))
   (helper l nil))
 
@@ -144,7 +144,7 @@
 (defn merge (l r)
   (defn loop (l r acc)
     (cond
-      (and (nil? l) (nil? r)) (reverse acc)
+      (and (nil? l) (nil? r)) (list.reverse acc)
       (nil? l)                (loop l (cdr r) (cons (car r) acc))
       (nil? r)                (loop (cdr l) r (cons (car l) acc))
       (leq (cdar l) (cdar r)) (loop (cdr l) r (cons (car l) acc))
@@ -161,14 +161,14 @@
 (defn list.take (l n)
   (defn loop (l n acc)
     (if (= n 0)
-      (reverse acc)
+      (list.reverse acc)
       (loop (cdr l) (-/2 n 1) (cons (car l) acc))))
     (loop l n nil))
 
 (defn list.split-at (lst idx)
   (defn loop (lst i accum)
     (if (= i 0)
-      (cons (reverse accum) lst)
+      (cons (list.reverse accum) lst)
       (loop (cdr lst) (-/2 i 1) (cons (car lst) accum))))
   (loop lst idx nil))
 
@@ -209,7 +209,7 @@
           (loop b (cons ha as) t bs)
           (loop hb (list ha) t (cons (cons b as) bs))))))
   (def tagged (list.map l (fn (x) (cons (f x) x))))
-  (def sorted (reverse (list.sort-by tagged car)))
+  (def sorted (list.reverse (list.sort-by tagged car)))
   (if (nil? sorted)
     nil
     (loop (caar sorted) nil sorted nil)))
@@ -225,7 +225,7 @@
         (helper (cdr l) a)
       else
         (helper (cdr l) (cons (car l) a))))
-  (reverse (helper l nil)))
+  (list.reverse (helper l nil)))
 
 (defn list.zip (l r)
   (defn loop (l r a)
@@ -233,4 +233,4 @@
       (loop (cdr l) (cdr r)
         (cons (cons (car l) (car r)) a))
       a))
-  (reverse (loop l r nil)))
+  (list.reverse (loop l r nil)))

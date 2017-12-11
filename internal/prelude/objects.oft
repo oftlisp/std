@@ -15,7 +15,8 @@
   group-by
   lookup
   lookup-by
-  map)
+  map
+  reverse)
 (import std/internal/prelude/logic
   and)
 (import std/internal/prelude/math
@@ -41,8 +42,7 @@
   append
   length
   list
-  not
-  reverse)
+  not)
 (import std/internal/primitives
   =
   apply

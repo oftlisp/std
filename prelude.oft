@@ -31,6 +31,8 @@
   apply
   assert
   assert-eq
+  assert-neq
+  assert-not
   bitand
   bitnot
   bitor
@@ -96,6 +98,7 @@
   eq
   err
   err?
+  even?
   exit
   explode
   false
@@ -146,6 +149,7 @@
   object-put-method
   object-type
   object-value
+  odd?
   ok
   ok?
   or
@@ -197,7 +201,9 @@
 
 (import std/internal/prelude/assert
   assert
-  assert-eq)
+  assert-eq
+  assert-neq
+  assert-not)
 (import std/internal/prelude/constants
   else
   false
@@ -228,6 +234,7 @@
   lookup-all-by
   lookup-by
   map
+  reverse
   skip
   sort
   sort-by
@@ -266,6 +273,8 @@
   bitand
   bitor
   bitxor
+  even?
+  odd?
   mod)
 (import std/internal/prelude/objects
   defclass
@@ -343,7 +352,6 @@
   less
   make-vector
   or-default
-  reverse
   shl?)
 (import std/internal/prelude/util/macros
   ->

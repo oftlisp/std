@@ -18,6 +18,7 @@
   lookup-all-by
   lookup-by
   map
+  reverse
   skip
   split-at
   sort
@@ -69,6 +70,7 @@
   vector.lookup-all-by
   vector.lookup-by
   vector.map
+  vector.reverse
   vector.skip
   vector.sort
   vector.sort-by
@@ -83,8 +85,6 @@
   object-get-method)
 (import std/internal/prelude/strings
   string.split-at)
-(import std/internal/prelude/util
-  reverse)
 (import std/internal/prelude/util/macros
   case
   cond
@@ -94,10 +94,13 @@
   append
   last
   length
-  list)
+  list
+  list.reverse)
 (import std/internal/primitives
   append-strings
   apply
+  bytes?
+  bytes.reverse
   car
   cdr
   cons
@@ -110,12 +113,13 @@
   panic
   string<-symbol
   string?
+  string.reverse
   symbol<-string
   vector?)
 
 ;; Function composition.
 (defn . (... l)
-  (def funcs (reverse l))
+  (def funcs (list.reverse l))
   (defn loop (x l)
     (if (nil? l)
       x
@@ -180,6 +184,14 @@
       (cons? x)   (loop (car x) (loop (cdr x) acc))
       else        (cons x acc)))
   (loop xs nil))
+
+(defn reverse (l)
+  (def f (if (object? l) (object-get-method (object-type l) 'reverse)
+         (if (bytes? l)  bytes.reverse
+         (if (string? l) string.reverse
+         (if (vector? l) vector.reverse
+                         list.reverse)))))
+  (f l))
 
 (defn split-at (l i)
   (def f (if (object? l) (object-get-method (object-type l) 'split-at)

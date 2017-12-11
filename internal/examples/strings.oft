@@ -1,0 +1,22 @@
+(module std/internal/examples/strings
+  main)
+
+(def str "a man a plan a canal panama")
+
+(defn palindrome? (str)
+  (def l (length str))
+  (def x (/ l 2))
+  (def y (if (even? l)
+    x
+    (1+ x)))
+
+  (def front (slice str 0 x))
+  (def back (slice str y l))
+  (eq front (reverse back)))
+
+(defn without-whitespace (str)
+  (todo #without-whitespace))
+
+(defn main (args)
+  (assert-not (palindrome? str))
+  (assert (palindrome? (without-whitespace str))))
