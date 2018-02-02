@@ -2,7 +2,7 @@
   main)
 
 (defn main (args)
-  (println '@at-macro)
+  (println #hash-macro)
   (println (\(list 'the $ 'macro) 'lambda))
   !(progn
     (println "This gets printed first, since the whole progn is evaluated at compile-time.")

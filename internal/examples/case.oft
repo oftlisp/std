@@ -21,5 +21,5 @@
       "unknown"))
 
 (defn main (args)
-  (for-each x (range 0 11)
+  (for-each x (range -1 11)
     (println x ": " (number-name x))))

@@ -1,9 +1,6 @@
 (module std/internal/examples/oop
   main)
 
-(import std/internal/prelude/objects/methods
-  debug-get-all-methods)
-
 (defclass range
   (val start)
   (val end)
@@ -35,7 +32,6 @@
   (rectangle s s))
 
 (defn main (args)
-  (debug-get-all-methods \(each $ println))
   (range.hello)
 
   (def x (range 1 3))

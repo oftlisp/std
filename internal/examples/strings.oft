@@ -14,9 +14,21 @@
   (def back (slice str y l))
   (eq front (reverse back)))
 
+(defn space? (ch)
+  (contains? [" "] ch))
+
 (defn without-whitespace (str)
-  (todo #without-whitespace))
+  (defn helper (str accum)
+    (if (empty? str)
+      accum
+      (helper (tail str)
+        (let1 c (head str)
+          (if (space? c)
+            accum
+            (cons c accum))))))
+  (concat-strings (helper (reverse str) nil)))
 
 (defn main (args)
   (assert-not (palindrome? str))
-  (assert (palindrome? (without-whitespace str))))
+  (assert (palindrome? (without-whitespace str)))
+  (println "All tests passed"))

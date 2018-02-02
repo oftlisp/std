@@ -78,6 +78,8 @@
   vector.take
   vector.uniq
   vector.zip)
+(import std/internal/prelude/logic
+  or)
 (import std/internal/prelude/objects/common-methods
   head
   tail)
@@ -139,10 +141,11 @@
   (list 'def name (helper args (cons body-car body-cdr))))
 
 (defmacro deffpgeneric (name args)
+  (def name-str (string<-symbol name))
   (def list-op (symbol<-string
-    (append-strings "list." (string<-symbol name))))
+    (append-strings "list." name-str)))
   (def vector-op (symbol<-string
-    (append-strings "vector." (string<-symbol name))))
+    (append-strings "vector." name-str)))
   (list 'defn name args
     (list 'if (list 'vector? (car args))
       (cons vector-op args)
@@ -150,7 +153,11 @@
         (list 'apply
           (list 'object-get-method (list 'object-type (car args)) name)
           (cons 'list args))
-        (cons list-op args)))))
+        (list 'if (list 'or (list 'nil? (car args)) (list 'cons? (car args)))
+          (cons list-op args)
+          (list 'panic
+            (append-strings "Invalid arg to " name-str)
+            (car args)))))))
 
 (deffpgeneric all (l f))
 (deffpgeneric any (l f))

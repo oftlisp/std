@@ -6,6 +6,7 @@
   list)
 (import std/internal/primitives
   cons
+  gensym
   nil?)
 
 ;; n-way logical and.
@@ -15,5 +16,10 @@
 
 ;; n-way logical or.
 (defmacro or (x ... xs)
-  (if (nil? xs) x
-    (list 'if x ''true (cons 'or xs))))
+  (if (nil? xs)
+    x
+    (progn
+      (def tmp (gensym))
+      (list 'progn
+        (list 'def tmp x)
+        (list 'if tmp tmp (cons 'or xs))))))

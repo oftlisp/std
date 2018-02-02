@@ -127,7 +127,10 @@
     (loop l n)))
 
 ;; Gets the nth value from a list or vector.
-(defn nth (l n)
-  (if (vector? l)
+(defn nth (l n ... ns)
+  (def out (if (vector? l)
     (vector.nth l n)
     (list.nth l n)))
+  (if (nil? ns)
+    out
+    (apply nth (cons out ns))))

@@ -1,7 +1,7 @@
 (module std/internal/examples/prime-sieve
   main)
 
-(import std/lazy
+(import std/fp/lazy
   naturals
   stream-cons)
 

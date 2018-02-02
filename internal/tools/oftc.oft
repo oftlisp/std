@@ -1,0 +1,13 @@
+(module std/internal/tools/oftc
+  main)
+
+(import std/lang/oftlisp
+  oftlisp-home-path
+  oftlisp-root-path
+  parse-oftlisp
+  read-module)
+
+(defn main (args)
+  (println "home " oftlisp-home-path)
+  (println "root " oftlisp-root-path)
+  (todo 1 2 3))
