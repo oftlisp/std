@@ -1,0 +1,10 @@
+(module main
+  [main])
+
+(import std/args
+  [make-arg-parser])
+
+(defn main (args)
+  (def arg-parser (make-arg-parser))
+  (println "Hello, world!")
+  (writeln args))

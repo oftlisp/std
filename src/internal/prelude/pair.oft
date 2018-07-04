@@ -1,0 +1,26 @@
+(module std/internal/prelude/pair
+  [fst map-fst map-pair map-snd pair snd]
+  no-prelude)
+
+(import std/internal/prelude/function
+  [id])
+(import std/internal/prelude/intrinsics
+  [car cdr cons cons? eq false panic])
+
+(intrinsics:defn fst (p)
+  (car p))
+
+(intrinsics:defn map-fst (f p)
+  (map-pair f id p))
+
+(intrinsics:defn map-pair (l r p)
+  (pair (l (fst p)) (r (snd p))))
+
+(intrinsics:defn map-snd (f p)
+  (map-pair id f p))
+
+(intrinsics:defn pair (l r)
+  (cons l r))
+
+(intrinsics:defn snd (p)
+  (cdr p))

@@ -1,0 +1,40 @@
+(module std/internal/prelude/result
+  [err err? map-err map-ok map-result must ok ok?]
+  no-prelude)
+
+(import std/internal/prelude/function
+  [id])
+(import std/internal/prelude/intrinsics
+  [car cdr cons cons? eq false panic])
+
+(intrinsics:defn err (x)
+  (cons 'err x))
+
+(intrinsics:defn err? (opt)
+  (if (cons? opt)
+    (eq (car opt) 'err)
+    false))
+
+(intrinsics:defn map-err (f r)
+  (map-result id f r))
+
+(intrinsics:defn map-ok (f r)
+  (map-result f id r))
+
+(intrinsics:defn map-result (on-ok on-err r)
+  (if (err? r)
+    (err (on-err (cdr r)))
+    (if (ok? r)
+      (ok (on-ok (cdr r)))
+      (panic "Not a result"))))
+
+(intrinsics:defn must (r)
+  (cdr (map-result id panic r)))
+
+(intrinsics:defn ok (x)
+  (cons 'ok x))
+
+(intrinsics:defn ok? (opt)
+  (if (cons? opt)
+    (eq (car opt) 'ok)
+    false))

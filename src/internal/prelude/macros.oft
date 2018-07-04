@@ -1,0 +1,27 @@
+(module std/internal/prelude/macros
+  [def defmacro defn list todo]
+  no-prelude)
+
+(import std/internal/prelude/intrinsics
+  [car cdr cons nil?])
+
+(intrinsics:defmacro def form
+  (cons 'intrinsics:def form))
+
+(intrinsics:defmacro defmacro form
+  (cons 'intrinsics:defmacro form))
+
+(intrinsics:defmacro defn form
+  (cons 'intrinsics:defn form))
+
+; TODO: Should this use the std/prelude versions instead?
+(intrinsics:defmacro list form
+  (intrinsics:defn helper (form)
+    (if (nil? form)
+      'std/internal/prelude/intrinsics:nil
+      (cons 'std/internal/prelude/intrinsics:cons
+        (cons (car form) (helper (cdr form))))))
+  (helper form))
+
+(intrinsics:defmacro todo form
+  (list 'panic (list 'cons ''todo (cons 'list form))))

@@ -1,0 +1,45 @@
+(module std/internal/prelude/intrinsics
+  [* + - / = byte? bytes? car cdr compare cons cons? eq equals false fixnum? function? gensym mod
+   nil nil? panic print println string? symbol? true vector? write write-bytes writeln]
+  no-prelude)
+
+; Constants
+(intrinsics:def nil   '())
+(intrinsics:def false nil)
+(intrinsics:def true  'true)
+
+; Basic Functions
+(intrinsics:def =       intrinsics:eq_num)
+(intrinsics:def car     intrinsics:car)
+(intrinsics:def cdr     intrinsics:cdr)
+(intrinsics:def compare intrinsics:compare)
+(intrinsics:def cons    intrinsics:cons)
+(intrinsics:def eq      intrinsics:eq)
+(intrinsics:def equals  intrinsics:equals)
+(intrinsics:def gensym  intrinsics:gensym)
+(intrinsics:def panic   intrinsics:panic)
+
+; I/O Functions
+(intrinsics:def print       intrinsics/io:print)
+(intrinsics:def println     intrinsics/io:println)
+(intrinsics:def write       intrinsics/io:write)
+(intrinsics:def writeln     intrinsics/io:writeln)
+(intrinsics:def write-bytes intrinsics/io:write_bytes)
+
+; Math Functions
+(intrinsics:def *   intrinsics/math:multiply)
+(intrinsics:def +   intrinsics/math:add)
+(intrinsics:def -   intrinsics/math:subtract)
+(intrinsics:def /   intrinsics/math:divide)
+(intrinsics:def mod intrinsics/math:modulo)
+
+; Type-Test Functions
+(intrinsics:def byte?     intrinsics/types:is_byte)
+(intrinsics:def bytes?    intrinsics/types:is_bytes)
+(intrinsics:def cons?     intrinsics/types:is_cons)
+(intrinsics:def fixnum?   intrinsics/types:is_fixnum)
+(intrinsics:def function? intrinsics/types:is_function)
+(intrinsics:def nil?      intrinsics/types:is_nil)
+(intrinsics:def string?   intrinsics/types:is_string)
+(intrinsics:def symbol?   intrinsics/types:is_symbol)
+(intrinsics:def vector?   intrinsics/types:is_vector)

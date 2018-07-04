@@ -1,0 +1,23 @@
+(module std/internal/prelude/vector
+  [vector-append vector-each vector-length vector-nth vector-slice]
+  no-prelude)
+
+(import std/internal/prelude/intrinsics
+  [= nil])
+(import std/internal/prelude/math
+  [1+])
+
+(intrinsics:def vector-append intrinsics/vector:append)
+(intrinsics:def vector-length intrinsics/vector:length)
+(intrinsics:def vector-nth    intrinsics/vector:nth)
+(intrinsics:def vector-slice  intrinsics/vector:slice)
+
+(intrinsics:defn vector-each (f v)
+  (intrinsics:def l (vector-length v))
+  (intrinsics:defn helper (n)
+    (if (= l n)
+      nil
+      (progn
+        (f (vector-nth n v))
+        (helper (1+ n)))))
+  (helper 0))

@@ -1,0 +1,24 @@
+(module std/internal/prelude/util
+  [as-shl debug-trace shl?]
+  no-prelude)
+
+(import std/internal/prelude/intrinsics
+  [car cdr cons? eq false nil symbol? writeln])
+
+(intrinsics:defn as-shl (value)
+  (if (cons? value)
+    (progn
+      (intrinsics:def tmp (car value))
+      (if (symbol? tmp)
+        tmp
+        nil))
+    nil))
+
+(intrinsics:defn debug-trace (x)
+  (intrinsics/io:debug_print x)
+  x)
+
+(intrinsics:defn shl? (sym value)
+  (if (cons? value)
+    (eq (car value) sym)
+    false))

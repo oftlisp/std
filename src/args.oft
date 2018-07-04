@@ -1,0 +1,6 @@
+(module std/args
+  [make-arg-parser])
+
+(defn make-arg-parser ()
+  "Returns an argument parser that rejects any arguments (except --help)."
+  (todo))

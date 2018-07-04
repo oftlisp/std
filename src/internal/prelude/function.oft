@@ -1,0 +1,18 @@
+(module std/internal/prelude/function
+  [. const fix flip id]
+  no-prelude)
+
+(intrinsics:defn . (f g)
+  \(f (g $)))
+
+(intrinsics:defn const (x)
+  \x)
+
+(intrinsics:defn fix (f)
+  (intrinsics:fn (x) (f (fix f) x)))
+
+(intrinsics:defn flip (f)
+  (intrinsics:fn (a b)
+    (f b a)))
+
+(intrinsics:defn id (x) x)

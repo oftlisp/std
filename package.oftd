@@ -1,0 +1,11 @@
+(authors
+  "Nathan Ringo <remexre@gmail.com>")
+(license "Apache-2.0/MIT")
+(name std)
+(version "0.1.0")
+
+(components
+  (library)
+  (binary
+    (name "oftc")
+    (path "bins/oftc.oft")))

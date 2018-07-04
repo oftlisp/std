@@ -1,0 +1,218 @@
+(module std/internal/prelude/list
+  [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any append assoc contains? each filter find
+   first-nonnil first-some flat-map foldl foldr index-into init last length lookup map nth
+   partition position position-of reverse skip skip-while split-at take take-while]
+  no-prelude)
+
+(import std/internal/prelude/either
+  [either])
+(import std/internal/prelude/function
+  [flip])
+(import std/internal/prelude/intrinsics
+  [car cdr cons equals false nil nil? panic true])
+(import std/internal/prelude/math
+  [0? 1+ 1-])
+(import std/internal/prelude/option
+  [none option-cases some some?])
+(import std/internal/prelude/pair
+  [map-pair pair])
+
+(intrinsics:defn all (f l)
+  (if (nil? l)
+    true
+    (if (f (car l))
+      (all f (cdr l))
+      false)))
+
+(intrinsics:defn all-some (l)
+  (intrinsics:defn helper (l acc)
+    (if (nil? l)
+      (reverse acc)
+      (progn
+        (intrinsics:def acc (option-cases
+          (intrinsics:fn (x) (cons x acc))
+          (intrinsics:fn () acc)
+          (car l)))
+        (helper (cdr l) acc))))
+  (helper l nil))
+
+(intrinsics:defn any (f l)
+  (if (nil? l)
+    false
+    (if (f (car l))
+      true
+      (any f (cdr l)))))
+
+(intrinsics:defn append (l r)
+  (intrinsics:defn helper (l r)
+    (if (nil? l)
+      r
+      (helper (cdr l) (cons (car l) r))))
+  (helper (reverse l) r))
+
+(intrinsics:defn assoc (x l)
+  (if (nil? l)
+    (panic (cons 'assoc-failed x))
+    (if (equals (car (car l)) x)
+      (cdr (car l))
+      (assoc x (cdr l)))))
+
+(intrinsics:defn contains? (x l)
+  (any \(equals x $) l))
+
+(intrinsics:defn each (f l)
+  (if (nil? l)
+    nil
+    (progn
+      (f (car l))
+      (each f (cdr l)))))
+
+(intrinsics:defn filter (pred l)
+  (intrinsics:defn helper (l acc)
+    (if (nil? l)
+      acc
+      (helper
+        (cdr l)
+        (if (pred (car l))
+          (cons (car l) acc)
+          acc))))
+  (reverse (helper l nil)))
+
+(intrinsics:defn find (pred l)
+  (if (nil? l)
+    none
+    (if (pred (car l))
+      (some (car l))
+      (find pred (cdr l)))))
+
+(intrinsics:defn first-nonnil (l)
+  (if (nil? l)
+    nil
+    (if (nil? (car l))
+      (first-nonnil (cdr l))
+      (car l))))
+
+(intrinsics:defn first-some (l)
+  (if (nil? l)
+    none
+    (if (some? (car l))
+      (car l)
+      (first-some (cdr l)))))
+
+(intrinsics:defn flat-map (f l)
+  (intrinsics:defn helper (l acc)
+    (if (nil? l)
+      acc
+      (helper (cdr l) (append (reverse (f (car l))) acc))))
+  (reverse (helper l nil)))
+
+(intrinsics:defn foldl (f x l)
+  (if (nil? l)
+    x
+    (foldl f (f x (car l)) (cdr l))))
+
+(intrinsics:defn foldr (f x l)
+  (if (nil? l)
+    x
+    (f (car l) (foldr f x (cdr l)))))
+
+(intrinsics:defn index-into (indices l)
+  (foldl (flip nth) l indices))
+
+(intrinsics:defn init (l)
+  (intrinsics:defn helper (l acc)
+    (if (nil? l)
+      (panic "can't take init of nil")
+      (if (nil? (cdr l))
+        (reverse acc)
+        (helper (cdr l) (cons (car l) acc)))))
+  (helper l nil))
+
+(intrinsics:defn last (l)
+  (if (nil? l)
+    (panic "can't take last of nil")
+    (if (nil? (cdr l))
+      (car l)
+      (last (cdr l)))))
+
+(intrinsics:defn length (l)
+  (foldl (intrinsics:fn (l _) (1+ l)) 0 l))
+
+(intrinsics:defn lookup (x l)
+  (if (nil? l)
+    none
+    (if (equals (car (car l)) x)
+      (some (cdr (car l)))
+      (lookup x (cdr l)))))
+
+(intrinsics:defn map (f l)
+  (reverse (foldl (intrinsics:fn (a x) (cons (f x) a)) '() l)))
+
+(intrinsics:defn nth (n l)
+  (car (skip n l)))
+
+(intrinsics:defn partition (es)
+  (intrinsics:defn helper (es ls rs)
+    (if (nil? es)
+      (pair ls rs)
+      (either
+        \(helper (cdr es) (cons $ ls) rs)
+        \(helper (cdr es) ls (cons $ rs))
+        (car es))))
+  (map-pair reverse reverse (helper es nil nil)))
+
+(intrinsics:defn position (pred l)
+  (intrinsics:defn helper (l n)
+    (if (nil? l)
+      none
+      (if (pred (car l))
+        (some n)
+        (helper (cdr l) (1+ n)))))
+  (helper l 0))
+
+(intrinsics:defn position-of (ele l)
+  (position \(equals ele $) l))
+
+(intrinsics:defn reverse (l)
+  (foldl (intrinsics:fn (a x) (cons x a)) '() l))
+
+(intrinsics:defn skip (n l)
+  (if (0? n)
+    l
+    (skip (1- n) (cdr l))))
+
+(intrinsics:defn skip-while (pred l)
+  (if (nil? l)
+    nil
+    (if (pred (car l))
+      (skip-while pred (cdr l))
+      l)))
+
+(intrinsics:defn split-at (n l)
+  (pair (take n l) (skip n l)))
+
+(intrinsics:defn take (n l)
+  (intrinsics:defn helper (n l acc)
+    (if (0? n)
+      acc
+      (helper (1- n) (cdr l) (cons (car l) acc))))
+  (reverse (helper n l nil)))
+
+(intrinsics:defn take-while (pred l)
+  (intrinsics:defn helper (l acc)
+    (if (nil? l)
+      acc
+      (if (pred (car l))
+        (helper (cdr l) (cons (car l) acc))
+        acc)))
+  (reverse (helper l nil)))
+
+(intrinsics:defn 1st (l) (car l))
+(intrinsics:defn 2nd (l) (car (cdr l)))
+(intrinsics:defn 3rd (l) (car (cdr (cdr l))))
+(intrinsics:defn 4th (l) (car (cdr (cdr (cdr l)))))
+(intrinsics:defn 5th (l) (car (cdr (cdr (cdr (cdr l))))))
+(intrinsics:defn 6th (l) (car (cdr (cdr (cdr (cdr (cdr l)))))))
+(intrinsics:defn 7th (l) (car (cdr (cdr (cdr (cdr (cdr (cdr l))))))))
+(intrinsics:defn 8th (l) (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr l)))))))))
+(intrinsics:defn 9th (l) (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr (cdr l))))))))))

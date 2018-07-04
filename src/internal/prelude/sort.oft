@@ -1,0 +1,63 @@
+(module std/internal/prelude/sort
+  [sort sort-by]
+  no-prelude)
+
+(import std/internal/prelude/compare
+  [< >])
+(import std/internal/prelude/conversions
+  [list->vector vector->list])
+(import std/internal/prelude/function
+  [id])
+(import std/internal/prelude/intrinsics
+  [/ car cdr compare cons eq list nil nil? vector?])
+(import std/internal/prelude/list
+  [length map split-at])
+(import std/internal/prelude/option
+  [none some])
+(import std/internal/prelude/pair
+  [fst map-pair pair snd])
+
+(intrinsics:defn merge (l r)
+  (intrinsics:defn rev-append (l r)
+    (if (nil? l)
+      r
+      (rev-append (cdr l) (cons (car l) r))))
+  (intrinsics:defn helper (l r acc)
+    (if (nil? l)
+      (rev-append acc r)
+      (if (nil? r)
+        (rev-append acc l)
+        (progn
+          (intrinsics:def lh (car l))
+          (intrinsics:def rh (car r))
+          (if (> (cdr lh) (cdr rh))
+            (helper l (cdr r) (cons rh acc))
+            (helper (cdr l) r (cons lh acc)))))))
+  (helper l r nil))
+
+(intrinsics:defn sort (l)
+  (sort-by id l))
+
+(intrinsics:defn sort-by (f l)
+  (intrinsics:def sorter (if (vector? l) sort-vector-by sort-list-by))
+  (sorter f l))
+
+(intrinsics:defn sort-list-by (f lst)
+  (intrinsics:defn helper (lst)
+    (intrinsics:def len (length lst))
+    (if (< len 2)
+      lst
+      (progn
+        (intrinsics:def tmp (split-at (/ len 2) lst))
+        (merge (helper (fst tmp)) (helper (snd tmp))))))
+  (map car (helper (map \(cons $ (f $)) lst))))
+
+(intrinsics:defn sort-vector-by (f v)
+  (intrinsics:defn helper (lst)
+    (intrinsics:def len (length lst))
+    (if (< len 2)
+      lst
+      (progn
+        (intrinsics:def tmp (split-at (/ len 2) lst))
+        (merge (helper (fst tmp)) (helper (snd tmp))))))
+  (list->vector (map car (helper (map \(cons $ (f $)) (vector->list v))))))

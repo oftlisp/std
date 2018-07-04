@@ -1,0 +1,77 @@
+(module std/internal/prelude/string
+  [string-append string-concat string-join string-length string-nth
+   string-replace string-search string-slice string-split-on string-split-on-1]
+  no-prelude)
+
+(import std/internal/prelude/compare
+  [<= >=])
+(import std/internal/prelude/intrinsics
+  [+ - car cdr cons equals false list nil nil? panic])
+(import std/internal/prelude/list
+  [reverse])
+(import std/internal/prelude/math
+  [1+])
+(import std/internal/prelude/option
+  [none option-cases option-map some])
+(import std/internal/prelude/pair
+  [fst snd pair])
+
+(intrinsics:def string-append intrinsics/strings:append)
+(intrinsics:def string-length intrinsics/strings:length)
+(intrinsics:def string-slice  intrinsics/strings:slice)
+
+(intrinsics:defn string-concat (ss)
+  (intrinsics:defn helper (ss acc)
+    (if (nil? ss)
+      acc
+      (helper (cdr ss) (string-append acc (car ss)))))
+  (helper ss ""))
+
+(intrinsics:defn string-join (delim ss)
+  (intrinsics:defn helper (ss acc)
+    (if (nil? ss)
+      acc
+      (helper (cdr ss) (string-append acc (string-append delim (car ss))))))
+  (if (nil? ss)
+    ""
+    (helper (cdr ss) (car ss))))
+
+(intrinsics:defn string-nth (n s)
+  (string-slice n (1+ n) s))
+
+(intrinsics:defn string-replace (from to s)
+  (string-join to (string-split-on from s)))
+
+; TODO: Use Boyer-Moore instead. For now, this is O(mn) naive string search.
+(intrinsics:defn string-search (needle haystack)
+  (intrinsics:def needle-len (string-length needle))
+  (intrinsics:def last-n (- (string-length haystack) needle-len))
+
+  (intrinsics:defn match? (n)
+    (intrinsics:def upper (+ n needle-len))
+    (if (<= upper (string-length haystack))
+      (equals (string-slice n (+ n needle-len) haystack) needle)
+      false))
+  (intrinsics:defn helper (n)
+    (if (match? n)
+      (some n)
+      (if (>= n last-n)
+        none
+        (helper (1+ n)))))
+  (helper 0))
+
+(intrinsics:defn string-split-on (needle s)
+  (intrinsics:defn helper (s acc)
+    (intrinsics:def tmp (string-split-on-1 needle s))
+    (option-cases
+      \(helper (snd $) (cons (fst $) acc))
+      (intrinsics:fn () (reverse (cons s acc)))
+      (string-split-on-1 needle s)))
+  (helper s nil))
+
+(intrinsics:defn string-split-on-1 (needle s)
+  (intrinsics:def nl (string-length needle))
+  (option-map \(pair
+    (string-slice 0        $                 s)
+    (string-slice (+ $ nl) (string-length s) s))
+    (string-search needle s)))
