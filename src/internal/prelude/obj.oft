@@ -1,0 +1,22 @@
+(module std/internal/prelude/obj
+  [get-type length make-object]
+  no-prelude)
+
+(import std/internal/prelude/intrinsics
+  [car cdr cons gensym nil nil? panic])
+(import std/internal/prelude/macros
+  [def defn defmacro])
+
+; Objectful Functions
+(def get-type    intrinsics/obj:get_type)
+(def make-object intrinsics/obj:make_object) 
+
+; Generic Functions
+(defmacro defgeneric (name args type-arg-index)
+  ; The real one is itself generic.
+  (defn nth (n l) (if (0? n) l (skip (1- n) (cdr l))))
+  (def type-arg (nth type-arg-index l))
+  `(defn ,name ,args
+    ((get-method (type ,type-arg) ,name) ,@args)))
+
+(defgeneric length (lst))

@@ -64,7 +64,7 @@ def make_archive():
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--oftb-dir", default="../oftb")
-    parser.add_argument("--std-dir", default="../std")
+    parser.add_argument("--std-dir", default=".")
     parser.add_argument("--use-system-oftb", action="store_true")
     args = parser.parse_args()
 

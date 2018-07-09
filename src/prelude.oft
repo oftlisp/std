@@ -1,22 +1,23 @@
 (module std/prelude
   [* + - . / 0? 1+ 1- 1st 2nd 3rd 4th 5th 6th 7th 8th 9th < <= = > >= all all-some and any append
-   as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-length bytes-nth
+   as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
    bytes-slice bytes? car cdr compare cons cons? const contains? debug-trace def defmacro defn each
    either eq equals err err? expect false filter find first-nonnil first-some fix fixnum->byte
    fixnum-and fixnum-not fixnum-or fixnum-rol fixnum-ror fixnum-shl fixnum-shr fixnum-xor fixnum?
-   flat-map flip foldl foldr fst function? gensym id index-into init last left left->option left?
-   length list list->vector lookup map map-err map-fst map-ok map-pair map-result map-snd mod must
-   nil nil? none none? not nth nullable->option ok ok? option->nullable option-cases option-map or
-   or-else pair panic partition position position-of print println reverse right right->option
-   right? shl? skip skip-while snd some some? sort sort-by split-at string->bytes string->symbol
-   string-append string-concat string-join string-length string-nth string-replace string-search
-   string-slice string-split-on string-split-on-1 string? symbol->string symbol? take take-while
-   todo true vector->list vector-append vector-each vector-length vector-nth vector-slice vector?
-   write write-bytes writeln]
+   flat-map flip foldl foldr fst function? gensym get-type id index-into init last left
+   left->option left? length list list->vector lookup make-object map map-err map-fst map-ok
+   map-pair map-result map-snd mod must nil nil? none none? not nth nullable->option ok ok?
+   option->nullable option-cases option-map or or-else pair panic partition position position-of
+   print println reverse right right->option right? shl? skip skip-while snd some some? sort
+   sort-by split-at string->bytes string->symbol string-append string-concat string-join
+   string-nth string-replace string-search string-slice string-split-on
+   string-split-on-1 string? symbol->string symbol? take take-while todo true unless vector->list
+   vector-append vector-each vector-nth vector-slice vector? when write write-bytes
+   writeln]
   no-prelude)
 
 (import std/internal/prelude/bytes
-  [bytes-append bytes-concat bytes-length bytes-nth bytes-slice])
+  [bytes-append bytes-concat bytes-nth bytes-slice])
 (import std/internal/prelude/compare
   [< <= > >=])
 (import std/internal/prelude/conversions
@@ -33,14 +34,16 @@
    nil nil? panic print println string? symbol? true vector? write write-bytes writeln])
 (import std/internal/prelude/list
   [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any append assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last length lookup map nth
+   first-nonnil first-some flat-map foldl foldr index-into init last lookup map nth
    partition position position-of reverse skip skip-while split-at take take-while])
 (import std/internal/prelude/logic
   [and not or])
 (import std/internal/prelude/macros
-  [def defmacro defn list todo])
+  [def defmacro defn list todo unless when])
 (import std/internal/prelude/math
   [0? 1+ 1-])
+(import std/internal/prelude/obj
+  [get-type length make-object])
 (import std/internal/prelude/option
   [expect none none? nullable->option option->nullable option-cases option-map or-else some some?])
 (import std/internal/prelude/pair
@@ -50,12 +53,12 @@
 (import std/internal/prelude/sort
   [sort sort-by])
 (import std/internal/prelude/string
-  [string-append string-concat string-join string-length string-nth string-replace string-search
+  [string-append string-concat string-join string-nth string-replace string-search
    string-slice string-split-on string-split-on-1])
 (import std/internal/prelude/util
   [as-shl debug-trace shl?])
 (import std/internal/prelude/vector
-  [vector-append vector-each vector-length vector-nth vector-slice])
+  [vector-append vector-each vector-nth vector-slice])
 
 (intrinsics:def * *)
 (intrinsics:def + +)
@@ -91,7 +94,6 @@
 (intrinsics:def byte? byte?)
 (intrinsics:def bytes-append bytes-append)
 (intrinsics:def bytes-concat bytes-concat)
-(intrinsics:def bytes-length bytes-length)
 (intrinsics:def bytes-nth bytes-nth)
 (intrinsics:def bytes-slice bytes-slice)
 (intrinsics:def bytes? bytes?)
@@ -191,7 +193,6 @@
 (intrinsics:def string-append string-append)
 (intrinsics:def string-concat string-concat)
 (intrinsics:def string-join string-join)
-(intrinsics:def string-length string-length)
 (intrinsics:def string-nth string-nth)
 (intrinsics:def string-replace string-replace)
 (intrinsics:def string-search string-search)
@@ -207,7 +208,6 @@
 (intrinsics:def vector->list vector->list)
 (intrinsics:def vector-append vector-append)
 (intrinsics:def vector-each vector-each)
-(intrinsics:def vector-length vector-length)
 (intrinsics:def vector-nth vector-nth)
 (intrinsics:def vector-slice vector-slice)
 (intrinsics:def vector? vector?)

@@ -8,4 +8,4 @@
   (library)
   (binary
     (name "oftc")
-    (path "bins/oftc.oft")))
+    (path "bin/oftc.oft")))

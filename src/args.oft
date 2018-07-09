@@ -1,6 +1,26 @@
 (module std/args
-  [make-arg-parser])
+  [arg-parser-empty arg-parser-args arg-parser-flag arg-parser-option parse-args])
 
-(defn make-arg-parser ()
+(defn arg-parser-empty ()
   "Returns an argument parser that rejects any arguments (except --help)."
+  (make-object 'std/args:parser ['empty]))
+
+(defn arg-parser-args (nargs)
+  "Returns an argument parser that parses `nargs` arguments."
+  (make-object 'std/args:parser ['args nargs]))
+
+(defn arg-parser-concat (parsers)
+  "Combines the argument parsers."
+  (make-object 'std/args:parser ['args nargs]))
+
+(defn arg-parser-flag (short long)
+  "Parses a flag with a short or long name."
+  (make-object 'std/args:parser ['flag short long]))
+
+(defn arg-parser-option (short long)
+  "Parses an option with a short or long name."
+  (make-object 'std/args:parser ['option short long]))
+
+(defn parse-args (args parser)
+  "Parses arguments with the argument parser."
   (todo))

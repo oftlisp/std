@@ -1,6 +1,6 @@
 # std
 
-The OftLisp standard library.
+The OftLisp standard library and compiler.
 
 ## Installation
 

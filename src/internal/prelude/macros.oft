@@ -1,18 +1,25 @@
 (module std/internal/prelude/macros
-  [def defmacro defn list todo]
+  [afn def defmacro defn list todo unless when]
   no-prelude)
 
 (import std/internal/prelude/intrinsics
-  [car cdr cons nil?])
+  [car cdr cons nil nil?])
+
+(intrinsics:defmacro quasiquote form
+  (std/internal/prelude/intrinsics:panic 'todo-quasiquote))
 
 (intrinsics:defmacro def form
-  (cons 'intrinsics:def form))
+  (std/internal/prelude/intrinsics:panic 'todo-def))
 
 (intrinsics:defmacro defmacro form
-  (cons 'intrinsics:defmacro form))
+  (std/internal/prelude/intrinsics:panic 'todo-defmacro))
 
 (intrinsics:defmacro defn form
-  (cons 'intrinsics:defn form))
+  (std/internal/prelude/intrinsics:panic 'todo-defn))
+
+(intrinsics:defmacro afn form
+  ; This uses a self-calling lambda instead of a progn to avoid being inlined at the top level.
+  `((fn () (defn $ ,@form) $)))
 
 ; TODO: Should this use the std/prelude versions instead?
 (intrinsics:defmacro list form
@@ -20,8 +27,21 @@
     (if (nil? form)
       'std/internal/prelude/intrinsics:nil
       (cons 'std/internal/prelude/intrinsics:cons
-        (cons (car form) (helper (cdr form))))))
+        (cons (car form)
+          (cons (helper (cdr form))
+            nil)))))
   (helper form))
 
 (intrinsics:defmacro todo form
-  (list 'panic (list 'cons ''todo (cons 'list form))))
+  (intrinsics:def data 
+    (if (nil? form)
+      ''todo
+      (if (nil? (cdr form))
+        (list 'std/internal/prelude/intrinsics:cons ''todo (car form))
+        (list 'std/internal/prelude/intrinsics:cons ''todo (cons 'list form)))))
+  (list 'std/internal/prelude/intrinsics:panic data))
+
+(defmacro unless (c b)
+  `(if ,c std/internal/prelude/intrinsics:nil ,b))
+(defmacro when (c b)
+  `(if ,c ,b std/internal/prelude/intrinsics:nil))

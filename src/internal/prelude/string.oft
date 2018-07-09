@@ -6,7 +6,7 @@
 (import std/internal/prelude/compare
   [<= >=])
 (import std/internal/prelude/intrinsics
-  [+ - car cdr cons equals false list nil nil? panic])
+  [+ - car cdr cons equals false nil nil? panic])
 (import std/internal/prelude/list
   [reverse])
 (import std/internal/prelude/math

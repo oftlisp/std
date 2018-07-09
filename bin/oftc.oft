@@ -1,0 +1,11 @@
+(module main
+  [main])
+
+(import std/args
+  [arg-parser-empty arg-parser-args arg-parser-flag arg-parser-option parse-args])
+
+(defn main (args)
+  (def args (parse-args args
+    (arg-parser-empty)))
+  (println "Hello, world!")
+  (writeln args))
