@@ -3,23 +3,9 @@
   no-prelude)
 
 (import std/internal/prelude/intrinsics
-  [car cdr cons nil nil?])
-
-(intrinsics:defmacro quasiquote form
-  (std/internal/prelude/intrinsics:panic 'todo-quasiquote))
-
-(intrinsics:defmacro def form
-  (std/internal/prelude/intrinsics:panic 'todo-def))
-
-(intrinsics:defmacro defmacro form
-  (std/internal/prelude/intrinsics:panic 'todo-defmacro))
-
-(intrinsics:defmacro defn form
-  (std/internal/prelude/intrinsics:panic 'todo-defn))
-
-(intrinsics:defmacro afn form
-  ; This uses a self-calling lambda instead of a progn to avoid being inlined at the top level.
-  `((fn () (defn $ ,@form) $)))
+  [car cdr cons cons? nil nil? vector?])
+(import std/internal/prelude/util
+  [debug-trace shl?])
 
 ; TODO: Should this use the std/prelude versions instead?
 (intrinsics:defmacro list form
@@ -31,6 +17,36 @@
           (cons (helper (cdr form))
             nil)))))
   (helper form))
+
+(intrinsics:defmacro quasiquote form
+  (intrinsics:defn qq (form)
+    (if (cons? form)
+      (list 'std/internal/prelude/obj:append
+        (qq-inner (car form))
+        (qq (cdr form)))
+      (if (vector? form)
+        (std/internal/prelude/intrinsics:panic (cons 'todo-quasiquote form))
+        (cons 'quote form))))
+  (intrinsics:defn qq-inner (form)
+    (if (shl? 'unquote form)
+      (std/internal/prelude/intrinsics:panic (cdr form))
+      (if (shl? 'unquote-splicing form)
+        (std/internal/prelude/intrinsics:panic (cdr form))
+        (list 'list (list 'quote form)))))
+  (qq (car form)))
+
+(intrinsics:defmacro defmacro form
+  (std/internal/prelude/intrinsics:panic (cons 'todo-defmacro form)))
+
+(intrinsics:defmacro def form
+  (std/internal/prelude/intrinsics:panic (cons 'todo-def form)))
+
+(intrinsics:defmacro defn form
+  (std/internal/prelude/intrinsics:panic (cons 'todo-defn form)))
+
+(intrinsics:defmacro afn form
+  ; This uses a self-calling lambda instead of a progn to avoid being inlined at the top level.
+  `((fn () (defn $ ,@form) $)))
 
 (intrinsics:defmacro todo form
   (intrinsics:def data 
