@@ -1,5 +1,5 @@
 (module std/internal/prelude/obj
-  [get-type length make-object]
+  [append get-type length make-object]
   no-prelude)
 
 (import std/internal/prelude/intrinsics
@@ -19,4 +19,5 @@
   `(defn ,name ,args
     ((get-method (type ,type-arg) ,name) ,@args)))
 
+(defgeneric append (lst))
 (defgeneric length (lst))

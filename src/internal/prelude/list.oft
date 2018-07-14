@@ -1,7 +1,7 @@
 (module std/internal/prelude/list
   [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any append assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last length lookup map nth
-   partition position position-of reverse skip skip-while split-at take take-while]
+   first-nonnil first-some flat-map foldl foldr index-into init last length list-append lookup map
+   nth partition position position-of reverse skip skip-while split-at take take-while]
   no-prelude)
 
 (import std/internal/prelude/either
@@ -43,7 +43,7 @@
       true
       (any f (cdr l)))))
 
-(intrinsics:defn append (l r)
+(intrinsics:defn list-append (l r)
   (intrinsics:defn helper (l r)
     (if (nil? l)
       r

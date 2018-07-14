@@ -19,24 +19,36 @@
   (helper form))
 
 (intrinsics:defmacro quasiquote form
+  ; (a ,b ,@c ,d) -> (append (list 'a) (append (list b) (append c (append (list d) nil))))
+  ; (,a ,b | ,c) -> (append (list a) (append (list b) (list c)))
   (intrinsics:defn qq (form)
     (if (cons? form)
-      (list 'std/internal/prelude/obj:append
-        (qq-inner (car form))
+      (list 'std/internal/prelude/list:list-append
+        (qq-list-inner (car form))
         (qq (cdr form)))
       (if (vector? form)
-        (std/internal/prelude/intrinsics:panic (cons 'todo-quasiquote form))
-        (cons 'quote form))))
-  (intrinsics:defn qq-inner (form)
+        (vector-map qq-vector-inner form)
+        (cons 'quote (cons form nil)))))
+  (intrinsics:defn qq-list-inner (form)
     (if (shl? 'unquote form)
-      (std/internal/prelude/intrinsics:panic (cdr form))
+      (list 'list (car (cdr form)))
       (if (shl? 'unquote-splicing form)
-        (std/internal/prelude/intrinsics:panic (cdr form))
-        (list 'list (list 'quote form)))))
-  (qq (car form)))
+        (car (cdr form))
+        (list 'list (qq form)))))
+  (intrinsics:defn qq-vector-inner (form)
+    (if (shl? 'unquote form)
+      (car (cdr form))
+      (if (shl? 'unquote-splicing form)
+        (std/internal/prelude/intrinsics:panic ",@ not yet supported in vectors")
+        (qq form))))
+  (intrinsics:def before (car form))
+  (intrinsics:def after (qq before))
+  %'--------------------------------------------------------------------------------
+  %before
+  %after)
 
 (intrinsics:defmacro defmacro form
-  (std/internal/prelude/intrinsics:panic (cons 'todo-defmacro form)))
+  (std/internal/prelude/intrinsics:panic `(todo-defmacro | ,form)))
 
 (intrinsics:defmacro def form
   (std/internal/prelude/intrinsics:panic (cons 'todo-def form)))
