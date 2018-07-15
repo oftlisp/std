@@ -1,5 +1,5 @@
 (module std/internal/prelude/list
-  [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any append assoc contains? each filter find
+  [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any assoc contains? each filter find
    first-nonnil first-some flat-map foldl foldr index-into init last length list-append lookup map
    nth partition position position-of reverse skip skip-while split-at take take-while]
   no-prelude)
@@ -42,13 +42,6 @@
     (if (f (car l))
       true
       (any f (cdr l)))))
-
-(intrinsics:defn list-append (l r)
-  (intrinsics:defn helper (l r)
-    (if (nil? l)
-      r
-      (helper (cdr l) (cons (car l) r))))
-  (helper (reverse l) r))
 
 (intrinsics:defn assoc (x l)
   (if (nil? l)
@@ -103,7 +96,7 @@
   (intrinsics:defn helper (l acc)
     (if (nil? l)
       acc
-      (helper (cdr l) (append (reverse (f (car l))) acc))))
+      (helper (cdr l) (list-append (reverse (f (car l))) acc))))
   (reverse (helper l nil)))
 
 (intrinsics:defn foldl (f x l)
@@ -137,6 +130,13 @@
 
 (intrinsics:defn length (l)
   (foldl (intrinsics:fn (l _) (1+ l)) 0 l))
+
+(intrinsics:defn list-append (l r)
+  (intrinsics:defn helper (l r)
+    (if (nil? l)
+      r
+      (helper (cdr l) (cons (car l) r))))
+  (helper (reverse l) r))
 
 (intrinsics:defn lookup (x l)
   (if (nil? l)

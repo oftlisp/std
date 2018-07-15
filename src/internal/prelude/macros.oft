@@ -2,10 +2,14 @@
   [afn def defmacro defn list todo unless when]
   no-prelude)
 
+(import std/internal/prelude/conversions
+  [symbol->string])
 (import std/internal/prelude/intrinsics
-  [car cdr cons cons? nil nil? vector?])
+  [car cdr cons cons? gensym nil nil? panic symbol? vector?])
+(import std/internal/prelude/string
+  [string-append])
 (import std/internal/prelude/util
-  [debug-trace shl?])
+  [shl?])
 
 ; TODO: Should this use the std/prelude versions instead?
 (intrinsics:defmacro list form
@@ -22,13 +26,17 @@
   ; (a ,b ,@c ,d) -> (append (list 'a) (append (list b) (append c (append (list d) nil))))
   ; (,a ,b | ,c) -> (append (list a) (append (list b) (list c)))
   (intrinsics:defn qq (form)
-    (if (cons? form)
-      (list 'std/internal/prelude/list:list-append
-        (qq-list-inner (car form))
-        (qq (cdr form)))
-      (if (vector? form)
-        (vector-map qq-vector-inner form)
-        (cons 'quote (cons form nil)))))
+    (if (shl? 'unquote form)
+      (car (cdr form))
+      (if (shl? 'unquote-splicing form)
+        (panic ",@ not supported at the top level of a quasiquote")
+        (if (cons? form)
+          (list 'std/internal/prelude/list:list-append
+            (qq-list-inner (car form))
+            (qq (cdr form)))
+          (if (vector? form)
+            (vector-map qq-vector-inner form)
+            (cons 'quote (cons form nil)))))))
   (intrinsics:defn qq-list-inner (form)
     (if (shl? 'unquote form)
       (list 'list (car (cdr form)))
@@ -39,37 +47,48 @@
     (if (shl? 'unquote form)
       (car (cdr form))
       (if (shl? 'unquote-splicing form)
-        (std/internal/prelude/intrinsics:panic ",@ not yet supported in vectors")
+        (panic ",@ not yet supported in vectors")
         (qq form))))
-  (intrinsics:def before (car form))
-  (intrinsics:def after (qq before))
-  %'--------------------------------------------------------------------------------
-  %before
-  %after)
-
-(intrinsics:defmacro defmacro form
-  (std/internal/prelude/intrinsics:panic `(todo-defmacro | ,form)))
+  (qq (car form)))
 
 (intrinsics:defmacro def form
-  (std/internal/prelude/intrinsics:panic (cons 'todo-def form)))
+  `(intrinsics:def ,@form))
 
 (intrinsics:defmacro defn form
-  (std/internal/prelude/intrinsics:panic (cons 'todo-defn form)))
+  `(intrinsics:defn ,@form))
 
-(intrinsics:defmacro afn form
+(intrinsics:defmacro defmacro form
+  (def macro-name (car form))
+  (def macro-body (cdr (cdr form)))
+  ; defmacro parameters are a (possibly improper) list containing only symbols. This list is
+  ; matched against the list of arguments. For example, (a b | c) matches against (1 2 3 4) as
+  ; a = 1, b = 2, c = (3 4). Note that a symbol is itself an improper list containing only symbols.
+  ; As such, foo matches against (1 2 3 4) as foo = (1 2 3 4).
+  (defn helper (args params)
+    (if (cons? params)
+      `((intrinsics:def ,(car params) (car ,args))
+        ,@(helper `(cdr ,args) (cdr params)))
+      (if (nil? params)
+        `((if (nil? ,args)
+            '()
+            (panic ,(string-append "invalid arguments to macro " (symbol->string macro-name))))
+          ,@macro-body)
+        (if (symbol? params)
+          `((intrinsics:def ,params ,args)
+            ,@macro-body)
+          (panic (cons invalid-defmacro-params params))))))
+  (def param-name (gensym))
+  `(intrinsics:defmacro ,macro-name ,param-name
+    ,@(helper param-name (car (cdr form)))))
+
+(defmacro afn form
   ; This uses a self-calling lambda instead of a progn to avoid being inlined at the top level.
   `((fn () (defn $ ,@form) $)))
 
-(intrinsics:defmacro todo form
-  (intrinsics:def data 
-    (if (nil? form)
-      ''todo
-      (if (nil? (cdr form))
-        (list 'std/internal/prelude/intrinsics:cons ''todo (car form))
-        (list 'std/internal/prelude/intrinsics:cons ''todo (cons 'list form)))))
-  (list 'std/internal/prelude/intrinsics:panic data))
+(defmacro todo form
+  `(panic (list 'todo ,@form)))
 
-(defmacro unless (c b)
-  `(if ,c std/internal/prelude/intrinsics:nil ,b))
-(defmacro when (c b)
-  `(if ,c ,b std/internal/prelude/intrinsics:nil))
+(defmacro unless (c | b)
+  `(if ,c std/internal/prelude/intrinsics:nil (progn ,@b)))
+(defmacro when (c | b)
+  `(if ,c (progn ,@b) std/internal/prelude/intrinsics:nil))
