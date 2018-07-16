@@ -33,9 +33,9 @@
   [* + - / = byte? bytes? car cdr compare cons cons? eq equals false fixnum? function? gensym mod
    nil nil? panic print println string? symbol? true vector? write write-bytes writeln])
 (import std/internal/prelude/list
-  [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any append assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last lookup map nth
-   partition position position-of reverse skip skip-while split-at take take-while])
+  [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any assoc contains? each filter find
+   first-nonnil first-some flat-map foldl foldr index-into init last lookup map nth partition
+   position position-of reverse skip skip-while split-at take take-while])
 (import std/internal/prelude/logic
   [and not or])
 (import std/internal/prelude/macros
@@ -43,7 +43,7 @@
 (import std/internal/prelude/math
   [0? 1+ 1-])
 (import std/internal/prelude/obj
-  [get-type length make-object])
+  [append get-type length make-object])
 (import std/internal/prelude/option
   [expect none none? nullable->option option->nullable option-cases option-map or-else some some?])
 (import std/internal/prelude/pair
@@ -135,6 +135,7 @@
 (intrinsics:def fst fst)
 (intrinsics:def function? function?)
 (intrinsics:def gensym gensym)
+(intrinsics:def get-type get-type)
 (intrinsics:def id id)
 (intrinsics:def index-into index-into)
 (intrinsics:def init init)
@@ -145,6 +146,7 @@
 (intrinsics:def length length)
 (intrinsics:def list->vector list->vector)
 (intrinsics:def lookup lookup)
+(intrinsics:def make-object make-object)
 (intrinsics:def map map)
 (intrinsics:def map-err map-err)
 (intrinsics:def map-fst map-fst)
