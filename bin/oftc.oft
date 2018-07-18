@@ -2,10 +2,9 @@
   [main])
 
 (import std/args
-  [arg-parser-empty arg-parser-arg arg-parser-flag arg-parser-option parse-args])
+  [parse-args usage])
 
 (defn main (args)
-  (def args (parse-args args
-    (arg-parser-empty)))
+  (def args (parse-args args nil))
   (println "Hello, world!")
   (writeln args))

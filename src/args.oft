@@ -1,27 +1,14 @@
 (module std/args
-  [arg-parser-empty arg-parser-arg arg-parser-flag arg-parser-option parse-args]
+  [parse-args usage]
   "Functions for creating and running argument parsers.")
 
-(defn arg-parser-empty ()
-  "Returns an argument parser that rejects any arguments (except --help)."
-  (make-object 'std/args:parser ['empty]))
+; An argument parser spec is:
+;
 
-(defn arg-parser-concat (parsers)
-  "Combines the argument parsers."
-  (todo))
-
-(defn arg-parser-flag (short long)
-  "Parses a flag with a short or long name."
-  (make-object 'std/args:parser ['flag short long]))
-
-(defn arg-parser-option (short long)
-  "Parses an option with a short or long name."
-  (make-object 'std/args:parser ['option short long]))
-
-(defn parse-args (args parser)
+(defn parse-args (args spec)
   "Parses arguments with the argument parser."
   (todo))
 
-(defn usage (name parser)
+(defn usage (name spec)
   "Returns a usage message for the given argument parser."
   (todo))
