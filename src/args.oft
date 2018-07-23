@@ -1,24 +1,61 @@
 (module std/args
-  [parse-args usage]
+  [make-arg-parser parse-args usage]
   "Functions for creating and running argument parsers.")
 
-; An argument parser spec is a tuple (SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS).
-; 
+; An argument parser spec is a tuple (ARG-SPEC SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS).
+;
+; ARG-SPEC is a (possibly improper) list of symbols.
 ; SHORT-FLAGS is an assoc from symbols with one character to symbols.
 ; LONG-FLAGS is an assoc from symbols to symbols.
-; SHORT-OPTS is an assoc from symbols to symbols.
+; SHORT-OPTS is an assoc from symbols with one character to symbols.
 ; LONG-OPTS is an assoc from symbols to symbols.
 
-; Creates an argument parser that can be passed into parse-args or usage.
-;
-; 
-(defmacro make-arg-parser (app-name | arg-specs)
-  (panic 'foo))
+(defn short? (sym)
+  "Checks if a symbol is a short option."
+  (def str (symbol->string sym))
+  (and- (> (length str) 1)
+       (equals (slice 0 1 str) "-")
+       (not (equals (slice 0 2 str) "--"))))
+(defn long? (sym)
+  "Checks if a symbol is a long option."
+  (def str (symbol->string sym))
+  (and- (> (length str) 2) (equals (slice 0 2 str) "--")))
+
+(defmacro make-arg-parser (app-name arg-spec | opt-specs)
+  "Creates an argument parser that can be passed into parse-args or usage.
+
+   ```
+   (make-arg-parser my-cool-app (foo | bar) ; one foo arg, zero-infinity bar args
+     (option output -o --output)            ; an option, -o or --output, named output
+     (flag verbose -v)                      ; a flag, -v, named verbose
+     (flag help -h --help))                 ; a flag, -h or --help, named help
+   (make-arg-parser other-app (baz? quux?)) ; two optional args, baz and quux
+   (make-arg-parser third-app ()            ; no args
+     (flag quiet -q))                       ; a flag, -q, named quiet
+   ```"
+
+  (defn add-flag (parser-spec flag-spec)
+    (todo 'add-flag))
+  (defn add-option (parser-spec option-spec)
+    (def name (car option-spec))
+    (defn helper (parser-spec flag)
+      (cond
+        (short? flag) (todo 'short)
+        (long? flag)  (todo 'long)
+                      (panic `(invalid-option-flag ,flag))))
+    (foldl helper parser-spec (cdr option-spec)))
+  (defn add-spec (parser-spec opt-spec)
+    (cond
+      (shl? 'flag opt-spec)   (add-flag   parser-spec (cdr opt-spec))
+      (shl? 'option opt-spec) (add-option parser-spec (cdr opt-spec))
+                              (panic `(invalid-parser-opt-spec ,opt-spec))))
+
+  %`(quote ,(foldl add-spec (list arg-spec nil nil nil nil) opt-specs)))
 
 (defn parse-args (args spec)
   "Parses arguments with the argument parser."
-  (todo))
+  (todo parse-args))
 
 (defn usage (name spec)
   "Returns a usage message for the given argument parser."
-  (todo))
+  (todo usage))

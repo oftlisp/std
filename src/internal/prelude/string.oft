@@ -20,6 +20,13 @@
 (intrinsics:def string-length intrinsics/strings:length)
 (intrinsics:def string-slice  intrinsics/strings:slice)
 
+(intrinsics:defmethod string append (a b)
+  (intrinsics/strings:append a b))
+(intrinsics:defmethod string length (str)
+  (intrinsics/strings:length str))
+(intrinsics:defmethod string slice (from to str)
+  (intrinsics/strings:slice from to str))
+
 (intrinsics:defn string-concat (ss)
   (intrinsics:defn helper (ss acc)
     (if (nil? ss)
