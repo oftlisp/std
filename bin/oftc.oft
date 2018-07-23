@@ -5,6 +5,8 @@
   [parse-args usage])
 
 (defn main (args)
+  (def parser (make-arg-parser "oftc"
+    (output [-o] output)))
   (def args (parse-args args nil))
   (println "Hello, world!")
   (writeln args))
