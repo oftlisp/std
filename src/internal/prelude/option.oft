@@ -1,5 +1,6 @@
 (module std/internal/prelude/option
-  [expect none none? nullable->option option->nullable option-cases option-map or-else some some?]
+  [expect none none? nullable->option option->nullable option-cases option-map or-else some some?
+   unwrap-or]
   no-prelude)
 
 (import std/internal/prelude/function
@@ -10,6 +11,9 @@
   [1+])
 
 (intrinsics:def none 'none)
+
+(intrinsics:defmethod option monad-join (opt)
+  (unwrap-or none opt))
 
 (intrinsics:defn expect (opt msg)
   (option-cases id (intrinsics:fn () (panic msg)) opt))
@@ -23,7 +27,7 @@
     (some x)))
 
 (intrinsics:defn option->nullable (opt)
-  (option-cases id (intrinsics:fn () nil) opt))
+  (unwrap-or nil opt))
 
 (intrinsics:defn option-cases (s n opt)
   (if (some? opt)
@@ -45,3 +49,6 @@
   (if (cons? opt)
     (eq (car opt) 'some)
     false))
+
+(intrinsics:defn unwrap-or (value opt)
+  (option-cases id (const value) opt))

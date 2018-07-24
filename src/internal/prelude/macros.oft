@@ -1,5 +1,5 @@
 (module std/internal/prelude/macros
-  [afn cond def defmacro defn list quasiquote todo unless when]
+  [afn and cond def defmacro defn let let1 list or quasiquote todo unless when]
   no-prelude)
 
 (import std/internal/prelude/conversions
@@ -82,8 +82,21 @@
     ,@(helper param-name (car (cdr form)))))
 
 (defmacro afn form
-  ; This uses a self-calling lambda instead of a progn to avoid being inlined at the top level.
-  `((fn () (defn $ ,@form) $)))
+  `(progn (defn $ ,@form) $))
+
+(defmacro and form
+  (if (nil? form)
+    true
+    `(if ,(car form)
+      (and ,@(cdr form))
+      false)))
+
+(defmacro or form
+  (if (nil? form)
+    false
+    `(if ,(car form)
+      true
+      (or ,@(cdr form)))))
 
 (defmacro cond cases
   (if (nil? cases)
@@ -93,6 +106,14 @@
       `(if ,(car cases)
         ,(car (cdr cases))
         (cond ,@(cdr (cdr cases)))))))
+
+(defmacro let (bindings | body)
+  (defn make-binding-def (binding)
+    `(def ,(car binding) (progn ,@(cdr binding))))
+  `(progn ,@(map make-binding-def bindings) ,@body))
+
+(defmacro let1 (name expr | body)
+  `(progn (def ,name ,expr) ,@body))
 
 (defmacro todo form
   `(panic (list 'todo ,@form)))

@@ -13,13 +13,13 @@
 (defn short? (sym)
   "Checks if a symbol is a short option."
   (def str (symbol->string sym))
-  (and- (> (length str) 1)
+  (and (> (length str) 1)
        (equals (slice 0 1 str) "-")
        (not (equals (slice 0 2 str) "--"))))
 (defn long? (sym)
   "Checks if a symbol is a long option."
   (def str (symbol->string sym))
-  (and- (> (length str) 2) (equals (slice 0 2 str) "--")))
+  (and (> (length str) 2) (equals (slice 0 2 str) "--")))
 
 (defmacro make-arg-parser (app-name arg-spec | opt-specs)
   "Creates an argument parser that can be passed into parse-args or usage.

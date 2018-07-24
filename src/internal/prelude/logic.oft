@@ -1,31 +1,15 @@
 (module std/internal/prelude/logic
-  [and and- not or or-]
+  [and not or]
   no-prelude)
 
 (import std/internal/prelude/intrinsics
   [false nil? true])
-(import std/internal/prelude/macros
-  [quasiquote])
 
 (intrinsics:defn and (l r)
   (if l r false))
-
-(intrinsics:defmacro and- form
-  (if (nil? form)
-    true
-    `(if ,(car form)
-      (and- ,@(cdr form))
-      false)))
 
 (intrinsics:defn not (x)
   (if x false true))
 
 (intrinsics:defn or (l r)
   (if l true r))
-
-(intrinsics:defmacro or- form
-  (if (nil? form)
-    false
-    `(if ,(car form)
-      true
-      (or- ,@(cdr form)))))

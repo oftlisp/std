@@ -24,3 +24,5 @@
 (defgeneric append (a b) 0)
 (defgeneric length (lst) 0)
 (defgeneric slice (from to lst) 2)
+(defgeneric map (f lst) 1)
+(defgeneric monad-join (m) 0)

@@ -1,0 +1,25 @@
+(module std/logic/microkanren
+  []
+  "A microKanren implementation.")
+
+(defn var? (value)
+  "Returns whether the given value is a variable."
+  (todo))
+
+(defn unify (u v s)
+  "Attempts to unify u and v under s, returning an option of a substitution."
+  (let ((u (walk u s)) (v (walk u s)))
+    (cond
+      (and (var? u) (var? v) (equal u v)) (some s)
+      (var? u)                            (some (cons (pair u v) s))
+      (var? v)                            (some (cons (pair v u) s))
+      (and (cons? u) (cons? v))           (todo)
+      (and (vector? u) (vector? v))       (todo)
+      (equal u v)                         (some s)
+                                          none)))
+
+(defn walk (value subst)
+  "Takes a value; if it is a variable, applies substitutions until it is no longer a variable."
+  (if (var? value)
+    (option-cases \($ subst) (const value) (lookup value subst))
+    value))
