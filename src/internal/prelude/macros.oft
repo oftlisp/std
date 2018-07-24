@@ -86,14 +86,14 @@
 
 (defmacro and form
   (if (nil? form)
-    true
+    'true
     `(if ,(car form)
       (and ,@(cdr form))
       false)))
 
 (defmacro or form
   (if (nil? form)
-    false
+    'false
     `(if ,(car form)
       true
       (or ,@(cdr form)))))
