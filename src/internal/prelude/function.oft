@@ -1,12 +1,15 @@
 (module std/internal/prelude/function
-  [. const fix flip id]
+  [. const0 const1 fix flip id]
   no-prelude)
 
 (intrinsics:defn . (f g)
   \(f (g $)))
 
-(intrinsics:defn const (x)
-  \x)
+(intrinsics:defn const0 (x)
+  (intrinsics:fn () x))
+
+(intrinsics:defn const1 (x)
+  (intrinsics:fn (_) x))
 
 (intrinsics:defn fix (f)
   (intrinsics:fn (x) (f (fix f) x)))

@@ -1,7 +1,7 @@
 (module std/prelude
   [* + - . / 0? 1+ 1- 1st 2nd 3rd 4th 5th 6th 7th 8th 9th < <= = > >= all all-some and any append
-   as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
-   bytes-slice bytes? car cdr compare cond cons cons? const contains? debug-trace def defmacro defn
+   as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth bytes-slice
+   bytes? car cdr compare cond cons cons? const0 const1 contains? debug-trace def defmacro defn
    each either eq equals err err? expect false filter find first-nonnil first-some fix fixnum->byte
    fixnum-and fixnum-not fixnum-or fixnum-rol fixnum-ror fixnum-shl fixnum-shr fixnum-xor fixnum?
    flat-map flip foldl foldr fst function? gensym get-type id index-into init last left
@@ -27,7 +27,7 @@
 (import std/internal/prelude/fixnum
   [fixnum-and fixnum-or fixnum-not fixnum-rol fixnum-ror fixnum-shl fixnum-shr fixnum-xor])
 (import std/internal/prelude/function
-  [. const fix flip id])
+  [. const0 const1 fix flip id])
 (import std/internal/prelude/intrinsics
   [* + - / = byte? bytes? car cdr compare cons cons? eq equals false fixnum? function? gensym mod
    nil nil? panic print println string? symbol? true vector? write write-bytes writeln])
@@ -102,7 +102,8 @@
 (intrinsics:def compare compare)
 (intrinsics:def cons cons)
 (intrinsics:def cons? cons?)
-(intrinsics:def const const)
+(intrinsics:def const0 const0)
+(intrinsics:def const1 const1)
 (intrinsics:def contains? contains?)
 (intrinsics:def debug-trace debug-trace)
 (intrinsics:def each each)

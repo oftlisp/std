@@ -4,7 +4,7 @@
   no-prelude)
 
 (import std/internal/prelude/function
-  [. const id])
+  [. const0 id])
 (import std/internal/prelude/intrinsics
   [car cdr cons cons? eq equals println false nil nil? panic true])
 (import std/internal/prelude/math
@@ -51,4 +51,4 @@
     false))
 
 (intrinsics:defn unwrap-or (value opt)
-  (option-cases id (const value) opt))
+  (option-cases id (const0 value) opt))
