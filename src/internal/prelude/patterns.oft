@@ -1,0 +1,42 @@
+(module std/internal/prelude/patterns
+  [defpattern pat-pair-bind pat-quote-bind pat-some-bind pat-pair-matches? pat-quote-matches
+   pat-some-matches?]
+  no-prelude)
+
+(import std/internal/prelude/intrinsics
+  [car cdr gensym panic])
+(import std/internal/prelude/macros
+  [def defmacro list pat-matches? quasiquote unless])
+(import std/internal/prelude/obj
+  [length])
+
+(defmacro defpattern ()
+  (todo))
+
+(defmacro pat-quote-matches? (pat sym)
+  `(equals ,sym ',pat))
+(defmacro pat-quote-bind (pat sym expr)
+  expr)
+
+(defmacro pat-pair-matches? (pat sym)
+  (unless (= (length pat) 2)
+    (panic "The pair pattern takes two arguments"))
+  `(and (pair? ,sym)
+        (pat-matches? ,(nth 0 pat) (fst ,sym))
+        (pat-matches? ,(nth 1 pat) (snd ,sym))))
+(defmacro pat-pair-bind (pat sym expr)
+  `(progn
+    (def ,(nth 0 pat) (fst ,sym))
+    (def ,(nth 1 pat) (snd ,sym))
+    ,expr))
+
+(defmacro pat-some-matches? (pat sym)
+  (unless (= (length pat) 1)
+    (panic "The some pattern takes one arguments"))
+  `(some? ,sym))
+(defmacro pat-some-bind (pat sym expr)
+  (def fst-sym (gensym))
+  (def snd-sym (gensym))
+  `(progn
+    (def ,(nth 0 pat) (fst ,sym))
+    ,expr))
