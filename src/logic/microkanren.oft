@@ -1,21 +1,67 @@
 (module std/logic/microkanren
-  []
+  [== call/fresh conj disj var?]
   "A microKanren implementation.")
+
+(defn var (counter)
+  "Wraps a counter to make a variable."
+  (make-object 'std/logic/microkanren:var counter))
 
 (defn var? (value)
   "Returns whether the given value is a variable."
-  (todo))
+  (eq (get-type value) 'std/logic/microkanren:var))
+
+(def mzero nil)
+
+(defn bind (s f)
+  "Monad bind over a stream."
+  (if (nil? s)
+    mzero
+    (mplus (f (car s)) (fn () (bind ((cdr s)) f)))))
+
+(defn mplus (s1 s2)
+  "Concatenates two streams."
+  (cond
+    (nil? s1)      s2
+    (function? s1) (mplus (s1) s2)
+                   (cons (car s1) (fn () (mplus (cdr s1) s2)))))
+
+(defn singleton (x)
+  (cons x nil))
+
+(defn == (l r)
+  (fn (s/c)
+    (def (pair s c) s/c)
+    (case (unify l r s)
+      (some s) (singleton (pair s c))
+      none     mzero)))
+
+(defn call/fresh (f)
+  "Returns a goal that calls the given closure, which must return a goal, with a fresh symbol."
+  (fn (s/c)
+    (def (pair s c) s/c)
+    (def goal (f (var c)))
+    (goal (pair s (1+ c)))))
+
+(defn conj (g1 g2)
+  "Performs the conjunction (AND) of two goals."
+  (fn (s/c) (bind (g1 s/c) g2)))
+
+(defn disj (g1 g2)
+  "Performs the disjunction (OR) of two goals."
+  (fn (s/c) (mplus (g1 s/c) (g2 s/c))))
 
 (defn unify (u v s)
   "Attempts to unify u and v under s, returning an option of a substitution."
   (let ((u (walk u s)) (v (walk u s)))
     (cond
-      (and (var? u) (var? v) (equal u v)) (some s)
-      (var? u)                            (some (cons (pair u v) s))
-      (var? v)                            (some (cons (pair v u) s))
-      (and (cons? u) (cons? v))           (todo)
-      (and (vector? u) (vector? v))       (todo)
-      (equal u v)                         (some s)
+      (and (var? u) (var? v) (equals u v)) (some s)
+      (var? u)                             (some (cons (pair u v) s))
+      (var? v)                             (some (cons (pair v u) s))
+      (and (cons? u) (cons? v))            (case (pair u v)
+                                             (pair (some x) (some y)) (some (pair x y))
+                                             _                        none)
+      (and (vector? u) (vector? v))        (todo)
+      (equals u v)                         (some s)
                                           none)))
 
 (defn walk (value subst)

@@ -3,10 +3,25 @@
 
 (import std/args
   [make-arg-parser parse-args usage])
+(import std/logic/microkanren
+  [== call/fresh conj disj var?])
+
+(defn nums-from (min)
+  (call/fresh (fn (n)
+    (disj
+      (== min %n)
+      (nums-from (1+ min))))))
+
+(def nats (nums-from 0))
 
 (defn main (args)
   (def parser (make-arg-parser oftc (package-path binary-name)
     (option output -o --output)))
-  (def args (parse-args args nil))
-  (println "Hello, world!")
-  (writeln args))
+  (println 'parser '= parser)
+
+  ; (def args (parse-args args nil))
+  ; (writeln args)
+
+  (println (nums-from 0))
+
+  (todo))

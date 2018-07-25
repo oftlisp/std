@@ -11,7 +11,7 @@
 (import std/internal/prelude/intrinsics
   [/ car cdr compare cons eq nil nil? vector?])
 (import std/internal/prelude/list
-  [length map split-at])
+  [list-length list-map list-split-at])
 (import std/internal/prelude/option
   [none some])
 (import std/internal/prelude/pair
@@ -44,20 +44,20 @@
 
 (intrinsics:defn sort-list-by (f lst)
   (intrinsics:defn helper (lst)
-    (intrinsics:def len (length lst))
+    (intrinsics:def len (list-length lst))
     (if (< len 2)
       lst
       (progn
-        (intrinsics:def tmp (split-at (/ len 2) lst))
+        (intrinsics:def tmp (list-split-at (/ len 2) lst))
         (merge (helper (fst tmp)) (helper (snd tmp))))))
-  (map car (helper (map \(cons $ (f $)) lst))))
+  (list-map car (helper (list-map \(cons $ (f $)) lst))))
 
 (intrinsics:defn sort-vector-by (f v)
   (intrinsics:defn helper (lst)
-    (intrinsics:def len (length lst))
+    (intrinsics:def len (list-length lst))
     (if (< len 2)
       lst
       (progn
-        (intrinsics:def tmp (split-at (/ len 2) lst))
+        (intrinsics:def tmp (list-split-at (/ len 2) lst))
         (merge (helper (fst tmp)) (helper (snd tmp))))))
-  (list->vector (map car (helper (map \(cons $ (f $)) (vector->list v))))))
+  (list->vector (list-map car (helper (list-map \(cons $ (f $)) (vector->list v))))))

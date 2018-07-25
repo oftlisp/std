@@ -20,12 +20,15 @@
 (intrinsics:def string-length intrinsics/strings:length)
 (intrinsics:def string-slice  intrinsics/strings:slice)
 
-(intrinsics:defmethod string append (a b)
-  (intrinsics/strings:append a b))
-(intrinsics:defmethod string length (str)
-  (intrinsics/strings:length str))
-(intrinsics:defmethod string slice (from to str)
-  (intrinsics/strings:slice from to str))
+(intrinsics:defmethod string append (l r) (string-append l r))
+(intrinsics:defmethod string length (s) (string-length s))
+(intrinsics:defmethod string nth (n s) (string-nth n s))
+(intrinsics:defmethod string skip (n s) (string-slice n (string-length s) s))
+(intrinsics:defmethod string slice (from to s) (string-slice from to s))
+(intrinsics:defmethod string split-at (n s) (pair
+  (string-slice 0 n s)
+  (string-slice n (string-length s) s)))
+(intrinsics:defmethod string take (n s) (string-slice 0 n s))
 
 (intrinsics:defn string-concat (ss)
   (intrinsics:defn helper (ss acc)

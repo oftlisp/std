@@ -1,7 +1,8 @@
 (module std/internal/prelude/list
   [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last length list-append lookup map
-   nth partition position position-of reverse skip skip-while split-at take take-while]
+   first-nonnil first-some flat-map foldl foldr index-into init last list-length list-map list-nth
+   list-skip list-split-at list-take lookup partition position position-of reverse skip-while
+   take-while]
   no-prelude)
 
 (import std/internal/prelude/either
@@ -9,13 +10,39 @@
 (import std/internal/prelude/function
   [flip])
 (import std/internal/prelude/intrinsics
-  [car cdr cons equals false nil nil? panic true])
+  [- car cdr cons equals false nil nil? panic true])
 (import std/internal/prelude/math
   [0? 1+ 1-])
 (import std/internal/prelude/option
   [none option-cases some some?])
 (import std/internal/prelude/pair
   [map-pair pair])
+
+(intrinsics:defmethod cons append (l r) (list-append l r))
+(intrinsics:defmethod nil  append (_ r) r)
+
+(intrinsics:defmethod cons length (l) (list-length l))
+(intrinsics:defmethod nil  length (_) 0)
+
+(intrinsics:defmethod cons map (f l) (list-map f l))
+(intrinsics:defmethod nil  map (_ _) nil)
+
+; (defgeneric monad-join (m) 0)
+
+(intrinsics:defmethod cons nth (n l) (list-nth n l))
+(intrinsics:defmethod nil  nth (n l) (list-nth n l))
+
+(intrinsics:defmethod cons skip (n l) (list-skip n l))
+(intrinsics:defmethod nil  skip (n l) (list-skip n l))
+
+(intrinsics:defmethod cons slice (from to l) (list-take (- to from) (list-skip from l)))
+(intrinsics:defmethod nil  slice (from to l) (list-take (- to from) (list-skip from l)))
+
+(intrinsics:defmethod cons split-at (n l) (list-split-at n l))
+(intrinsics:defmethod nil  split-at (n l) (list-split-at n l))
+
+(intrinsics:defmethod cons take (n l) (list-take n l))
+(intrinsics:defmethod nil  take (n l) (list-take n l))
 
 (intrinsics:defn all (f l)
   (if (nil? l)
@@ -110,7 +137,7 @@
     (f (car l) (foldr f x (cdr l)))))
 
 (intrinsics:defn index-into (indices l)
-  (foldl (flip nth) l indices))
+  (foldl (flip list-nth) l indices))
 
 (intrinsics:defn init (l)
   (intrinsics:defn helper (l acc)
@@ -128,7 +155,7 @@
       (car l)
       (last (cdr l)))))
 
-(intrinsics:defn length (l)
+(intrinsics:defn list-length (l)
   (foldl (intrinsics:fn (l _) (1+ l)) 0 l))
 
 (intrinsics:defn list-append (l r)
@@ -145,11 +172,11 @@
       (some (cdr (car l)))
       (lookup x (cdr l)))))
 
-(intrinsics:defn map (f l)
+(intrinsics:defn list-map (f l)
   (reverse (foldl (intrinsics:fn (a x) (cons (f x) a)) '() l)))
 
-(intrinsics:defn nth (n l)
-  (car (skip n l)))
+(intrinsics:defn list-nth (n l)
+  (car (list-skip n l)))
 
 (intrinsics:defn partition (es)
   (intrinsics:defn helper (es ls rs)
@@ -176,10 +203,10 @@
 (intrinsics:defn reverse (l)
   (foldl (intrinsics:fn (a x) (cons x a)) '() l))
 
-(intrinsics:defn skip (n l)
+(intrinsics:defn list-skip (n l)
   (if (0? n)
     l
-    (skip (1- n) (cdr l))))
+    (list-skip (1- n) (cdr l))))
 
 (intrinsics:defn skip-while (pred l)
   (if (nil? l)
@@ -188,10 +215,10 @@
       (skip-while pred (cdr l))
       l)))
 
-(intrinsics:defn split-at (n l)
-  (pair (take n l) (skip n l)))
+(intrinsics:defn list-split-at (n l)
+  (pair (list-take n l) (list-skip n l)))
 
-(intrinsics:defn take (n l)
+(intrinsics:defn list-take (n l)
   (intrinsics:defn helper (n l acc)
     (if (0? n)
       acc

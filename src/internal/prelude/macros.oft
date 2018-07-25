@@ -1,15 +1,18 @@
 (module std/internal/prelude/macros
-  [afn and cond def defmacro defn let let1 list or quasiquote todo unless when]
+  [-> afn and case cond def defmacro defn defn* defn-> fn let let1 list or pat-matches? quasiquote
+   todo unless when]
   no-prelude)
 
 (import std/internal/prelude/conversions
-  [symbol->string])
+  [string->symbol symbol->string])
 (import std/internal/prelude/intrinsics
-  [car cdr cons cons? gensym nil nil? panic symbol? vector?])
+  [car cdr cons cons? eq gensym nil nil? panic symbol? vector?])
+(import std/internal/prelude/list
+  [list-map])
 (import std/internal/prelude/string
   [string-append])
 (import std/internal/prelude/util
-  [shl?])
+  [debug-trace shl?])
 
 ; TODO: Should this use the std/prelude versions instead?
 (intrinsics:defmacro list form
@@ -51,20 +54,14 @@
         (qq form))))
   (qq (car form)))
 
-(intrinsics:defmacro def form
-  `(intrinsics:def ,@form))
-
-(intrinsics:defmacro defn form
-  `(intrinsics:defn ,@form))
-
 (intrinsics:defmacro defmacro form
-  (def macro-name (car form))
-  (def macro-body (cdr (cdr form)))
+  (intrinsics:def macro-name (car form))
+  (intrinsics:def macro-body (cdr (cdr form)))
   ; defmacro parameters are a (possibly improper) list containing only symbols. This list is
   ; matched against the list of arguments. For example, (a b | c) matches against (1 2 3 4) as
   ; a = 1, b = 2, c = (3 4). Note that a symbol is itself an improper list containing only symbols.
   ; As such, foo matches against (1 2 3 4) as foo = (1 2 3 4).
-  (defn helper (args params)
+  (intrinsics:defn helper (args params)
     (if (cons? params)
       `((intrinsics:def ,(car params) (car ,args))
         ,@(helper `(cdr ,args) (cdr params)))
@@ -77,9 +74,73 @@
           `((intrinsics:def ,params ,args)
             ,@macro-body)
           (panic (cons invalid-defmacro-params params))))))
-  (def param-name (gensym))
+  (intrinsics:def param-name (gensym))
   `(intrinsics:defmacro ,macro-name ,param-name
     ,@(helper param-name (car (cdr form)))))
+
+(defmacro cond cases
+  (if (nil? cases)
+    'nil
+    (if (nil? (cdr cases))
+      (car cases)
+      `(if ,(car cases)
+        ,(car (cdr cases))
+        (cond ,@(cdr (cdr cases)))))))
+
+(defmacro pat-matches? (pat expr)
+  (todo))
+
+(defmacro if-let (pat value t e)
+  (intrinsics:def value-name (gensym))
+  (intrinsics:def body (cond
+    (eq pat '_)   `t
+    (symbol? pat) `(progn (intrinsics:def ,pat ,value-name) ,t)
+    (cons? pat)   (progn
+                    (intrinsics:def bind (string->symbol (string-append "pat-"
+                      (string-append (symbol->string (car pat)) "-bind"))))
+                    (intrinsics:def matches? (string->symbol (string-append "pat-"
+                      (string-append (symbol->string (car pat)) "-matches?"))))
+                    `(if (,matches? ,(cdr pat) ,value-name)
+                      (,bind ,(cdr pat) ,value-name ,t)
+                      ,e))
+                  (panic (cons 'invalid-pattern pat))))
+  `(progn (intrinsics:def ,value-name ,value) ,body))
+
+(defmacro case (value | clauses)
+  (intrinsics:def value-name (gensym))
+  (intrinsics:defn helper (clauses)
+    (if (nil? clauses)
+      `(panic (cons 'no-case-matches ,value-name))
+      (if (nil? (cdr clauses))
+        (car clauses)
+        (progn
+          (intrinsics:def pat (car clauses))
+          (intrinsics:def expr (car (cdr clauses)))
+          (intrinsics:def rest (cdr (cdr clauses)))
+          (cond
+            (eq pat '_)   expr
+            (symbol? pat) `(progn (intrinsics:def ,pat ,value-name) ,expr)
+            (cons? pat)   (progn
+                            (intrinsics:def bind (string->symbol (string-append "pat-"
+                              (string-append (symbol->string (car pat)) "-bind"))))
+                            (intrinsics:def matches? (string->symbol (string-append "pat-"
+                              (string-append (symbol->string (car pat)) "-matches?"))))
+                            `(if (,matches? ,(cdr pat) ,value-name)
+                              (,bind ,(cdr pat) ,value-name ,expr)
+                              ,(helper rest)))
+                          (panic (cons 'invalid-pattern pat)))))))
+  %`(progn
+    (intrinsics:def ,value-name ,value)
+    ,(helper clauses)))
+
+(defmacro def form
+  `(intrinsics:def ,@form))
+
+(defmacro defn form
+  `(intrinsics:defn ,@form))
+
+(defmacro fn form
+  `(intrinsics:fn ,@form))
 
 (defmacro afn form
   `(progn (defn $ ,@form) $))
@@ -98,25 +159,32 @@
       true
       (or ,@(cdr form)))))
 
-(defmacro cond cases
-  (if (nil? cases)
-    'nil
-    (if (nil? (cdr cases))
-      (car cases)
-      `(if ,(car cases)
-        ,(car (cdr cases))
-        (cond ,@(cdr (cdr cases)))))))
+(defmacro -> (var | funcs)
+  (defn helper (funcs expr)
+    (cond
+      (nil? funcs)          expr
+      (symbol? (car funcs)) (helper (cdr funcs) `(,(car funcs) ,expr))
+                            (helper (cdr funcs) `(,@(car funcs) ,expr))))
+  (helper funcs var))
+
+(defmacro defn-> (name args | body)
+  (def main-arg (gensym))
+  `(defn ,name (,@args ,main-arg)
+    (-> ,main-arg ,@body)))
 
 (defmacro let (bindings | body)
   (defn make-binding-def (binding)
     `(def ,(car binding) (progn ,@(cdr binding))))
-  `(progn ,@(map make-binding-def bindings) ,@body))
+  `(progn ,@(list-map make-binding-def bindings) ,@body))
 
 (defmacro let1 (name expr | body)
   `(progn (def ,name ,expr) ,@body))
 
 (defmacro todo form
   `(panic (list 'todo ,@form)))
+
+(defmacro defn* form
+  (todo 'defn*))
 
 (defmacro unless (c | b)
   `(if ,c std/internal/prelude/intrinsics:nil (progn ,@b)))

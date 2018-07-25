@@ -10,6 +10,15 @@
 ; SHORT-OPTS is an assoc from symbols with one character to symbols.
 ; LONG-OPTS is an assoc from symbols to symbols.
 
+(defn map-nth (f n l)
+  (append (take n l)
+    (cons (f (nth n l))
+      (skip (1+ n) l))))
+(defn-> sym-skip (n)
+  symbol->string
+  (skip n)
+  string->symbol)
+
 (defn short? (sym)
   "Checks if a symbol is a short option."
   (def str (symbol->string sym))
@@ -35,13 +44,19 @@
    ```"
 
   (defn add-flag (parser-spec flag-spec)
-    (todo 'add-flag))
+    (def name (car option-spec))
+    (defn helper (parser-spec flag)
+      (cond
+        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 1 parser-spec)
+        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 2 parser-spec)
+                      (panic `(invalid-option-flag ,flag))))
+    (foldl helper parser-spec (cdr option-spec)))
   (defn add-option (parser-spec option-spec)
     (def name (car option-spec))
     (defn helper (parser-spec flag)
       (cond
-        (short? flag) (todo 'short)
-        (long? flag)  (todo 'long)
+        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 3 parser-spec)
+        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 4 parser-spec)
                       (panic `(invalid-option-flag ,flag))))
     (foldl helper parser-spec (cdr option-spec)))
   (defn add-spec (parser-spec opt-spec)
