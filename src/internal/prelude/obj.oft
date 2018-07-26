@@ -22,6 +22,7 @@
     ((intrinsics:get-method (get-type ,type-arg) ,name) ,@args)))
 
 (defgeneric append (a b) 0)
+(defgeneric flat-map (f l) 1)
 (defgeneric length (lst) 0)
 (defgeneric map (f lst) 1)
 (defgeneric monad-join (m) 0)

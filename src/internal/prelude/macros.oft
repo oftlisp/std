@@ -6,9 +6,9 @@
 (import std/internal/prelude/conversions
   [string->symbol symbol->string])
 (import std/internal/prelude/intrinsics
-  [car cdr cons cons? eq gensym nil nil? panic symbol? vector?])
+  [car cdr cons cons? eq gensym nil nil? panic string? symbol? true vector?])
 (import std/internal/prelude/list
-  [list-map])
+  [list-flat-map list-map])
 (import std/internal/prelude/string
   [string-append])
 (import std/internal/prelude/util
@@ -76,7 +76,7 @@
           (panic (cons invalid-defmacro-params params))))))
   (intrinsics:def param-name (gensym))
   `(intrinsics:defmacro ,macro-name ,param-name
-    ,@(helper param-name (car (cdr form)))))
+    (progn ,@(helper param-name (car (cdr form))))))
 
 (defmacro cond cases
   (if (nil? cases)
@@ -88,9 +88,19 @@
         (cond ,@(cdr (cdr cases)))))))
 
 (defmacro pat-matches? (pat expr)
-  (todo))
+  (cond
+    (eq pat '_)   'true
+    (symbol? pat) 'true
+    (cons? pat)   (progn
+                    (intrinsics:def matches? (string->symbol (string-append "pat-"
+                      (string-append (symbol->string (car pat)) "-matches?"))))
+                    (intrinsics:def name (gensym))
+                    `(progn
+                      (intrinsics:def ,name ,expr)
+                      (,matches? ,(cdr pat) ,name)))))
 
 (defmacro if-let (pat value t e)
+  ; TODO: Use pat-matches?
   (intrinsics:def value-name (gensym))
   (intrinsics:def body (cond
     (eq pat '_)   `t
@@ -107,6 +117,7 @@
   `(progn (intrinsics:def ,value-name ,value) ,body))
 
 (defmacro case (value | clauses)
+  ; TODO: Use pat-matches?, if-let
   (intrinsics:def value-name (gensym))
   (intrinsics:defn helper (clauses)
     (if (nil? clauses)
@@ -129,21 +140,21 @@
                               (,bind ,(cdr pat) ,value-name ,expr)
                               ,(helper rest)))
                           (panic (cons 'invalid-pattern pat)))))))
-  %`(progn
+  `(progn
     (intrinsics:def ,value-name ,value)
     ,(helper clauses)))
 
-(defmacro def form
-  `(intrinsics:def ,@form))
+(defmacro def (pat expr)
+  `(intrinsics:def ,pat ,expr))
 
-(defmacro defn form
-  `(intrinsics:defn ,@form))
+(defmacro defn (name args | body)
+  `(intrinsics:defn ,name ,args (progn ,@body)))
 
-(defmacro fn form
-  `(intrinsics:fn ,@form))
+(defmacro fn (args | body)
+  `(intrinsics:fn ,args (progn ,@body)))
 
-(defmacro afn form
-  `(progn (defn $ ,@form) $))
+(defmacro afn (args | body)
+  `(progn (defn $ ,args ,@body) $))
 
 (defmacro and form
   (if (nil? form)
@@ -169,6 +180,7 @@
 
 (defmacro defn-> (name args | body)
   (def main-arg (gensym))
+  (def body (if (and (cons? body) (string? (car body))) (cdr body) body))
   `(defn ,name (,@args ,main-arg)
     (-> ,main-arg ,@body)))
 

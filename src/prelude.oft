@@ -2,18 +2,19 @@
   [* + - -> . / 0? 1+ 1- 1st 2nd 3rd 4th 5th 6th 7th 8th 9th < <= = > >= all all-some and any
    append as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
    bytes-slice bytes? car case cdr compare cond cons cons? const0 const1 contains? debug-trace def
-   defmacro defn defn* defn-> each either eq equals err err? expect false filter find first-nonnil
-   first-some fix fixnum->byte fixnum-and fixnum-not fixnum-or fixnum-rol fixnum-ror fixnum-shl
-   fixnum-shr fixnum-xor fixnum? flat-map flip fn foldl foldr fst function? gensym get-type id
-   index-into init last left left->option left? length let let1 list list->vector lookup
-   make-object map map-err map-fst map-ok map-pair map-result map-snd mod must nil nil? none none?
-   not nth nullable->option ok ok? option->nullable option-cases option-map or or-else pair panic
-   partition position position-of print println quasiquote reverse right right->option right? shl?
-   slice skip skip-while snd some some? sort sort-by split-at string->bytes string->symbol
-   string-append string-concat string-join string-nth string-replace string-search string-slice
-   string-split-on string-split-on-1 string? symbol->string symbol? take take-while todo true
-   unless unwrap-or vector->list vector-append vector-each vector-nth vector-slice vector? when
-   write write-bytes writeln]
+   defmacro defn defn* defn-> defpattern each either eq equals err err? expect false filter find
+   first-nonnil first-some fix fixnum->byte fixnum-and fixnum-not fixnum-or fixnum-rol fixnum-ror
+   fixnum-shl fixnum-shr fixnum-xor fixnum? flat-map flip fn foldl foldr fst function? gensym
+   get-type id index-into init last left left->option left? length let let1 list list->vector
+   lookup make-object map map-err map-fst map-ok map-pair map-result map-snd mod must nil nil? none
+   none?  not nth nullable->option ok ok? option->nullable option-cases option-map or or-else pair
+   pair? panic partition pat-pair-bind pat-quote-bind pat-some-bind pat-matches? pat-pair-matches?
+   pat-quote-matches? pat-some-matches? position position-of print println quasiquote reverse right
+   right->option right? shl? slice skip skip-while snd some some? sort sort-by split-at
+   string->bytes string->symbol string-append string-concat string-join string-nth string-replace
+   string-search string-slice string-split-on string-split-on-1 string? symbol->string symbol? take
+   take-while todo true unless unwrap-or vector->list vector-append vector-each vector-nth
+   vector-slice vector? when write write-bytes writeln]
   no-prelude)
 
 (import std/internal/prelude/bytes
@@ -34,23 +35,26 @@
    nil nil? panic print println string? symbol? true vector? write write-bytes writeln])
 (import std/internal/prelude/list
   [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last list-length list-map list-nth
-   list-skip list-split-at list-take lookup partition position position-of reverse skip-while
-   take-while])
+   first-nonnil first-some foldl foldr index-into init last list-flat-map list-length list-map
+   list-nth list-skip list-split-at list-take lookup partition position position-of reverse
+   skip-while take-while])
 (import std/internal/prelude/logic
   [and not or])
 (import std/internal/prelude/macros
-  [-> afn and case cond def defmacro defn defn* defn-> fn let let1 list or quasiquote todo unless
-   when])
+  [-> afn and case cond def defmacro defn defn* defn-> fn let let1 list or pat-matches? quasiquote
+   todo unless when])
 (import std/internal/prelude/math
   [0? 1+ 1-])
 (import std/internal/prelude/obj
-  [append get-type length map monad-join nth make-object skip slice split-at take])
+  [append flat-map get-type length map monad-join nth make-object skip slice split-at take])
 (import std/internal/prelude/option
   [expect none none? nullable->option option->nullable option-cases option-map or-else some some?
    unwrap-or])
 (import std/internal/prelude/pair
-  [fst map-fst map-pair map-snd pair snd])
+  [fst map-fst map-pair map-snd pair pair? snd])
+(import std/internal/prelude/patterns
+  [defpattern pat-pair-bind pat-quote-bind pat-some-bind pat-pair-matches? pat-quote-matches?
+   pat-some-matches?])
 (import std/internal/prelude/result
   [err err? map-err map-ok map-result must ok ok?])
 (import std/internal/prelude/sort
@@ -149,6 +153,7 @@
 (intrinsics:def left? left?)
 (intrinsics:def length length)
 (intrinsics:def list->vector list->vector)
+(intrinsics:def list-flat-map list-flat-map)
 (intrinsics:def lookup lookup)
 (intrinsics:def make-object make-object)
 (intrinsics:def map map)
@@ -175,6 +180,7 @@
 (intrinsics:def or or)
 (intrinsics:def or-else or-else)
 (intrinsics:def pair pair)
+(intrinsics:def pair? pair?)
 (intrinsics:def panic panic)
 (intrinsics:def partition partition)
 (intrinsics:def position position)

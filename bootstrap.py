@@ -10,7 +10,9 @@ import tarfile
 from tempfile import NamedTemporaryFile
 
 
-def command(*cmd, redirect=None):
+def command(*cmd, redirect=None, verbose=False):
+    if verbose:
+        print(" ".join(cmd))
     if redirect is None:
         subprocess.check_call(cmd)
     else:
@@ -37,19 +39,20 @@ oftb_dir = None
 std_dir = None
 
 
-def bootstrap():
+def bootstrap(verbose=False):
     print_cyan("oftb-macro-expander oftc")
     macro_expander_path = join(oftb_dir,
                                "macro-expander/build/oftb-macro-expander.ofta")
     command(oftb_exec, "-v", "interpret", macro_expander_path, std_dir, ".",
-            "oftc", redirect="build/oftc.ofta")
+            "oftc", redirect="build/oftc.ofta", verbose=verbose)
 
     print_cyan("oftc oftc")
     command(oftb_exec, "-v", "interpret", "build/oftc.ofta", "--", "--std",
-            std_dir, ".", "oftc")
+            std_dir, ".", "oftc", verbose=verbose)
 
     print_cyan("oftc oftc")
-    command("build/oftc", "--std", std_dir, ".", "oftc", "-o", "build/oftc-2")
+    command("build/oftc", "--std", std_dir, ".", "oftc", "-o", "build/oftc-2",
+            verbose=verbose)
 
     if not filecmp.cmp("build/oftc", "build/oftc-2"):
         raise Exception("oftc is not idempotent")
@@ -66,6 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--oftb-dir", default="../oftb")
     parser.add_argument("--std-dir", default=".")
     parser.add_argument("--use-system-oftb", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
     if args.use_system_oftb:
@@ -77,5 +81,5 @@ if __name__ == "__main__":
 
     chdir(abspath(join(__file__, "..")))
 
-    bootstrap()
+    bootstrap(verbose=args.verbose)
     make_archive()

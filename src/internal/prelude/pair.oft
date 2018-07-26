@@ -1,5 +1,5 @@
 (module std/internal/prelude/pair
-  [fst map-fst map-pair map-snd pair snd]
+  [fst map-fst map-pair map-snd pair pair? snd]
   no-prelude)
 
 (import std/internal/prelude/function
@@ -21,6 +21,9 @@
 
 (intrinsics:defn pair (l r)
   (cons l r))
+
+(intrinsics:defn pair? (p)
+  (cons? p))
 
 (intrinsics:defn snd (p)
   (cdr p))

@@ -9,7 +9,7 @@
 (defn nums-from (min)
   (call/fresh (fn (n)
     (disj
-      (== min %n)
+      (== %min n)
       (nums-from (1+ min))))))
 
 (def nats (nums-from 0))

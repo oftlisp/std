@@ -10,11 +10,14 @@
 ; SHORT-OPTS is an assoc from symbols with one character to symbols.
 ; LONG-OPTS is an assoc from symbols to symbols.
 
-(defn map-nth (f n l)
-  (append (take n l)
-    (cons (f (nth n l))
-      (skip (1+ n) l))))
+(defn map-nth (f n t)
+  "Maps the nth item of the tuple t with the function f."
+  (append (take n t)
+    (cons (f (nth n t))
+      (skip (1+ n) t))))
+
 (defn-> sym-skip (n)
+  "Removes the first n characters of the given symbol."
   symbol->string
   (skip n)
   string->symbol)
@@ -65,7 +68,7 @@
       (shl? 'option opt-spec) (add-option parser-spec (cdr opt-spec))
                               (panic `(invalid-parser-opt-spec ,opt-spec))))
 
-  %`(quote ,(foldl add-spec (list arg-spec nil nil nil nil) opt-specs)))
+  `(quote ,(foldl add-spec (list arg-spec nil nil nil nil) opt-specs)))
 
 (defn parse-args (args spec)
   "Parses arguments with the argument parser."

@@ -1,8 +1,8 @@
 (module std/internal/prelude/list
   [1st 2nd 3rd 4th 5th 6th 7th 8th 9th all all-some any assoc contains? each filter find
-   first-nonnil first-some flat-map foldl foldr index-into init last list-length list-map list-nth
-   list-skip list-split-at list-take lookup partition position position-of reverse skip-while
-   take-while]
+   first-nonnil first-some foldl foldr index-into init last list-flat-map list-length list-map
+   list-nth list-skip list-split-at list-take lookup partition position position-of reverse
+   skip-while take-while]
   no-prelude)
 
 (import std/internal/prelude/either
@@ -23,6 +23,9 @@
 
 (intrinsics:defmethod cons length (l) (list-length l))
 (intrinsics:defmethod nil  length (_) 0)
+
+(intrinsics:defmethod cons flat-map (f l) (list-flat-map f l))
+(intrinsics:defmethod nil  flat-map (_ _) nil)
 
 (intrinsics:defmethod cons map (f l) (list-map f l))
 (intrinsics:defmethod nil  map (_ _) nil)
@@ -119,7 +122,7 @@
       (car l)
       (first-some (cdr l)))))
 
-(intrinsics:defn flat-map (f l)
+(intrinsics:defn list-flat-map (f l)
   (intrinsics:defn helper (l acc)
     (if (nil? l)
       acc

@@ -1,14 +1,15 @@
 (module std/internal/prelude/patterns
-  [defpattern pat-pair-bind pat-quote-bind pat-some-bind pat-pair-matches? pat-quote-matches
+  [defpattern pat-none-bind pat-pair-bind pat-quasiquote-bind pat-quote-bind pat-some-bind
+   pat-none-matches? pat-pair-matches? pat-quasiquote-matches? pat-quote-matches?
    pat-some-matches?]
   no-prelude)
 
 (import std/internal/prelude/intrinsics
-  [car cdr gensym panic])
+  [= car cdr gensym nil? panic])
 (import std/internal/prelude/macros
   [def defmacro list pat-matches? quasiquote unless])
 (import std/internal/prelude/obj
-  [length])
+  [length nth])
 
 (defmacro defpattern ()
   (todo))

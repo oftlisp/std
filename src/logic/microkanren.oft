@@ -33,7 +33,7 @@
     (def (pair s c) s/c)
     (case (unify l r s)
       (some s) (singleton (pair s c))
-      none     mzero)))
+      (none)   mzero)))
 
 (defn call/fresh (f)
   "Returns a goal that calls the given closure, which must return a goal, with a fresh symbol."
@@ -62,7 +62,7 @@
                                              _                        none)
       (and (vector? u) (vector? v))        (todo)
       (equals u v)                         (some s)
-                                          none)))
+                                           none)))
 
 (defn walk (value subst)
   "Takes a value; if it is a variable, applies substitutions until it is no longer a variable."
