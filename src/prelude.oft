@@ -8,13 +8,13 @@
    get-type id index-into init last left left->option left? length let let1 list list->vector
    lookup make-object map map-err map-fst map-ok map-pair map-result map-snd mod must nil nil? none
    none?  not nth nullable->option ok ok? option->nullable option-cases option-map or or-else pair
-   pair? panic partition pat-pair-bind pat-quote-bind pat-some-bind pat-matches? pat-pair-matches?
-   pat-quote-matches? pat-some-matches? position position-of print println quasiquote reverse right
-   right->option right? shl? slice skip skip-while snd some some? sort sort-by split-at
-   string->bytes string->symbol string-append string-concat string-join string-nth string-replace
-   string-search string-slice string-split-on string-split-on-1 string? symbol->string symbol? take
-   take-while todo true unless unwrap-or vector->list vector-append vector-each vector-nth
-   vector-slice vector? when write write-bytes writeln]
+   pair? panic partition pat-none-bind pat-pair-bind pat-quote-bind pat-some-bind pat-matches?
+   pat-none-matches? pat-pair-matches? pat-quote-matches? pat-some-matches? position position-of
+   print println quasiquote reverse right right->option right? shl? slice skip skip-while snd some
+   some? sort sort-by split-at string->bytes string->symbol string-append string-concat string-join
+   string-nth string-replace string-search string-slice string-split-on string-split-on-1 string?
+   symbol->string symbol? take take-while todo true unless unwrap-or vector->list vector-append
+   vector-each vector-nth vector-slice vector? when write write-bytes writeln]
   no-prelude)
 
 (import std/internal/prelude/bytes
@@ -53,7 +53,8 @@
 (import std/internal/prelude/pair
   [fst map-fst map-pair map-snd pair pair? snd])
 (import std/internal/prelude/patterns
-  [defpattern pat-pair-bind pat-quote-bind pat-some-bind pat-pair-matches? pat-quote-matches?
+  [defpattern pat-none-bind pat-pair-bind pat-quasiquote-bind pat-quote-bind pat-some-bind
+   pat-none-matches? pat-pair-matches? pat-quasiquote-matches? pat-quote-matches?
    pat-some-matches?])
 (import std/internal/prelude/result
   [err err? map-err map-ok map-result must ok ok?])

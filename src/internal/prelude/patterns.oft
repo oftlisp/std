@@ -4,15 +4,25 @@
    pat-some-matches?]
   no-prelude)
 
+(import std/internal/prelude/conversions
+  [string->symbol symbol->string])
 (import std/internal/prelude/intrinsics
   [= car cdr gensym nil? panic])
 (import std/internal/prelude/macros
   [def defmacro list pat-matches? quasiquote unless])
 (import std/internal/prelude/obj
-  [length nth])
+  [append length nth])
 
-(defmacro defpattern ()
-  (todo))
+(defmacro defpattern (name args expansion)
+  (def bind (string->symbol (append "pat-" (symbol->string name) "-bind")))
+  (def matches? (string->symbol (append "pat-" (symbol->string name) "-matches?")))
+  (def pat (gensym))
+  (def sym (gensym))
+  `(macro-multiple
+    (defmacro ,matches? (,pat ,sym)
+      (todo))
+    (defmacro ,bind (,pat ,sym)
+      (todo))))
 
 (defmacro pat-quote-matches? (pat sym)
   `(equals ,sym ',pat))
@@ -41,3 +51,5 @@
   `(progn
     (def ,(nth 0 pat) (fst ,sym))
     ,expr))
+
+(defpattern none () 'none)
