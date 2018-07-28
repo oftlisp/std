@@ -1,6 +1,6 @@
 (module std/internal/prelude/macros
-  [-> afn and case cond def defmacro defn defn* defn-> fn let let1 list or pat-matches? quasiquote
-   todo unless when]
+  [-> afn and case cond def defmacro defmacro* defn defn-> fn let let1 list or pat-matches?
+   quasiquote todo unless when]
   no-prelude)
 
 (import std/internal/prelude/conversions
@@ -23,7 +23,7 @@
         (cons (car form)
           (cons (helper (cdr form))
             nil)))))
-  (helper form))
+  (cons (helper form) nil))
 
 (intrinsics:defmacro quasiquote form
   ; (a ,b ,@c ,d) -> (append (list 'a) (append (list b) (append c (append (list d) nil))))
@@ -52,9 +52,9 @@
       (if (shl? 'unquote-splicing form)
         (panic ",@ not yet supported in vectors")
         (qq form))))
-  (qq (car form)))
+  (cons (qq (car form)) nil))
 
-(intrinsics:defmacro defmacro form
+(intrinsics:defn defmacro-helper (form func)
   (intrinsics:def macro-name (car form))
   (intrinsics:def macro-body (cdr (cdr form)))
   ; defmacro parameters are a (possibly improper) list containing only symbols. This list is
@@ -75,8 +75,21 @@
             ,@macro-body)
           (panic (cons invalid-defmacro-params params))))))
   (intrinsics:def param-name (gensym))
-  `(intrinsics:defmacro ,macro-name ,param-name
-    (progn ,@(helper param-name (car (cdr form))))))
+  (func macro-name param-name (helper param-name (car (cdr form)))))
+
+(intrinsics:defmacro defmacro form
+  (list (defmacro-helper form
+    (intrinsics:fn (macro-name param-name macro-body)
+      `(intrinsics:defmacro ,macro-name ,param-name
+        (std/internal/prelude/intrinsics:cons
+          (progn ,@macro-body)
+          std/internal/prelude/intrinsics:nil))))))
+
+(intrinsics:defmacro defmacro* form
+  (list (defmacro-helper form
+    (intrinsics:fn (macro-name param-name macro-body)
+      `(intrinsics:defmacro ,macro-name ,param-name
+        (progn ,@macro-body))))))
 
 (defmacro cond cases
   (if (nil? cases)
@@ -194,9 +207,6 @@
 
 (defmacro todo form
   `(panic (list 'todo ,@form)))
-
-(defmacro defn* form
-  (todo 'defn*))
 
 (defmacro unless (c | b)
   `(if ,c std/internal/prelude/intrinsics:nil (progn ,@b)))

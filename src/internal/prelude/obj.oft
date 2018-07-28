@@ -21,7 +21,6 @@
   `(defn ,name ,args
     ((intrinsics:get-method (get-type ,type-arg) ,name) ,@args)))
 
-(defgeneric append (a b) 0)
 (defgeneric flat-map (f l) 1)
 (defgeneric length (lst) 0)
 (defgeneric map (f lst) 1)
@@ -31,3 +30,18 @@
 (defgeneric slice (from to lst) 2)
 (defgeneric split-at (n lst) 1)
 (defgeneric take (n lst) 1)
+
+(defmacro append ls
+  (def base (if (nil? ls)
+    (panic "Must pass at least one item to append")
+    (car ls)))
+  (defn helper (acc rest)
+    (def tmp (gensym))
+    (if (nil? rest)
+      acc
+      (helper
+        `(progn
+          (def ,tmp ,acc)
+          ((intrinsics:get-method (intrinsics/obj:get_type ,tmp) append) ,tmp ,(car rest)))
+        (cdr rest))))
+  (helper base (cdr ls)))

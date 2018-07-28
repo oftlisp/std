@@ -9,11 +9,11 @@
 (import std/internal/prelude/intrinsics
   [= car cdr gensym nil? panic])
 (import std/internal/prelude/macros
-  [def defmacro list pat-matches? quasiquote unless])
+  [def defmacro defmacro* list pat-matches? quasiquote unless])
 (import std/internal/prelude/obj
   [append length nth])
 
-(defmacro defpattern (name args expansion)
+(defmacro* defpattern (name args expansion)
   (def bind (string->symbol (append "pat-" (symbol->string name) "-bind")))
   (def matches? (string->symbol (append "pat-" (symbol->string name) "-matches?")))
   (def pat (gensym))

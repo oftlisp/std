@@ -2,19 +2,20 @@
   [* + - -> . / 0? 1+ 1- 1st 2nd 3rd 4th 5th 6th 7th 8th 9th < <= = > >= all all-some and any
    append as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
    bytes-slice bytes? car case cdr compare cond cons cons? const0 const1 contains? debug-trace def
-   defmacro defn defn* defn-> defpattern each either eq equals err err? expect false filter find
-   first-nonnil first-some fix fixnum->byte fixnum-and fixnum-not fixnum-or fixnum-rol fixnum-ror
-   fixnum-shl fixnum-shr fixnum-xor fixnum? flat-map flip fn foldl foldr fst function? gensym
-   get-type id index-into init last left left->option left? length let let1 list list->vector
-   lookup make-object map map-err map-fst map-ok map-pair map-result map-snd mod must nil nil? none
-   none?  not nth nullable->option ok ok? option->nullable option-cases option-map or or-else pair
-   pair? panic partition pat-none-bind pat-pair-bind pat-quote-bind pat-some-bind pat-matches?
-   pat-none-matches? pat-pair-matches? pat-quote-matches? pat-some-matches? position position-of
-   print println quasiquote reverse right right->option right? shl? slice skip skip-while snd some
-   some? sort sort-by split-at string->bytes string->symbol string-append string-concat string-join
-   string-nth string-replace string-search string-slice string-split-on string-split-on-1 string?
-   symbol->string symbol? take take-while todo true unless unwrap-or vector->list vector-append
-   vector-each vector-nth vector-slice vector? when write write-bytes writeln]
+   defmacro defmacro* defn defn-> defpattern each either eq equals err err? expect false filter
+   find first-nonnil first-some fix fixnum->byte fixnum-and fixnum-not fixnum-or fixnum-rol
+   fixnum-ror fixnum-shl fixnum-shr fixnum-xor fixnum? flat-map flip fn foldl foldr fst function?
+   gensym get-type id index-into init last left left->option left? length let let1 list
+   list->vector lookup make-object map map-err map-fst map-ok map-pair map-result map-snd mod must 
+   nil nil? none none?  not nth nullable->option ok ok? option->nullable option-cases option-map or
+   or-else pair pair? panic partition pat-none-bind pat-pair-bind pat-quote-bind pat-some-bind
+   pat-matches? pat-none-matches? pat-pair-matches? pat-quote-matches? pat-some-matches? position
+   position-of print println quasiquote reverse right right->option right? shl? slice skip
+   skip-while snd some some? sort sort-by split-at string->bytes string->symbol string-append
+   string-concat string-join string-nth string-replace string-search string-slice string-split-on
+   string-split-on-1 string? symbol->string symbol? take take-while todo true unless unwrap-or
+   vector->list vector-append vector-each vector-nth vector-slice vector? when write write-bytes
+   writeln]
   no-prelude)
 
 (import std/internal/prelude/bytes
@@ -41,8 +42,8 @@
 (import std/internal/prelude/logic
   [and not or])
 (import std/internal/prelude/macros
-  [-> afn and case cond def defmacro defn defn* defn-> fn let let1 list or pat-matches? quasiquote
-   todo unless when])
+  [-> afn and case cond def defmacro defmacro* defn defn-> fn let let1 list or pat-matches?
+   quasiquote todo unless when])
 (import std/internal/prelude/math
   [0? 1+ 1-])
 (import std/internal/prelude/obj
