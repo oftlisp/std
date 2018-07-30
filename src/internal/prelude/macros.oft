@@ -1,6 +1,6 @@
 (module std/internal/prelude/macros
-  [-> afn and case cond def defmacro defmacro* defn defn-> fn let let1 list matches? or
-   quasiquote todo unless when]
+  [-> afn and case cond def defmacro defmacro* defn defn-> defn-case defn-cond fn let let1 list
+   matches? or quasiquote todo unless when]
   no-prelude)
 
 (import std/internal/prelude/conversions
@@ -171,6 +171,12 @@
   (intrinsics:def arg-binds (list-map \`(def ,(car $) ,(cdr $)) args))
   `(intrinsics:defn ,name ,(list-map cdr args)
     (progn ,@arg-binds ,@body)))
+
+(defmacro defn-case (name | clauses)
+  (todo 'defn-case))
+
+(defmacro defn-cond (name args | clauses)
+  `(defn ,name ,args (cond ,@clauses)))
 
 (defmacro fn (args | body)
   (intrinsics:def args (list-map \(cons $ (gensym)) args))

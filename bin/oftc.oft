@@ -12,4 +12,5 @@
   ; (def args (parse-args args nil))
   ; (writeln args)
 
+  (println (usage parser))
   (todo))

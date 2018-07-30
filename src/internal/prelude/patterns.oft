@@ -7,11 +7,13 @@
 (import std/internal/prelude/conversions
   [string->symbol symbol->string])
 (import std/internal/prelude/intrinsics
-  [= car cdr gensym nil? panic])
+  [= car cdr cons? gensym nil nil? panic vector?])
 (import std/internal/prelude/macros
-  [def defmacro defmacro* list matches? quasiquote todo unless])
+  [cond def defmacro defmacro* defn defn-cond let list matches? quasiquote todo unless])
 (import std/internal/prelude/obj
   [append length nth])
+(import std/internal/prelude/util
+  [debug-trace shl?])
 
 ; TODO: pat-list-matches?, pat-list-bind
 
@@ -39,12 +41,35 @@
   (def pat (if (= (length pat) 1)
     (car pat)
     (panic "The quasiquote pattern takes two arguments")))
-  (todo 'pat-quasiquote-matches? pat))
+  (defn-cond helper (pat sym)
+    (shl? 'unquote pat)          'true
+    (shl? 'unquote-splicing pat) (panic "unquote-splicing not yet supported in quasiquote patterns")
+    (cons? pat)                  (let ((car-name (gensym))
+                                       (cdr-name (gensym)))
+                                   `(and (cons? ,sym)
+                                     (let ((,car-name (car ,sym))
+                                           (,cdr-name (cdr ,sym)))
+                                       (and ,(helper (car pat) car-name)
+                                            ,(helper (cdr pat) cdr-name)))))
+    (vector? pat)                (panic "vectors not yet supported in quasiquote patterns")
+                                 `(equals (quote ,pat) ,sym))
+  (helper pat sym))
 (defmacro* pat-quasiquote-bind (pat sym)
   (def pat (if (= (length pat) 1)
     (car pat)
     (panic "The quasiquote pattern takes two arguments")))
-  (todo 'pat-quasiquote-matches? pat))
+  (defn-cond helper (pat sym)
+    (shl? 'unquote pat)          (list `(def ,(car (cdr pat)) ,sym))
+    (shl? 'unquote-splicing pat) (panic "unquote-splicing not yet supported in quasiquote patterns")
+    (cons? pat)                  (let ((car-name (gensym))
+                                       (cdr-name (gensym)))
+                                   `((def ,car-name (car ,sym))
+                                     (def ,cdr-name (cdr ,sym))
+                                     ,@(helper (car pat) car-name)
+                                     ,@(helper (cdr pat) cdr-name)))
+    (vector? pat)                (panic "vectors not yet supported in quasiquote patterns")
+                                 nil)
+  (helper pat sym))
 
 (defmacro pat-quote-matches? (pat sym)
   `(equals ,sym ',pat))
