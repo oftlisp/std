@@ -9,7 +9,7 @@
 (import std/internal/prelude/intrinsics
   [= car cdr gensym nil? panic])
 (import std/internal/prelude/macros
-  [def defmacro defmacro* list matches? quasiquote unless])
+  [def defmacro defmacro* list matches? quasiquote todo unless])
 (import std/internal/prelude/obj
   [append length nth])
 
