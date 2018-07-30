@@ -1,6 +1,6 @@
 (module std/internal/prelude/patterns
-  [defpattern pat-none-bind pat-pair-bind pat-quasiquote-bind pat-quote-bind pat-some-bind
-   pat-none-matches? pat-pair-matches? pat-quasiquote-matches? pat-quote-matches?
+  [defpattern defpattern-quasiquote pat-none-bind pat-pair-bind pat-quasiquote-bind pat-quote-bind
+   pat-some-bind pat-none-matches? pat-pair-matches? pat-quasiquote-matches? pat-quote-matches?
    pat-some-matches?]
   no-prelude)
 
@@ -9,47 +9,60 @@
 (import std/internal/prelude/intrinsics
   [= car cdr gensym nil? panic])
 (import std/internal/prelude/macros
-  [def defmacro defmacro* list pat-matches? quasiquote unless])
+  [def defmacro defmacro* list matches? quasiquote unless])
 (import std/internal/prelude/obj
   [append length nth])
 
-(defmacro* defpattern (name args expansion)
+; TODO: pat-list-matches?, pat-list-bind
+
+(defmacro* defpattern (name args | body)
   (def bind (string->symbol (append "pat-" (symbol->string name) "-bind")))
   (def matches? (string->symbol (append "pat-" (symbol->string name) "-matches?")))
   (def pat (gensym))
   (def sym (gensym))
-  `(macro-multiple
-    (defmacro ,matches? (,pat ,sym)
-      (todo))
-    (defmacro ,bind (,pat ,sym)
-      (todo))))
+  (list
+    `(defmacro ,matches? (,pat ,sym)
+      (todo ,(list 'quote matches?)))
+    `(defmacro* ,bind (,pat ,sym)
+      (todo ,(list 'quote bind)))))
+
+(defmacro defpattern-quasiquote (name args expansion)
+  ; This is written perhaps more cautiously than necessary; I'm unsure enough about how I should
+  ; have the semantics of nested quasiquotes and quote-in-quasiquote behave that I'm forgoing
+  ; quasiquote as a whole for now.
+  (def body-name (gensym))
+  (list 'defpattern name args
+    (list 'def body-name (list 'quasiquote expansion))
+    (list 'list 'quasiquote body-name)))
+
+(defmacro pat-quasiquote-matches? (pat sym)
+  (def pat (if (= (length pat) 1)
+    (car pat)
+    (panic "The quasiquote pattern takes two arguments")))
+  (todo 'pat-quasiquote-matches? pat))
+(defmacro* pat-quasiquote-bind (pat sym)
+  (def pat (if (= (length pat) 1)
+    (car pat)
+    (panic "The quasiquote pattern takes two arguments")))
+  (todo 'pat-quasiquote-matches? pat))
 
 (defmacro pat-quote-matches? (pat sym)
   `(equals ,sym ',pat))
-(defmacro pat-quote-bind (pat sym expr)
-  expr)
+(defmacro* pat-quote-bind (pat sym)
+  nil)
 
 (defmacro pat-pair-matches? (pat sym)
   (unless (= (length pat) 2)
     (panic "The pair pattern takes two arguments"))
   `(and (pair? ,sym)
-        (pat-matches? ,(nth 0 pat) (fst ,sym))
-        (pat-matches? ,(nth 1 pat) (snd ,sym))))
-(defmacro pat-pair-bind (pat sym expr)
-  `(progn
-    (def ,(nth 0 pat) (fst ,sym))
-    (def ,(nth 1 pat) (snd ,sym))
-    ,expr))
+        (matches? ,(nth 0 pat) (fst ,sym))
+        (matches? ,(nth 1 pat) (snd ,sym))))
+(defmacro* pat-pair-bind (pat sym)
+  (unless (= (length pat) 2)
+    (panic "The pair pattern takes two arguments"))
+  (list
+    `(def ,(nth 0 pat) (fst ,sym))
+    `(def ,(nth 1 pat) (snd ,sym))))
 
-(defmacro pat-some-matches? (pat sym)
-  (unless (= (length pat) 1)
-    (panic "The some pattern takes one arguments"))
-  `(some? ,sym))
-(defmacro pat-some-bind (pat sym expr)
-  (def fst-sym (gensym))
-  (def snd-sym (gensym))
-  `(progn
-    (def ,(nth 0 pat) (fst ,sym))
-    ,expr))
-
-(defpattern none () 'none)
+(defpattern-quasiquote some (x) (some ,x))
+(defpattern-quasiquote none ()  none)

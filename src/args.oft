@@ -2,8 +2,9 @@
   [make-arg-parser parse-args usage]
   "Functions for creating and running argument parsers.")
 
-; An argument parser spec is a tuple (ARG-SPEC SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS).
+; An argument parser spec is a tuple (APP-NAME ARG-SPEC SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS).
 ;
+; APP-NAME is a string.
 ; ARG-SPEC is a (possibly improper) list of symbols.
 ; SHORT-FLAGS is an assoc from symbols with one character to symbols.
 ; LONG-FLAGS is an assoc from symbols to symbols.
@@ -46,6 +47,11 @@
      (flag quiet -q))                       ; a flag, -q, named quiet
    ```"
 
+  (def app-name (cond
+    (symbol? app-name) (symbol->string app-name)
+    (string? app-name) app-name
+                       (panic (cons 'invalid-app-name app-name))))
+
   (defn add-flag (parser-spec flag-spec)
     (def name (car option-spec))
     (defn helper (parser-spec flag)
@@ -68,12 +74,20 @@
       (shl? 'option opt-spec) (add-option parser-spec (cdr opt-spec))
                               (panic `(invalid-parser-opt-spec ,opt-spec))))
 
-  `(quote ,(foldl add-spec (list arg-spec nil nil nil nil) opt-specs)))
+  `(quote ,(cons app-name (foldl add-spec (list arg-spec nil nil nil nil) opt-specs))))
 
 (defn parse-args (args spec)
   "Parses arguments with the argument parser."
+  (def `(,app-name ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
   (todo parse-args))
 
-(defn usage (name spec)
+(defn usage (spec)
   "Returns a usage message for the given argument parser."
-  (todo usage))
+  (def `(,app-name ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
+  (def args (string-join " " (map symbol->string arg-spec)))
+  (def flags (sort (append
+    (map (fn ((pair flag name)) (pair name (append "-" (symbol->string flag)))) short-flags)
+    (map (fn ((pair flag name)) (pair name (append "--" (symbol->string flag)))) long-flags))))
+  (append "USAGE: " app-name " [OPTIONS]" args "\n"
+    "\n"
+    (string-join "\n" flags) "\n"))

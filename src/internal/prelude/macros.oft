@@ -1,5 +1,5 @@
 (module std/internal/prelude/macros
-  [-> afn and case cond def defmacro defmacro* defn defn-> fn let let1 list or pat-matches?
+  [-> afn and case cond def defmacro defmacro* defn defn-> fn let let1 list matches? or
    quasiquote todo unless when]
   no-prelude)
 
@@ -8,7 +8,7 @@
 (import std/internal/prelude/intrinsics
   [car cdr cons cons? eq gensym nil nil? panic string? symbol? true vector?])
 (import std/internal/prelude/list
-  [list-flat-map list-map])
+  [list-map])
 (import std/internal/prelude/string
   [string-append])
 (import std/internal/prelude/util
@@ -73,7 +73,7 @@
         (if (symbol? params)
           `((intrinsics:def ,params ,args)
             ,@macro-body)
-          (panic (cons invalid-defmacro-params params))))))
+          (panic (cons 'invalid-defmacro-params params))))))
   (intrinsics:def param-name (gensym))
   (func macro-name param-name (helper param-name (car (cdr form)))))
 
@@ -100,71 +100,83 @@
         ,(car (cdr cases))
         (cond ,@(cdr (cdr cases)))))))
 
-(defmacro pat-matches? (pat expr)
+(intrinsics:defn pat-bind-helper (pat expr-name)
+  (cond
+    (eq pat '_)   nil
+    (symbol? pat) (list `(intrinsics:def ,pat ,expr-name))
+    (cons? pat)   (progn
+                    (intrinsics:def name (string->symbol (string-append "pat-"
+                      (string-append (symbol->string (car pat)) "-bind"))))
+                    `(,name ,(cdr pat) ,expr-name))
+                  (panic (cons 'invalid-pattern pat))))
+
+(intrinsics:defn pat-matches?-helper (pat expr-name)
   (cond
     (eq pat '_)   'true
     (symbol? pat) 'true
     (cons? pat)   (progn
-                    (intrinsics:def matches? (string->symbol (string-append "pat-"
+                    (intrinsics:def name (string->symbol (string-append "pat-"
                       (string-append (symbol->string (car pat)) "-matches?"))))
-                    (intrinsics:def name (gensym))
-                    `(progn
-                      (intrinsics:def ,name ,expr)
-                      (,matches? ,(cdr pat) ,name)))))
-
-(defmacro if-let (pat value t e)
-  ; TODO: Use pat-matches?
-  (intrinsics:def value-name (gensym))
-  (intrinsics:def body (cond
-    (eq pat '_)   `t
-    (symbol? pat) `(progn (intrinsics:def ,pat ,value-name) ,t)
-    (cons? pat)   (progn
-                    (intrinsics:def bind (string->symbol (string-append "pat-"
-                      (string-append (symbol->string (car pat)) "-bind"))))
-                    (intrinsics:def matches? (string->symbol (string-append "pat-"
-                      (string-append (symbol->string (car pat)) "-matches?"))))
-                    `(if (,matches? ,(cdr pat) ,value-name)
-                      (,bind ,(cdr pat) ,value-name ,t)
-                      ,e))
+                    `(,name ,(cdr pat) ,expr-name))
                   (panic (cons 'invalid-pattern pat))))
-  `(progn (intrinsics:def ,value-name ,value) ,body))
 
-(defmacro case (value | clauses)
-  ; TODO: Use pat-matches?, if-let
-  (intrinsics:def value-name (gensym))
-  (intrinsics:defn helper (clauses)
-    (if (nil? clauses)
-      `(panic (cons 'no-case-matches ,value-name))
-      (if (nil? (cdr clauses))
-        (car clauses)
-        (progn
-          (intrinsics:def pat (car clauses))
-          (intrinsics:def expr (car (cdr clauses)))
-          (intrinsics:def rest (cdr (cdr clauses)))
-          (cond
-            (eq pat '_)   expr
-            (symbol? pat) `(progn (intrinsics:def ,pat ,value-name) ,expr)
-            (cons? pat)   (progn
-                            (intrinsics:def bind (string->symbol (string-append "pat-"
-                              (string-append (symbol->string (car pat)) "-bind"))))
-                            (intrinsics:def matches? (string->symbol (string-append "pat-"
-                              (string-append (symbol->string (car pat)) "-matches?"))))
-                            `(if (,matches? ,(cdr pat) ,value-name)
-                              (,bind ,(cdr pat) ,value-name ,expr)
-                              ,(helper rest)))
-                          (panic (cons 'invalid-pattern pat)))))))
+(defmacro if-let (pat expr t e)
+  (intrinsics:def expr-name (gensym))
+  (intrinsics:def matches? (pat-matches?-helper pat expr-name))
+  (intrinsics:def bind (pat-bind-helper pat expr-name))
   `(progn
-    (intrinsics:def ,value-name ,value)
+    (intrinsics:def ,expr-name ,expr)
+    (if ,(pat-matches?-helper pat expr-name) (progn ,@(pat-bind-helper pat expr-name) ,t) ,e)))
+
+(defmacro matches? (pat expr)
+  `(if-let ,pat ,expr true false))
+
+(defmacro case (expr | clauses)
+  (intrinsics:def expr-name (gensym))
+  (intrinsics:defn helper (clauses)
+    (cond
+      (nil? clauses)       `(panic (cons 'no-case-matches ,expr-name))
+      (nil? (cdr clauses)) (car clauses)
+                           (progn
+                             (intrinsics:def pat (car clauses))
+                             (intrinsics:def expr (car (cdr clauses)))
+                             (intrinsics:def rest (cdr (cdr clauses)))
+                             (intrinsics:def matches? (pat-matches?-helper pat expr-name))
+                             (intrinsics:def bind (pat-bind-helper pat expr-name))
+                             `(if ,matches?
+                               (progn ,@bind ,expr)
+                               ,(helper rest)))))
+  `(progn
+    (intrinsics:def ,expr-name ,expr)
     ,(helper clauses)))
 
-(defmacro def (pat expr)
-  `(intrinsics:def ,pat ,expr))
+(defmacro* def (pat expr)
+  (cond
+    (eq pat '_)   (list `(intrinsics:def ,(gensym) ,expr))
+    (symbol? pat) (list `(intrinsics:def ,pat ,expr))
+                  (progn
+                    (intrinsics:def expr-name (gensym))
+                    (intrinsics:def matches? (pat-matches?-helper pat expr-name))
+                    (intrinsics:def bind (pat-bind-helper pat expr-name))
+                    (list
+                      `(intrinsics:def ,expr-name ,expr)
+                      `(if ,matches?
+                        std/internal/prelude/intrinsics:nil
+                        (std/internal/prelude/intrinsics:panic
+                          (std/internal/prelude/intrinsics:cons 'def-match-failed ,expr-name)))
+                      bind))))
 
 (defmacro defn (name args | body)
-  `(intrinsics:defn ,name ,args (progn ,@body)))
+  (intrinsics:def args (list-map \(cons $ (gensym)) args))
+  (intrinsics:def arg-binds (list-map \`(def ,(car $) ,(cdr $)) args))
+  `(intrinsics:defn ,name ,(list-map cdr args)
+    (progn ,@arg-binds ,@body)))
 
 (defmacro fn (args | body)
-  `(intrinsics:fn ,args (progn ,@body)))
+  (intrinsics:def args (list-map \(cons $ (gensym)) args))
+  (intrinsics:def arg-binds (list-map \`(def ,(car $) ,(cdr $)) args))
+  `(intrinsics:defn ,(list-map cdr args)
+    (progn ,@arg-binds ,@body)))
 
 (defmacro afn (args | body)
   `(progn (defn $ ,args ,@body) $))

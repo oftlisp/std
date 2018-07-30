@@ -40,9 +40,9 @@ std_dir = None
 
 
 def bootstrap(verbose=False):
-    print_cyan("oftb-macro-expander oftc")
+    print_cyan("oftb-stage2 oftc")
     macro_expander_path = join(oftb_dir,
-                               "macro-expander/build/oftb-macro-expander.ofta")
+                               "macro-expander/build/oftb-stage2.ofta")
     command(oftb_exec, "-v", "interpret", macro_expander_path, std_dir, ".",
             "oftc", redirect="build/oftc.ofta", verbose=verbose)
 

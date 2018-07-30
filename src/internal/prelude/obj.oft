@@ -5,7 +5,7 @@
 (import std/internal/prelude/intrinsics
   [car cdr cons gensym nil nil? panic])
 (import std/internal/prelude/macros
-  [def defn defmacro list quasiquote])
+  [case def defn defmacro if-let list quasiquote])
 (import std/internal/prelude/math
   [0? 1-])
 
@@ -17,10 +17,11 @@
 (defmacro defgeneric (name args type-arg-index)
   ; The real nth function is itself generic.
   (defn nth (n l) (if (0? n) (car l) (nth (1- n) (cdr l))))
-  (def type-arg (nth type-arg-index args))
+  (intrinsics:def type-arg (nth type-arg-index args))
   `(defn ,name ,args
     ((intrinsics:get-method (get-type ,type-arg) ,name) ,@args)))
 
+(defgeneric append (l r) 0)
 (defgeneric flat-map (f l) 1)
 (defgeneric length (lst) 0)
 (defgeneric map (f lst) 1)
@@ -32,6 +33,7 @@
 (defgeneric take (n lst) 1)
 
 (defmacro append ls
+  ; TODO: Be tree-like.
   (def base (if (nil? ls)
     (panic "Must pass at least one item to append")
     (car ls)))
