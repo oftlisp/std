@@ -84,10 +84,8 @@
 (defn usage (spec)
   "Returns a usage message for the given argument parser."
   (def `(,app-name ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
-  (def args (string-join " " (map symbol->string arg-spec)))
-  (def flags (sort (append
-    (map (fn ((pair flag name)) (pair name (append "-" (symbol->string flag)))) short-flags)
-    (map (fn ((pair flag name)) (pair name (append "--" (symbol->string flag)))) long-flags))))
-  (append "USAGE: " app-name " [OPTIONS]" args "\n"
-    "\n"
-    (string-join "\n" flags) "\n"))
+  (def args (string-join "" (map \(append " " (symbol->string $)) arg-spec)))
+  (def flags (string-join "" (sort (append
+    (map (fn ((pair flag name)) (append "-" (symbol->string flag) " " (symbol->string name))) short-flags)
+    (map (fn ((pair flag name)) (append "--" (symbol->string flag) " " (symbol->string name))) long-flags)))))
+  (append "USAGE: " app-name " [OPTIONS]" args "\n" flags "\n"))
