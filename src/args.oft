@@ -132,9 +132,9 @@
                          (todo 'short s option flags))
           (long? arg)  (progn
                          (def long (sym-skip 2 arg))
-                         (todo 'long s))
+                         (todo 'long long))
         ))))
-  (helper args))
+  (helper args (pair nil nil)))
 
 (defn usage (spec)
   "Returns a usage message for the given argument parser."

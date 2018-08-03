@@ -5,11 +5,10 @@
   [make-arg-parser parse-args usage])
 
 (defn main (args)
-  (def parser (make-arg-parser oftc (package-path binary-name)
+  (def arg-parser (make-arg-parser oftc (package-path binary-name)
     (option output -o --output)))
 
-  ; (def args (parse-args args nil))
-  ; (writeln args)
+  (println (usage arg-parser))
 
-  (println (usage parser))
-  (todo))
+  (def args (parse-args args arg-parser))
+  (todo args))

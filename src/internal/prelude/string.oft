@@ -1,16 +1,16 @@
 (module std/internal/prelude/string
-  [string-append string-concat string-join string-length string-nth
+  [as-chars string-append string-concat string-join string-length string-nth
    string-replace string-search string-slice string-split-on string-split-on-1]
   no-prelude)
 
 (import std/internal/prelude/compare
   [<= >=])
 (import std/internal/prelude/intrinsics
-  [+ - car cdr cons equals false nil nil? panic])
+  [+ - = car cdr cons equals false nil nil? panic])
 (import std/internal/prelude/list
   [reverse])
 (import std/internal/prelude/math
-  [1+])
+  [1+ 1-])
 (import std/internal/prelude/option
   [none option-cases option-map some])
 (import std/internal/prelude/pair
@@ -29,6 +29,14 @@
   (string-slice 0 n s)
   (string-slice n (string-length s) s)))
 (intrinsics:defmethod string take (n s) (string-slice 0 n s))
+
+(intrinsics:defn as-chars (s)
+  (intrinsics:defn helper (n acc)
+    (intrinsics:def next (cons (string-slice n (1+ n) s) acc))
+    (if (= n 0)
+      next
+      (helper (1- n) next)))
+  (helper (1- (string-length s)) nil))
 
 (intrinsics:defn string-concat (ss)
   (intrinsics:defn helper (ss acc)

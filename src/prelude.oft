@@ -1,6 +1,6 @@
 (module std/prelude
   [* + - -> . / 0? 1+ 1- 1st 2nd 3rd 4th 5th 6th 7th 8th 9th < <= = > >= all all-some and any
-   append as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
+   append as-chars as-shl assoc byte->bytes byte->fixnum byte? bytes-append bytes-concat bytes-nth
    bytes-slice bytes? car case cdr compare cond cons cons? const0 const1 contains? debug-trace def
    defmacro defmacro* defn defn-> defn-case defn-cond defpattern defpattern-quasiquote each either
    eq equals err err? expect false filter find first-nonnil first-some fix fixnum->byte fixnum-and
@@ -63,7 +63,7 @@
 (import std/internal/prelude/sort
   [sort sort-by])
 (import std/internal/prelude/string
-  [string-append string-concat string-join string-nth string-replace string-search
+  [as-chars string-append string-concat string-join string-nth string-replace string-search
    string-slice string-split-on string-split-on-1])
 (import std/internal/prelude/util
   [as-shl debug-trace shl?])
@@ -97,6 +97,7 @@
 (intrinsics:def and and)
 (intrinsics:def any any)
 (intrinsics:def append append)
+(intrinsics:def as-chars as-chars)
 (intrinsics:def as-shl as-shl)
 (intrinsics:def assoc assoc)
 (intrinsics:def byte->bytes byte->bytes)
