@@ -2,9 +2,12 @@
   [make-arg-parser parse-args usage]
   "Functions for creating and running argument parsers.")
 
-; An argument parser spec is a tuple (APP-NAME ARG-SPEC SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS).
+; An argument parser spec is a tuple:
+;
+;   (APP-NAME USAGE ARG-SPEC SHORT-FLAGS LONG-FLAGS SHORT-OPTS LONG-OPTS)
 ;
 ; APP-NAME is a string.
+; USAGE is a string.
 ; ARG-SPEC is a (possibly improper) list of symbols.
 ; SHORT-FLAGS is an assoc from symbols with one character to symbols.
 ; LONG-FLAGS is an assoc from symbols to symbols.
@@ -34,6 +37,64 @@
   (def str (symbol->string sym))
   (and (> (length str) 2) (equals (slice 0 2 str) "--")))
 
+(defn arg-parser (app-name arg-spec opt-specs)
+  "Creates an argument parser that can be passed into parse-args or usage.
+
+   ```
+   (arg-parser 'my-cool-app '(foo | bar)
+     '((option output -o --output)
+       (flag verbose -v)
+       (flag help -h --help)))
+   ```"
+
+  (def app-name (cond
+    (symbol? app-name) (symbol->string app-name)
+    (string? app-name) app-name
+                       (panic (cons 'invalid-app-name app-name))))
+
+  (defn add-flag (parser-spec flag-spec)
+    (def name (car flag-spec))
+    (defn helper (parser-spec flag)
+      (cond
+        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 1 parser-spec)
+        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 2 parser-spec)
+                      (panic `(invalid-option-flag ,flag))))
+    (foldl helper parser-spec (cdr flag-spec)))
+
+  (defn add-option (parser-spec option-spec)
+    (def name (car option-spec))
+    (defn helper (parser-spec flag)
+      (cond
+        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 3 parser-spec)
+        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 4 parser-spec)
+                      (panic `(invalid-option-flag ,flag))))
+    (foldl helper parser-spec (cdr option-spec)))
+
+  (defn add-spec (parser-spec opt-spec)
+    (cond
+      (shl? 'flag opt-spec)   (add-flag   parser-spec (cdr opt-spec))
+      (shl? 'option opt-spec) (add-option parser-spec (cdr opt-spec))
+                              (panic `(invalid-parser-opt-spec ,opt-spec))))
+
+  (defn flag-usage (flag)
+    (string-join ", " (map symbol->string (cdr flag))))
+  (defn option-usage (option)
+    (string-join ", " (map
+      \(append (symbol->string $) " " (symbol->string (car option)))
+      (cdr option))))
+  (defn spec-usage (opt-spec)
+    (cond
+      (shl? 'flag opt-spec)   (flag-usage   (cdr opt-spec))
+      (shl? 'option opt-spec) (option-usage (cdr opt-spec))
+                              (panic `(invalid-parser-opt-spec ,opt-spec))))
+  (defn make-usage (opt-specs)
+    (def args (string-join "" (map \(append " " (symbol->string $)) arg-spec)))
+    (def opts (append "\n" (string-join "\n" (map spec-usage opt-specs)) "\n"))
+    (append "USAGE: " app-name " [OPTIONS]" args "\n" opts))
+
+  (cons app-name (cons (make-usage opt-specs)
+    (foldl add-spec (list arg-spec nil nil nil nil) opt-specs))))
+
 (defmacro make-arg-parser (app-name arg-spec | opt-specs)
   "Creates an argument parser that can be passed into parse-args or usage.
 
@@ -47,45 +108,39 @@
      (flag quiet -q))                       ; a flag, -q, named quiet
    ```"
 
-  (def app-name (cond
-    (symbol? app-name) (symbol->string app-name)
-    (string? app-name) app-name
-                       (panic (cons 'invalid-app-name app-name))))
-
-  (defn add-flag (parser-spec flag-spec)
-    (def name (car option-spec))
-    (defn helper (parser-spec flag)
-      (cond
-        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 1 parser-spec)
-        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 2 parser-spec)
-                      (panic `(invalid-option-flag ,flag))))
-    (foldl helper parser-spec (cdr option-spec)))
-  (defn add-option (parser-spec option-spec)
-    (def name (car option-spec))
-    (defn helper (parser-spec flag)
-      (cond
-        (short? flag) (map-nth \(cons (pair (sym-skip 1 flag) name) $) 3 parser-spec)
-        (long? flag)  (map-nth \(cons (pair (sym-skip 2 flag) name) $) 4 parser-spec)
-                      (panic `(invalid-option-flag ,flag))))
-    (foldl helper parser-spec (cdr option-spec)))
-  (defn add-spec (parser-spec opt-spec)
-    (cond
-      (shl? 'flag opt-spec)   (add-flag   parser-spec (cdr opt-spec))
-      (shl? 'option opt-spec) (add-option parser-spec (cdr opt-spec))
-                              (panic `(invalid-parser-opt-spec ,opt-spec))))
-
-  `(quote ,(cons app-name (foldl add-spec (list arg-spec nil nil nil nil) opt-specs))))
+  `(quote ,(arg-parser app-name arg-spec opt-specs)))
 
 (defn parse-args (args spec)
-  "Parses arguments with the argument parser."
-  (def `(,app-name ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
-  (todo parse-args))
+  "Parses arguments with the argument parser. Returns a pair (FLAGS OPTS), where FLAGS is a list of
+   the symbols associated with flags and OPTS is an assoc from the names of arguments and options
+   to the values, which will be strings with the exception of the rest argument, which (if present)
+   will be a list."
+  (def `(,app-name ,usage ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
+  (defn helper (args state)
+    (def (pair flags opts) state)
+    (if (nil? args)
+      state
+      (let ((arg  (car args))
+            (args (cdr args)))
+        ; arg ~ /-([^-]*)([^-])/ => (map as-short-flag $1) (as-short-option $2)
+        ; arg ~ /--([^-])/ => (as-long $1)
+        (cond
+          (short? arg) (progn
+                         (def s (symbol->string arg))
+                         (def flags (map string->symbol (as-chars (slice 1 (1- (length s)) s))))
+                         (def option (string->symbol (last s)))
+                         (todo 'short s option flags))
+          (long? arg)  (progn
+                         (def long (sym-skip 2 arg))
+                         (todo 'long s))
+        ))))
+  (helper args))
 
 (defn usage (spec)
   "Returns a usage message for the given argument parser."
-  (def `(,app-name ,arg-spec ,short-flags ,long-flags ,short-opts ,long-opts) spec)
-  (def args (string-join "" (map \(append " " (symbol->string $)) arg-spec)))
-  (def flags (string-join "" (sort (append
-    (map (fn ((pair flag name)) (append "-" (symbol->string flag) " " (symbol->string name))) short-flags)
-    (map (fn ((pair flag name)) (append "--" (symbol->string flag) " " (symbol->string name))) long-flags)))))
-  (append "USAGE: " app-name " [OPTIONS]" args "\n" flags "\n"))
+  (nth 1 spec))
+
+(defn usage-and-exit (spec)
+  "Prints a usage message for the given argument parser, then exits with status code 1."
+  (println (usage spec))
+  (panic '(exit | 1)))

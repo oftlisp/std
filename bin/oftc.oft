@@ -7,7 +7,6 @@
 (defn main (args)
   (def parser (make-arg-parser oftc (package-path binary-name)
     (option output -o --output)))
-  (println 'parser '= parser)
 
   ; (def args (parse-args args nil))
   ; (writeln args)

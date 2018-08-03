@@ -1,5 +1,5 @@
 (module std/internal/prelude/obj
-  [append get-type length map monad-join nth make-object skip slice split-at take]
+  [append get-type last length map monad-join nth make-object skip slice split-at take]
   no-prelude)
 
 (import std/internal/prelude/intrinsics
@@ -23,6 +23,7 @@
 
 (defgeneric append (l r) 0)
 (defgeneric flat-map (f l) 1)
+(defgeneric last (lst) 0)
 (defgeneric length (lst) 0)
 (defgeneric map (f lst) 1)
 (defgeneric monad-join (m) 0)
